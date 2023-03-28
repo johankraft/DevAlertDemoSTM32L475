@@ -1,0 +1,5 @@
+device STM32L475VG
+speed 4000
+if SWD
+loadbin build/aws_demos.bin 0x8000000
+exit
