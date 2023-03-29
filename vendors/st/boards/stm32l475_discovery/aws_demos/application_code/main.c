@@ -135,45 +135,6 @@ typedef struct task_arg {
 
 SemaphoreHandle_t xSemaphore;
 
-void bhj_crash()
-{
-    int *foo = (int*)0xbadc0de;
-    configPRINTF( ( "Crash!!\r\n" ) );
-
-    xDfmSessionSetCloudStrategy(DFM_CLOUD_STRATEGY_ONLINE);
-    DfmAlertHandle_t alertHandle;
-    xDfmAlertBegin(DFM_TYPE_ASSERT_FAILED, "test 1", &alertHandle);
-
-    uint32_t value;
-    __asm volatile ("mov %0,sp" : "=r" (value));
-    xDfmAlertAddSymptom(alertHandle, DFM_SYMPTOM_STACKPTR, value);
-
-    xTraceDisable();
-    void *pvBuffer;
-    TraceUnsignedBaseType_t uiSize;
-    if (xTraceGetEventBuffer(&pvBuffer, &uiSize) == TRC_SUCCESS)
-    	xDfmAlertAddPayload(alertHandle, pvBuffer, uiSize, "dfm_trace.psfs");
-
-    xDfmAlertEnd(alertHandle);
-
-    xTraceEnable(TRC_START);
-//    *foo = 0;
-}
-
-void moreCalls() {
-    configPRINTF(("a function\r\n"));
-    bhj_crash();
-}
-void anothercall() {
-    configPRINTF(("another function\r\n" ));
-    moreCalls();
-}
-
-void call1() {
-    configPRINTF(("a call\r\n" ));
-    anothercall();
-}
-
 uint32_t hardware_rand(void)
 {
     uint32_t rand;
@@ -181,25 +142,31 @@ uint32_t hardware_rand(void)
     return rand;
 }
 
+///TODO: Note - Demonstrates a fault exception
+static int MakeFaultExceptionByIllegalRead(void)
+{
+   int r;
+   volatile unsigned int* p;
+
+   p = (unsigned int*)0x00100000;  // 0x00100000-0x07FFFFFF is reserved on STM32F4
+   r = *p;
+
+   return r;
+}
+
 /**
  * Button checker
  */
+
+// dummy is global and volatile to avoid the compiler removing the function call...
+volatile int dummy;
+
 void ButtonTask(void* argument)
 {
     /* USER CODE BEGIN 5 */
-    configPRINTF( ( "Starting Button Demo task!\r\n" ) );
+	vTaskDelay(2000);
 
-    // Enable fault on divide-by-zero and unaligned access
-	SCB->CCR |= SCB_CCR_DIV_0_TRP_Msk
-#if 0	// XXX needs compiler support
-			 |  SCB_CCR_UNALIGN_TRP_Msk
-#endif
-			 ;
-
-	// Enable usage fault, bus fault, and mem manage fault
-	SCB->SHCSR |= SCB_SHCSR_USGFAULTENA_Msk
-			   |  SCB_SHCSR_BUSFAULTENA_Msk
-			   |  SCB_SHCSR_MEMFAULTENA_Msk;
+    configPRINTF( ( "CRASH ME using the BLUE button to report an alert!\n\n" ) );
 
     BaseType_t  waitResult;
 
@@ -208,12 +175,19 @@ void ButtonTask(void* argument)
     for(;;)
     {
         waitResult = xTaskNotifyWait(0xFFFF, 0xFFFF ,NULL, pdMS_TO_TICKS( 500 ) );
-        if (waitResult == pdTRUE) {
+
+        if (waitResult == pdTRUE)
+        {
             if( xSemaphoreTake( xSemaphore, pdMS_TO_TICKS(500) ) == pdTRUE ) {
-                configPRINTF( ( "%s\r\n", arg->message ) );
-                call1();
+
+            	configPRINTF( ( "FAULT EXCEPTION -> DFM alert and restart!\n\n") );
+
+                dummy = MakeFaultExceptionByIllegalRead();
+
                 xSemaphoreGive( xSemaphore );
-            } else {
+            }
+            else
+            {
                 configPRINTF(( "Could not take semaphore\n" ));
             }
         }
@@ -224,6 +198,10 @@ void ButtonTask(void* argument)
 TaskHandle_t xBhjHandle = NULL;
 #define DEV_ALERT_DUMMY 666
 task_arg_t arg1 = { DEV_ALERT_DUMMY, "User button pressed" };
+
+
+
+
 
 /**
  * @brief Application runtime entry point.
@@ -251,6 +229,9 @@ int main( void )
 void vApplicationDaemonTaskStartupHook( void )
 {
     WIFIReturnCode_t xWifiStatus;
+    int dfmResult = DFM_SUCCESS;
+
+    configPRINTF( ( "\n\n\n\n------ Starting up DevAlert demo ------\n" ) );
 
     /* Turn on the WiFi before key provisioning. This is needed because
      * if we want to use offload SSL, device certificate and key is stored
@@ -265,7 +246,9 @@ void vApplicationDaemonTaskStartupHook( void )
         /* A simple example to demonstrate key and certificate provisioning in
          * microcontroller flash using PKCS#11 interface. This should be replaced
          * by production ready key provisioning mechanism. */
-        vDevModeKeyProvisioning();
+
+        // Not needed, right? (slow!) Possibly if using a new board, or changing the wifi or certificate?
+        // vDevModeKeyProvisioning();
 
         if( SYSTEM_Init() == pdPASS )
         {
@@ -277,8 +260,6 @@ void vApplicationDaemonTaskStartupHook( void )
             {
                 configPRINTF(("Failed to initialize DFM\r\n"));
             }
-            //xDfmSessionSetDeviceName("...");
-            #error
 
             #ifdef USE_OFFLOAD_SSL
                 /* Check if WiFi firmware needs to be updated. */
@@ -297,12 +278,36 @@ void vApplicationDaemonTaskStartupHook( void )
                             ( void * ) &arg1,    /* Parameter passed into the task. */
                             tskIDLE_PRIORITY,/* Priority at which the task is created. */
                             &xBhjHandle );      /* Used to pass out the created task's handle. */
-            /* Start demos. */
-//            DEMO_RUNNER_RunDemos();
-            if (xDfmAlertSendAll() == DFM_FAIL)
+
+
+            /* Try sending any stored alerts from a prior crash */
+            dfmResult = xDfmAlertSendAll();
+
+            if ((dfmResult == DFM_FAIL) || (dfmResult == DFM_NO_ALERTS))
             {
-                configPRINTF(("Failed to send alerts\n"));
+                configPRINTF(("DFM: No stored alerts.\n\n"));
             }
+            else if (dfmResult == DFM_SUCCESS)
+            {
+            	configPRINTF(("DFM: Found and uploaded alerts.\n\n"));
+
+            	// TODO: Missing Reset function, temporary fix
+            	dfmStoragePortReset();
+
+            	if (xDfmInitialize() == DFM_FAIL)
+            	{
+            		configPRINTF(("DFM: Failed to re-initialize after upload!\n\n"));
+            	}
+            }
+            else
+            {
+            	configPRINTF(("DFM: Unexpected return code (%d)!\n\n", dfmResult));
+            }
+
+            // TODO: This is needed since the storage port for STM32 flash (beta) otherwise ignores new alerts after the first one.
+            // Something isn't cleared properly, it seems. Perhaps related to the new dfmStoragePortReset?
+            xDfmSessionSetStorageStrategy(DFM_STORAGE_STRATEGY_OVERWRITE);
+
         }
     }
     else
@@ -598,8 +603,11 @@ static void prvMiscInitialization( void )
      * heap must be initialized. */
     prvInitializeHeap();
 
+	// Enable usage fault and bus fault
+	SCB->SHCSR |= SCB_SHCSR_USGFAULTENA_Msk | SCB_SHCSR_BUSFAULTENA_Msk;
+
     /* Init and start tracing */
-    vTraceEnable(TRC_START);
+    xTraceEnable(TRC_START);
 
     BSP_LED_Init( LED_GREEN );
     BSP_PB_Init( BUTTON_USER, BUTTON_MODE_EXTI );

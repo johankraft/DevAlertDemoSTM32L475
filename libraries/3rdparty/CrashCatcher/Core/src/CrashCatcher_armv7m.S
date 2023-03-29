@@ -25,8 +25,17 @@
     */
     .global HardFault_Handler
     .type HardFault_Handler, %function
+
+    .global UsageFault_Handler
+    .type UsageFault_Handler, %function
+
+	.global BusFault_Handler
+    .type BusFault_Handler, %function
+
     .thumb_func
 HardFault_Handler:
+UsageFault_Handler:
+BusFault_Handler:
     /* Push the following onto the stack (see CrashCatcherExceptionRegisters structure). The g_crashCatcherStack buffer
        is reserved for use as the stack while CrashCatcher is running.
         msp

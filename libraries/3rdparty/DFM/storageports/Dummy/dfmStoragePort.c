@@ -57,7 +57,7 @@
 #define DFM_STORAGE_PORT_ALERT_TYPE		0x34561842
 #define DFM_STORAGE_PORT_PAYLOAD_TYPE	0x82713124
 
-uint8_t FLASH_ALERT_DATA[11000] __attribute__( ( section( ".dfm_alert" ), aligned (8) ) ) = { 0 };
+uint8_t FLASH_ALERT_DATA[25000] __attribute__( ( section( ".dfm_alert" ), aligned (8) ) ) = { 0 };
 uint32_t ulWrOffset = 0;
 uint32_t ulRdOffset = 0;
 
@@ -160,4 +160,25 @@ static DfmResult_t prvDfmStoragePortWrite(DfmEntryHandle_t xEntryHandle, uint32_
 	}
 	return DFM_FAIL;
 }
+
+
+
+
+DfmResult_t dfmStoragePortReset(void)
+{
+	uint32_t dummy = 0;
+
+	uint32_t ulDst = (uint32_t)&FLASH_ALERT_DATA[0];
+
+
+	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
+	if (FLASH_unlock_erase(ulDst, sizeof(FLASH_ALERT_DATA)) != 0)
+	{
+			return DFM_FAIL;
+	}
+
+	return DFM_SUCCESS;
+
+}
+
 #endif

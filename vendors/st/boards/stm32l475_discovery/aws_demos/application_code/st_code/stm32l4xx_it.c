@@ -70,24 +70,15 @@ void NMI_Handler(void)
 /**
 * @brief This function handles Hard fault interrupt.
 */
-/*
+
+#if (0) // These fault handlers are defined by DFM/CrashCatcher instead, see CrashCatcher_armv7m.S
 void HardFault_Handler(void)
 {
   while (1)
   {
   }
 }
-*/
 
-/**
-* @brief This function handles Memory management fault.
-*/
-void MemManage_Handler(void)
-{
-  while (1)
-  {
-  }
-}
 
 /**
 * @brief This function handles Prefetch fault, memory access fault.
@@ -108,6 +99,19 @@ void UsageFault_Handler(void)
   {
   }
 }
+#endif
+
+
+/**
+* @brief This function handles Memory management fault.
+*/
+void MemManage_Handler(void)
+{
+  while (1)
+  {
+  }
+}
+
 
 /**
 * @brief This function handles System service call via SWI instruction.
@@ -115,6 +119,7 @@ void UsageFault_Handler(void)
 /*void SVC_Handler(void) // AWS_EDIT
 {
 }*/
+
 
 /**
 * @brief This function handles Debug monitor.

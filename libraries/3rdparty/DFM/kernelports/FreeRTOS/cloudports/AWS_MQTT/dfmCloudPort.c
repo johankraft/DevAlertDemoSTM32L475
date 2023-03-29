@@ -304,6 +304,7 @@ DfmResult_t xDfmCloudPortSend(DfmEntryHandle_t xEntryHandle)
 
     if (xResult != MQTTSuccess)
     {
+    	configPRINTF( ( "MQTT_Publish FAILED (%d)\n", xResult) );
         xStatus = DFM_FAIL;
     }
 

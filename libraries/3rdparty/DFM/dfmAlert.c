@@ -646,6 +646,7 @@ static DfmResult_t prvDfmGetAll(DfmAlertEntryCallback_t xAlertCallback, DfmAlert
 	uint32_t ulAlertId = 0;
 	void* pvBuffer = (void*)0;
 	uint32_t ulBufferSize = 0;
+	uint32_t alertCount = 0;
 
 	if (pxDfmAlertData == (void*)0)
 	{
@@ -717,6 +718,14 @@ static DfmResult_t prvDfmGetAll(DfmAlertEntryCallback_t xAlertCallback, DfmAlert
 				return DFM_FAIL;
 			}
 		}
+
+		alertCount++;
+	}
+
+	if (alertCount == 0)
+	{
+		/* StoragePort had no valid alerts. No obvious error.  */
+		return DFM_NO_ALERTS;
 	}
 
 	return DFM_SUCCESS;
