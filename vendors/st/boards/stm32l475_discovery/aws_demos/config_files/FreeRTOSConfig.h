@@ -125,9 +125,17 @@
 
 /* Normal assert() semantics without relying on the provision of an assert.h
  * header file. */
+
+/*
 #define configASSERT( x )                                        \
     if( ( x ) == 0 ) { taskDISABLE_INTERRUPTS(); for( ; ; ) {; } \
     }
+*/
+
+void OnAssertFailed(const char* filename, int line);
+
+#define configASSERT( x )  if( ( x ) == 0 ){ OnAssertFailed(__FILE__, __LINE__); }
+
 
 /* Logging task definitions. */
 extern void vMainUARTPrintString( char * pcString );

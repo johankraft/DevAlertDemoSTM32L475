@@ -226,8 +226,6 @@ static void prvLoggingPrintfCommon( uint8_t usLoggingLevel,
 {
     size_t xLength = 0;
     char * pcPrintString = NULL;
-    static TraceStringHandle_t tracealyzerUserEventChannel = NULL;
-
 
     configASSERT( usLoggingLevel <= LOG_DEBUG );
     configASSERT( pcFormat != NULL );

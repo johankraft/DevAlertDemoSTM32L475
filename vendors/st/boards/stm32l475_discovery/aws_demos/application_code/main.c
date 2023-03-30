@@ -142,7 +142,50 @@ uint32_t hardware_rand(void)
     return rand;
 }
 
-///TODO: Note - Demonstrates a fault exception
+void OnAssertFailed(const char* filename, int line)
+{
+	DfmAlertHandle_t alertHandle = NULL;
+	static TraceStringHandle_t chn = NULL;
+	char msg[80] = "";
+
+	// For this demo, the "assert failed" alert is sent directly, without restarting the device.
+	// Otherwise, DFM_CLOUD_STRATEGY_OFFLINE is used to store the alert in flash, restart, and then send it using xDfmSendAll(), after xDfmInitialize.
+	xDfmSessionSetCloudStrategy(DFM_CLOUD_STRATEGY_ONLINE);
+
+	// First time only, register a user event channel for logging the alert in the trace.
+	if (chn == NULL)
+		xTraceStringRegister("ALERT", &chn);
+
+	// Create a message string for both the trace logging and the alert description.
+	snprintf(msg, sizeof(msg), "Assert failed at %s:%d", strrchr(filename, '/')+1, line);
+	xTracePrint(chn, msg);
+
+	// Pause the tracing while creating and sending the alert.
+	xTraceDisable();
+
+	if (xDfmAlertBegin(DFM_TYPE_ASSERT_FAILED, msg, &alertHandle) == DFM_SUCCESS)
+	{
+		void* pvBuffer = (void*)0;
+		uint32_t ulBufferSize = 0;
+
+		// The symptoms provide a "fingerprint" of the issue, must be numerical...
+		xDfmAlertAddSymptom(alertHandle, DFM_SYMPTOM_CURRENT_TASK, simplechecksum32(pcTaskGetName( xTaskGetCurrentTaskHandle() ))); // using the 4 first bytes as an int
+		xDfmAlertAddSymptom(alertHandle, DFM_SYMPTOM_FILE, simplechecksum32(filename));
+		xDfmAlertAddSymptom(alertHandle, DFM_SYMPTOM_LINE, line);
+
+		// Store the trace
+	    xTraceGetEventBuffer(&pvBuffer, &ulBufferSize);
+	    xDfmAlertAddPayload(alertHandle, pvBuffer, ulBufferSize, "dfm_trace.psfs");
+
+		// Commit the alert (store or send, depending on "cloud strategy" setting
+		xDfmAlertEnd(alertHandle);
+	}
+
+	// Resume tracing
+    xTraceEnable(TRC_START);
+}
+
+
 static int MakeFaultExceptionByIllegalRead(void)
 {
    int r;
@@ -158,6 +201,8 @@ static int MakeFaultExceptionByIllegalRead(void)
  * Button checker
  */
 
+TaskHandle_t xBhjHandle = NULL;
+
 // dummy is global and volatile to avoid the compiler removing the function call...
 volatile int dummy;
 
@@ -168,43 +213,105 @@ void ButtonTask(void* argument)
     /* USER CODE BEGIN 5 */
 	vTaskDelay(2000);
 
-    configPRINTF( ( "CRASH ME using the BLUE button to report an alert!\n\n" ) );
+    configPRINTF( ( "Use the BLUE BUTTON to test an alert!\n\n" ) );
 
     BaseType_t  waitResult;
 
     for(;;)
     {
-        waitResult = xTaskNotifyWait(0xFFFF, 0xFFFF ,NULL, pdMS_TO_TICKS( 10 ) );
+        waitResult = xTaskNotifyWait(0xFFFF, 0xFFFF, NULL, pdMS_TO_TICKS( 100000 ) );
 
         if (waitResult == pdTRUE)
         {
-            if( xSemaphoreTake( xSemaphore, pdMS_TO_TICKS(500) ) == pdTRUE ) {
+        	switch(counter)
+        	{
+        		case 0:
+        			configPRINTF( ( "Testing failed assert\n\n") );
 
-            	configPRINTF( ( "FAULT EXCEPTION -> DFM alert and restart!\n\n") );
+        			// Calls OnAssertFailed
+        			configASSERT( 1 == 0 );
 
-                dummy = MakeFaultExceptionByIllegalRead();
+        			break;
 
-                xSemaphoreGive( xSemaphore );
-            }
-            else
-            {
-                configPRINTF(( "Could not take semaphore\n" ));
-            }
-        }
-        else
-        {
-        	xTracePrintCompactF1("Compact Log", "This will be read from the ELF file, only the string address is traced. Counter: %d", counter++);
+        		case 1:
+        			configPRINTF( ( "Testing fault exception\n\n") );
+
+        			// Causing hard fault exception
+        			dummy = MakeFaultExceptionByIllegalRead();
+
+        			break;
+
+        		default:
+        			counter = 0;
+        			break;
+        	}
+        	counter++;
+
         }
     }
     /* USER CODE END 5 */
 }
 
-TaskHandle_t xBhjHandle = NULL;
-#define DEV_ALERT_DUMMY 666
-task_arg_t arg1 = { DEV_ALERT_DUMMY, "User button pressed" };
+
+#define nMSG 5
+
+const char * messages[nMSG] = {	"SetMode A",
+								"SetOptionsFlags X,Y",
+								"Certificate checksum 123456789ABCDEF",
+								"SetRemoteIP 127.0.0.1",
+								"SetRemotePort 8888"};
+
+void prvRXTask(void* argument)
+{
+	int delay;
+	volatile int dummy;
+
+	int counter = 0;
+	int len = 0;
+
+	TraceStateMachineHandle_t myfsm;
+	TraceStateMachineStateHandle_t myfsm_statePr, myfsm_stateSp, myfsm_stateDo, myfsm_stateIn;
+
+	/* Trace a state machine (states can span between tasks) */
+	xTraceStateMachineCreate("RX States", &myfsm);
+	xTraceStateMachineStateCreate(myfsm, "Preparing", &myfsm_statePr);
+	xTraceStateMachineStateCreate(myfsm, "SpecialStep", &myfsm_stateSp);
+	xTraceStateMachineStateCreate(myfsm, "Doing", &myfsm_stateDo);
+	xTraceStateMachineStateCreate(myfsm, "Inactive", &myfsm_stateIn);
+
+	xTraceStateMachineSetState(myfsm, myfsm_stateIn);
+
+    for(;;)
+    {
+
+    	len = strlen(messages[counter]);
+
+    	xTracePrintCompactF0("Command", messages[counter]);
+    	xTracePrintCompactF1("Bytes", "%d", len);
+
+    	counter = (counter+1) % nMSG;
+
+   		xTraceStateMachineSetState(myfsm, myfsm_statePr);
+   		for (dummy = 0; dummy < 1200; dummy++);
+   		xTraceStateMachineSetState(myfsm, myfsm_stateSp);
+   		for (dummy = 0; dummy < 2000; dummy++);
+   		xTraceStateMachineSetState(myfsm, myfsm_statePr);
+   		for (dummy = 0; dummy < 3000; dummy++);
+    	xTraceStateMachineSetState(myfsm, myfsm_stateDo);
+
+    	// This state takes some time...
+ 	    for (dummy = 0; dummy < (1000 * len); dummy++);
+
+    	// Simulate timing of incoming messages
+    	delay = 5 + hardware_rand() % 85;
+
+    	xTraceStateMachineSetState(myfsm, myfsm_stateIn);
 
 
+    	vTaskDelay(delay);
+    }
 
+}
 
 
 /**
@@ -215,6 +322,11 @@ int main( void )
     /* Perform any hardware initialization that does not require the RTOS to be
      * running.  */
     prvMiscInitialization();
+
+    if( xTaskCreate( prvRXTask, "RX", 1000, NULL, 6, NULL ) != pdPASS )
+    {
+    	configPRINTF(("Failed creating task!"));
+    }
 
     /* Create tasks that are not dependent on the WiFi being initialized. */
     xLoggingTaskInitialize( mainLOGGING_TASK_STACK_SIZE,
@@ -229,15 +341,6 @@ int main( void )
     return 0;
 }
 /*-----------------------------------------------------------*/
-
-
-/* TODO 2023-03-29:
- * - Check the trace, include some user events or additional tasks?
- * - Add some more alert, e.g. on asserts? (double-click on blue button, or use terminal trigger the test cases?)
- * - Get eclipse integration working with crash dumps.
- * - Demo state machines, intervals with target-side definitions.
- */
-
 
 
 void vApplicationDaemonTaskStartupHook( void )
@@ -277,7 +380,9 @@ void vApplicationDaemonTaskStartupHook( void )
 
             #ifdef USE_OFFLOAD_SSL
                 /* Check if WiFi firmware needs to be updated. */
+
                 prvCheckWiFiFirmwareVersion();
+
             #endif /* USE_OFFLOAD_SSL */
 
             BaseType_t xReturned;
@@ -289,7 +394,7 @@ void vApplicationDaemonTaskStartupHook( void )
                             ButtonTask,       /* Function that implements the task. */
                             "DemoTask1",          /* Text name for the task. */
                             2048u / 4u,      /* Stack size in words, not bytes. */
-                            ( void * ) &arg1,    /* Parameter passed into the task. */
+                            NULL,    		/* Parameter passed into the task. */
                             tskIDLE_PRIORITY,/* Priority at which the task is created. */
                             &xBhjHandle );      /* Used to pass out the created task's handle. */
 
@@ -384,12 +489,14 @@ static void prvWifiConnect( void )
 
     if( xWifiStatus == eWiFiSuccess )
     {
+    	configPRINTF( ( "Connecting to WiFi..." ) );
+
         /* Try connecting using provided wifi credentials. */
         xWifiStatus = WIFI_ConnectAP( &( xNetworkParams ) );
 
         if( xWifiStatus == eWiFiSuccess )
         {
-            configPRINTF( ( "WiFi connected to AP %.*s.\r\n", xNetworkParams.ucSSIDLength, ( char * ) xNetworkParams.ucSSID ) );
+            configPRINTF( ( "WiFi connected!") );
 
             /* Get IP address of the device. */
             xWifiStatus = WIFI_GetIPInfo( &xIpConfig );
@@ -801,6 +908,8 @@ void vApplicationIdleHook( void )
 }
 /*-----------------------------------------------------------*/
 
+#if (0)
+
 void * malloc( size_t xSize )
 {
     configASSERT( xSize == ~0 );
@@ -817,6 +926,7 @@ void vOutputChar( const char cChar,
     ( void ) xTicksToWait;
 }
 /*-----------------------------------------------------------*/
+#endif
 
 void vMainUARTPrintString( char * pcString )
 {
@@ -826,6 +936,7 @@ void vMainUARTPrintString( char * pcString )
 }
 /*-----------------------------------------------------------*/
 
+#if (0)
 void prvGetRegistersFromStack( uint32_t * pulFaultStackAddress )
 {
 /* These are volatile to try and prevent the compiler/linker optimising them
@@ -901,6 +1012,7 @@ int iMainRand32( void )
     return( ( int ) ( uxlNextRand >> 16UL ) & 0x7fffUL );
 }
 /*-----------------------------------------------------------*/
+#endif
 
 static void prvInitializeHeap( void )
 {

@@ -8,9 +8,11 @@
  * DFM Crash Catcher integration
  */
 
+
+#include <FreeRTOS.h>
+#include "task.h"
 #include <CrashCatcher.h>
 #include <string.h>
-
 #include "dfm.h"
 #include "dfmCrashCatcher.h"
 
@@ -25,6 +27,8 @@ DfmAlertHandle_t xAlertHandle;
 uint8_t dfmAlertStarted = 0;
 static uint8_t ucDataBuffer[CRASH_DUMP_MAX_SIZE] __attribute__ ((aligned (8)));
 static uint8_t* ucBufferPos;
+
+
 
 static void dumpHalfWords(const uint16_t* pMemory, size_t elementCount);
 static void dumpWords(const uint32_t* pMemory, size_t elementCount);
@@ -46,16 +50,18 @@ void CrashCatcher_DumpStart(const CrashCatcherInfo* pInfo)
     ucBufferPos = &ucDataBuffer[0];
     /* Do not try to send the alert */
     xDfmSessionSetCloudStrategy(DFM_CLOUD_STRATEGY_OFFLINE);
-    if (xDfmAlertBegin(DFM_TYPE_HARDFAULT, "Crash Alert", &xAlertHandle) == DFM_SUCCESS)
+    if (xDfmAlertBegin(DFM_TYPE_HARDFAULT, "Fault Exception", &xAlertHandle) == DFM_SUCCESS)
     {
+    	xDfmAlertAddSymptom(xAlertHandle, DFM_SYMPTOM_CURRENT_TASK, simplechecksum32(pcTaskGetName( xTaskGetCurrentTaskHandle() )));
+    	xDfmAlertAddSymptom(xAlertHandle, DFM_SYMPTOM_STACKPTR, pInfo->sp);
+
 #if ((CRASH_ADD_TRACE) >= 1)
+    	xTracePrintCompactF0("ALERT", "Fault exception! See crash dump for details.");
         prvAddTracePayload();
 #endif
         dfmAlertStarted = 1;
     }
 }
-
-#if ((CRASH_ADD_TRACE) >= 1)
 static void prvAddTracePayload()
 {
     char* szName;
@@ -72,12 +78,12 @@ static void prvAddTracePayload()
 
     if (xTraceIsRecorderEnabled() == 1)
     {
+
         xTraceDisable();
     }
     xTraceGetEventBuffer(&pvBuffer, &ulBufferSize);
     xDfmAlertAddPayload(xAlertHandle, pvBuffer, ulBufferSize, szName);
 }
-#endif
 
 void CrashCatcher_DumpMemory(const void* pvMemory, CrashCatcherElementSizes elementSize, size_t elementCount)
 {

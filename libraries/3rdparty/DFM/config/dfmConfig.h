@@ -106,6 +106,13 @@ extern "C" {
  */
 #define DFM_CFG_DEVICENAME_STRATEGY DFM_DEVICE_NAME_STRATEGY_ONDEVICE
 
+
+static inline int simplechecksum32(char* str)
+{
+	return *(int*)str;
+}
+
+
 #ifdef __cplusplus
 }
 #endif
