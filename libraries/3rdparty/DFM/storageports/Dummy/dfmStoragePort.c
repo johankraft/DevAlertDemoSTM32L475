@@ -111,6 +111,7 @@ DfmResult_t xDfmStoragePortGetAlert(void* pvBuffer, uint32_t ulBufferSize)
 	memcpy(pvBuffer, &FLASH_ALERT_DATA[ulRdOffset], ulSize);
 	ulRdOffset += ulSize;
 	ulRdOffset += (8 - (ulSize % 8));
+
 	return DFM_SUCCESS;
 }
 
@@ -166,10 +167,8 @@ static DfmResult_t prvDfmStoragePortWrite(DfmEntryHandle_t xEntryHandle, uint32_
 
 DfmResult_t dfmStoragePortReset(void)
 {
-	uint32_t dummy = 0;
 
 	uint32_t ulDst = (uint32_t)&FLASH_ALERT_DATA[0];
-
 
 	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
 	if (FLASH_unlock_erase(ulDst, sizeof(FLASH_ALERT_DATA)) != 0)

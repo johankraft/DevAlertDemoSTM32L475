@@ -38,6 +38,8 @@
 #include <stdarg.h>
 #include <string.h>
 
+#include "trcRecorder.h"
+
 /* Sanity check all the definitions required by this file are set. */
 #ifndef configPRINT_STRING
     #error configPRINT_STRING( x ) must be defined in FreeRTOSConfig.h to use this logging file.  Set configPRINT_STRING( x ) to a function that outputs a string, where X is the string.  For example, #define configPRINT_STRING( x ) MyUARTWriteString( X )
@@ -207,7 +209,7 @@ static void prvLoggingTask( void * pvParameters )
         /* Block to wait for the next string to print. */
         if( xQueueReceive( xQueue, &pcReceivedString, portMAX_DELAY ) == pdPASS )
         {
-            configPRINT_STRING( pcReceivedString );
+   		    configPRINT_STRING( pcReceivedString );
 
             vPortFree( ( void * ) pcReceivedString );
         }
@@ -224,10 +226,15 @@ static void prvLoggingPrintfCommon( uint8_t usLoggingLevel,
 {
     size_t xLength = 0;
     char * pcPrintString = NULL;
+    static TraceStringHandle_t tracealyzerUserEventChannel = NULL;
+
 
     configASSERT( usLoggingLevel <= LOG_DEBUG );
     configASSERT( pcFormat != NULL );
     configASSERT( configLOGGING_MAX_MESSAGE_LENGTH > 0 );
+
+    // Logging to Tracealyzer as well, shown in the "Debug Console" user event channel.
+    xTraceConsoleChannelPrintF(pcFormat, args);
 
     /* The queue is created by xLoggingTaskInitialize().  Check
      * xLoggingTaskInitialize() has been called. */

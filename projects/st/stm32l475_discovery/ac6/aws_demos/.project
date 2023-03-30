@@ -1246,6 +1246,11 @@
 			<locationURI>PARENT-5-PROJECT_LOC/libraries/3rdparty/tracerecorder/source/include/trcDefines.h</locationURI>
 		</link>
 		<link>
+			<name>libraries/3rdparty/tracerecorder/include/trcDependency.h</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/libraries/3rdparty/tracerecorder/source/include/trcDependency.h</locationURI>
+		</link>
+		<link>
 			<name>libraries/3rdparty/tracerecorder/include/trcDiagnostics.h</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/libraries/3rdparty/tracerecorder/source/include/trcDiagnostics.h</locationURI>
@@ -1379,6 +1384,11 @@
 			<name>libraries/3rdparty/tracerecorder/src/trcCounter.c</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/libraries/3rdparty/tracerecorder/source/trcCounter.c</locationURI>
+		</link>
+		<link>
+			<name>libraries/3rdparty/tracerecorder/src/trcDependency.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/libraries/3rdparty/tracerecorder/source/trcDependency.c</locationURI>
 		</link>
 		<link>
 			<name>libraries/3rdparty/tracerecorder/src/trcDiagnostics.c</name>

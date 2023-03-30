@@ -163,6 +163,8 @@ volatile int dummy;
 
 void ButtonTask(void* argument)
 {
+	int counter = 0;
+
     /* USER CODE BEGIN 5 */
 	vTaskDelay(2000);
 
@@ -170,11 +172,9 @@ void ButtonTask(void* argument)
 
     BaseType_t  waitResult;
 
-    task_arg_t* arg = (task_arg_t*)(argument);
-    /* Infinite loop */
     for(;;)
     {
-        waitResult = xTaskNotifyWait(0xFFFF, 0xFFFF ,NULL, pdMS_TO_TICKS( 500 ) );
+        waitResult = xTaskNotifyWait(0xFFFF, 0xFFFF ,NULL, pdMS_TO_TICKS( 10 ) );
 
         if (waitResult == pdTRUE)
         {
@@ -190,6 +190,10 @@ void ButtonTask(void* argument)
             {
                 configPRINTF(( "Could not take semaphore\n" ));
             }
+        }
+        else
+        {
+        	xTracePrintCompactF1("Compact Log", "This will be read from the ELF file, only the string address is traced. Counter: %d", counter++);
         }
     }
     /* USER CODE END 5 */
@@ -225,6 +229,16 @@ int main( void )
     return 0;
 }
 /*-----------------------------------------------------------*/
+
+
+/* TODO 2023-03-29:
+ * - Check the trace, include some user events or additional tasks?
+ * - Add some more alert, e.g. on asserts? (double-click on blue button, or use terminal trigger the test cases?)
+ * - Get eclipse integration working with crash dumps.
+ * - Demo state machines, intervals with target-side definitions.
+ */
+
+
 
 void vApplicationDaemonTaskStartupHook( void )
 {
@@ -291,21 +305,15 @@ void vApplicationDaemonTaskStartupHook( void )
             {
             	configPRINTF(("DFM: Found and uploaded alerts.\n\n"));
 
-            	// TODO: Missing Reset function, temporary fix
-            	dfmStoragePortReset();
+            	dfmStoragePortReset(); // TODO: DFM lacked a "storage reset" handling, integrate this.
 
-            	if (xDfmInitialize() == DFM_FAIL)
-            	{
-            		configPRINTF(("DFM: Failed to re-initialize after upload!\n\n"));
-            	}
             }
             else
             {
             	configPRINTF(("DFM: Unexpected return code (%d)!\n\n", dfmResult));
             }
 
-            // TODO: This is needed since the storage port for STM32 flash (beta) otherwise ignores new alerts after the first one.
-            // Something isn't cleared properly, it seems. Perhaps related to the new dfmStoragePortReset?
+            // TODO: This shouldn't be needed?
             xDfmSessionSetStorageStrategy(DFM_STORAGE_STRATEGY_OVERWRITE);
 
         }
@@ -608,6 +616,9 @@ static void prvMiscInitialization( void )
 
     /* Init and start tracing */
     xTraceEnable(TRC_START);
+
+    // Enables "compact logging" with e.g. xTracePrintCompactF1(). The dispatcher tool must have access to the elf file.
+    xTraceDependencyRegister("aws_demos.elf", TRC_DEPENDENCY_TYPE_ELF);
 
     BSP_LED_Init( LED_GREEN );
     BSP_PB_Init( BUTTON_USER, BUTTON_MODE_EXTI );
