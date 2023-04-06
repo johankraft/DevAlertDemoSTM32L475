@@ -27,7 +27,7 @@ DfmResult_t xDfmStoragePortGetAlert(void* pvBuffer, uint32_t ulBufferSize);
 DfmResult_t xDfmStoragePortStorePayloadChunk(DfmEntryHandle_t xEntryHandle, uint32_t ulOverwrite);
 DfmResult_t xDfmStoragePortGetPayloadChunk(char* szSessionId, uint32_t ulAlertId, void* pvBuffer, uint32_t ulBufferSize);
 
-DfmResult_t dfmStoragePortReset(void);
+DfmResult_t dfmStoragePortReset(int isNewAlert);
 
 #ifdef __cplusplus
 }

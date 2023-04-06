@@ -63,15 +63,16 @@ extern TIM_HandleTypeDef htim6;
 /**
 * @brief This function handles Non maskable interrupt.
 */
+#if (0) // These fault handlers are defined by DFM/CrashCatcher instead, see CrashCatcher_armv7m.S
 void NMI_Handler(void)
 {
+	for (;;);
 }
 
 /**
 * @brief This function handles Hard fault interrupt.
 */
 
-#if (0) // These fault handlers are defined by DFM/CrashCatcher instead, see CrashCatcher_armv7m.S
 void HardFault_Handler(void)
 {
   while (1)

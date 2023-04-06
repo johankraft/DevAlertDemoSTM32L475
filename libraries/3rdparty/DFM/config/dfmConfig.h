@@ -37,6 +37,12 @@ extern "C" {
 #error "DFM_CFG_PRODUCTID needs to be set."
 #endif
 
+
+/* Main settings for Demo (all collected here) */
+#define DFM_DEMO_STACKDUMP_SIZE 200
+#define DFM_DEMO_TRACEBUFFER_SIZE (1500) /* Added */
+#define DFM_DEMO_FLASHSTORAGE_SIZE (25500) /* Added */
+
 /**
  * @brief The maximum size of a "chunk" that will be stored or sent.
  */

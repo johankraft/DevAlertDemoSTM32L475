@@ -51,6 +51,7 @@
 #include "iot_uart.h"
 
 #include "dfm.h"
+#include "dfmCrashCatcher.h"
 
 /* WiFi driver includes. */
 #include "es_wifi.h"
@@ -58,7 +59,7 @@
 /* The SPI driver polls at a high priority. The logging task's priority must also
  * be high to be not be starved of CPU time. */
 #define mainLOGGING_TASK_PRIORITY                         ( configMAX_PRIORITIES - 1 )
-#define mainLOGGING_TASK_STACK_SIZE                       ( configMINIMAL_STACK_SIZE * 5 )
+#define mainLOGGING_TASK_STACK_SIZE                       ( 2000 )
 #define mainLOGGING_MESSAGE_QUEUE_LENGTH                  ( 15 )
 
 /* Minimum required WiFi firmware version. */
@@ -160,7 +161,7 @@ void OnAssertFailed(const char* filename, int line)
 	snprintf(msg, sizeof(msg), "Assert failed at %s:%d", strrchr(filename, '/')+1, line);
 	xTracePrint(chn, msg);
 
-	// Pause the tracing while creating and sending the alert.
+	/* Disable tracing while reading the trace buffer. We don't want new events added in the middle of the upload. */
 	xTraceDisable();
 
 	if (xDfmAlertBegin(DFM_TYPE_ASSERT_FAILED, msg, &alertHandle) == DFM_SUCCESS)
@@ -181,11 +182,11 @@ void OnAssertFailed(const char* filename, int line)
 		xDfmAlertEnd(alertHandle);
 	}
 
-	// Resume tracing
-    xTraceEnable(TRC_START);
+	xTraceResume();
 }
 
 
+// Provokes a hard fault exception
 static int MakeFaultExceptionByIllegalRead(void)
 {
    int r;
@@ -197,59 +198,93 @@ static int MakeFaultExceptionByIllegalRead(void)
    return r;
 }
 
+// This is just to make the call stack a bit longer and more interesting...
+int dosomething(int n)
+{
+	if (n != -42)
+	{
+		return MakeFaultExceptionByIllegalRead();
+	}
+	return 0;
+}
+
+
+// Uses a gcc/clang feature to detect stack corruption on return from this function
+// See the error handler __stack_chk_fail in dfmCrashCatcher.c
+void testStackCorruption(void)
+{
+	volatile char buf[12];
+
+	sprintf(buf, "Too long data!");
+}
+
+// Todo: Extend DFM_TRAP to allow for symptoms, if to restart, etc...
 /**
  * Button checker
  */
 
 TaskHandle_t xBhjHandle = NULL;
 
-// dummy is global and volatile to avoid the compiler removing the function call...
-volatile int dummy;
+extern dfmFlashData_t dfmFlashData;
 
 void ButtonTask(void* argument)
 {
-	int counter = 0;
+	configPRINTF( ( "Provoking random errors...\n\n" ) );
 
-    /* USER CODE BEGIN 5 */
 	vTaskDelay(2000);
-
-    configPRINTF( ( "Use the BLUE BUTTON to test an alert!\n\n" ) );
-
-    BaseType_t  waitResult;
 
     for(;;)
     {
-        waitResult = xTaskNotifyWait(0xFFFF, 0xFFFF, NULL, pdMS_TO_TICKS( 100000 ) );
+    	//configPRINTF(("Alert storage counter: %d\n", dfmFlashData.alert_storage_counter));
 
-        if (waitResult == pdTRUE)
+        switch(/*dfmFlashData.alert_storage_counter*/ hardware_rand() % 4)
         {
-        	switch(counter)
-        	{
         		case 0:
-        			configPRINTF( ( "Testing failed assert\n\n") );
 
-        			// Calls OnAssertFailed
+        			configPRINTF( ( "Test case: assert failed (not restarting)\n") );
+
+        			vTaskDelay(1000);
+
         			configASSERT( 1 == 0 );
 
-        			break;
+        			configPRINTF( ( "Testing something else now...\n") );
+
+        	        vTaskDelay(1000);
+
+        			//break; //intentionally no break...
 
         		case 1:
-        			configPRINTF( ( "Testing fault exception\n\n") );
 
-        			// Causing hard fault exception
-        			dummy = MakeFaultExceptionByIllegalRead();
+        			configPRINTF( ( "Test case: malloc failed (will restart)\n") );
+
+        			vTaskDelay(1000);
+
+        			pvPortMalloc(1000000); // This much heap memory isn't available, should fail
 
         			break;
 
-        		default:
-        			counter = 0;
-        			break;
-        	}
-        	counter++;
+        		case 2:
 
+        			configPRINTF( ( "Test case: Hardware fault exception (will restart)\n") );
+
+        			vTaskDelay(1000);
+
+        			volatile int x = dosomething(3);
+
+        			break;
+
+        		case 3:
+
+        			configPRINTF( ( "Test case: Stack corruption (will restart)\n") );
+
+        			vTaskDelay(1000);
+
+        			testStackCorruption();
+        			break;
         }
+    //	counter = (counter + 1  % 4); //hardware_rand() % 8;
+
     }
-    /* USER CODE END 5 */
 }
 
 
@@ -313,15 +348,16 @@ void prvRXTask(void* argument)
 
 }
 
-
 /**
  * @brief Application runtime entry point.
  */
 int main( void )
 {
-    /* Perform any hardware initialization that does not require the RTOS to be
+	/* Perform any hardware initialization that does not require the RTOS to be
      * running.  */
     prvMiscInitialization();
+
+    BSP_LED_Off( LED_GREEN );
 
     if( xTaskCreate( prvRXTask, "RX", 1000, NULL, 6, NULL ) != pdPASS )
     {
@@ -393,7 +429,7 @@ void vApplicationDaemonTaskStartupHook( void )
             xReturned = xTaskCreate(
                             ButtonTask,       /* Function that implements the task. */
                             "DemoTask1",          /* Text name for the task. */
-                            2048u / 4u,      /* Stack size in words, not bytes. */
+                            1024,           /* Stack size in words, not bytes. */
                             NULL,    		/* Parameter passed into the task. */
                             tskIDLE_PRIORITY,/* Priority at which the task is created. */
                             &xBhjHandle );      /* Used to pass out the created task's handle. */
@@ -410,7 +446,7 @@ void vApplicationDaemonTaskStartupHook( void )
             {
             	configPRINTF(("DFM: Found and uploaded alerts.\n\n"));
 
-            	dfmStoragePortReset(); // TODO: DFM lacked a "storage reset" handling, integrate this.
+            	dfmStoragePortReset(0); // Don't increment alert storage counter
 
             }
             else
@@ -420,6 +456,9 @@ void vApplicationDaemonTaskStartupHook( void )
 
             // TODO: This shouldn't be needed?
             xDfmSessionSetStorageStrategy(DFM_STORAGE_STRATEGY_OVERWRITE);
+
+            BSP_LED_On( LED_GREEN );
+
 
         }
     }
@@ -936,98 +975,27 @@ void vMainUARTPrintString( char * pcString )
 }
 /*-----------------------------------------------------------*/
 
-#if (0)
-void prvGetRegistersFromStack( uint32_t * pulFaultStackAddress )
-{
-/* These are volatile to try and prevent the compiler/linker optimising them
- * away as the variables never actually get used.  If the debugger won't show the
- * values of the variables, make them global my moving their declaration outside
- * of this function. */
-    volatile uint32_t r0;
-    volatile uint32_t r1;
-    volatile uint32_t r2;
-    volatile uint32_t r3;
-    volatile uint32_t r12;
-    volatile uint32_t lr;  /* Link register. */
-    volatile uint32_t pc;  /* Program counter. */
-    volatile uint32_t psr; /* Program status register. */
-
-    r0 = pulFaultStackAddress[ 0 ];
-    r1 = pulFaultStackAddress[ 1 ];
-    r2 = pulFaultStackAddress[ 2 ];
-    r3 = pulFaultStackAddress[ 3 ];
-
-    r12 = pulFaultStackAddress[ 4 ];
-    lr = pulFaultStackAddress[ 5 ];
-    pc = pulFaultStackAddress[ 6 ];
-    psr = pulFaultStackAddress[ 7 ];
-
-    /* Remove compiler warnings about the variables not being used. */
-    ( void ) r0;
-    ( void ) r1;
-    ( void ) r2;
-    ( void ) r3;
-    ( void ) r12;
-    ( void ) lr;  /* Link register. */
-    ( void ) pc;  /* Program counter. */
-    ( void ) psr; /* Program status register. */
-
-    /* When the following line is hit, the variables contain the register values. */
-    for( ; ; )
-    {
-    }
-}
-/*-----------------------------------------------------------*/
-
-/* The fault handler implementation calls a function called
- * prvGetRegistersFromStack(). */
-void HardFault_Handler( void )
-{
-    __asm volatile
-    (
-        " tst lr, #4                                                \n"
-        " ite eq                                                    \n"
-        " mrseq r0, msp                                             \n"
-        " mrsne r0, psp                                             \n"
-        " ldr r1, [r0, #24]                                         \n"
-        " ldr r2, handler2_address_const                            \n"
-        " bx r2                                                     \n"
-        " handler2_address_const: .word prvGetRegistersFromStack    \n"
-    );
-}
-/*-----------------------------------------------------------*/
-
-/* Psuedo random number generator.  Just used by demos so does not need to be
- * secure.  Do not use the standard C library rand() function as it can cause
- * unexpected behaviour, such as calls to malloc(). */
-int iMainRand32( void )
-{
-    static UBaseType_t uxlNextRand; /*_RB_ Not seeded. */
-    const uint32_t ulMultiplier = 0x015a4e35UL, ulIncrement = 1UL;
-
-    /* Utility function to generate a pseudo random number. */
-
-    uxlNextRand = ( ulMultiplier * uxlNextRand ) + ulIncrement;
-
-    return( ( int ) ( uxlNextRand >> 16UL ) & 0x7fffUL );
-}
-/*-----------------------------------------------------------*/
-#endif
+uint8_t ucHeap1[ configTOTAL_HEAP_SIZE ];
 
 static void prvInitializeHeap( void )
 {
-    static uint8_t ucHeap1[ configTOTAL_HEAP_SIZE ];
-    static uint8_t ucHeap2[ 25 * 1024 ] __attribute__( ( section( ".freertos_heap2" ) ) );
+    //static uint8_t ucHeap2[ 25 * 1024 ] __attribute__( ( section( ".freertos_heap2" ) ) );
 
     HeapRegion_t xHeapRegions[] =
     {
-        { ( unsigned char * ) ucHeap2, sizeof( ucHeap2 ) },
         { ( unsigned char * ) ucHeap1, sizeof( ucHeap1 ) },
+      //  { ( unsigned char * ) ucHeap2, sizeof( ucHeap2 ) },
         { NULL,                        0                 }
     };
 
     vPortDefineHeapRegions( xHeapRegions );
 }
+
+void vApplicationMallocFailedHook(void)
+{
+	DFM_TRAP(DFM_TYPE_MALLOC_FAILED, "Could not allocate heap memory");
+}
+
 /*-----------------------------------------------------------*/
 
 #ifdef USE_OFFLOAD_SSL

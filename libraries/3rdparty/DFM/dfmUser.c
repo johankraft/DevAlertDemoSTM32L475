@@ -11,6 +11,8 @@
 #include <dfm.h>
 #include <stdio.h>
 
+#include "stm32l4xx.h"
+
 #include "aws_clientcredential.h"
 
 #if ((DFM_CFG_ENABLED) >= 1)

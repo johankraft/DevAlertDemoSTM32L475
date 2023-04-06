@@ -368,6 +368,33 @@ traceResult xTraceDisable(void)
 	return TRC_SUCCESS;
 }
 
+
+traceResult xTracePause(void)
+{
+
+	if (xTraceIsRecorderEnabled())
+	{
+		pxTraceRecorderData->uiRecorderEnabled = 0u;
+		return TRC_SUCCESS;
+	}
+
+	return TRC_FAIL;
+}
+
+
+traceResult xTraceResume(void)
+{
+
+	if (! xTraceIsRecorderEnabled())
+	{
+		pxTraceRecorderData->uiRecorderEnabled = 1u;
+		return TRC_SUCCESS;
+	}
+
+	return TRC_FAIL;
+
+}
+
 #if (TRC_CFG_RECORDER_BUFFER_ALLOCATION == TRC_RECORDER_BUFFER_ALLOCATION_CUSTOM)
 traceResult xTraceSetBuffer(TraceRecorderData_t* pxBuffer)
 {

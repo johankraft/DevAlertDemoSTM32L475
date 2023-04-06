@@ -231,8 +231,6 @@ static void prvLoggingPrintfCommon( uint8_t usLoggingLevel,
     configASSERT( pcFormat != NULL );
     configASSERT( configLOGGING_MAX_MESSAGE_LENGTH > 0 );
 
-    // Logging to Tracealyzer as well, shown in the "Debug Console" user event channel.
-    xTraceConsoleChannelPrintF(pcFormat, args);
 
     /* The queue is created by xLoggingTaskInitialize().  Check
      * xLoggingTaskInitialize() has been called. */
@@ -352,12 +350,17 @@ static void prvLoggingPrintfCommon( uint8_t usLoggingLevel,
          * not empty. */
         if( xLength > 0 )
         {
+
+        	// Logging to Tracealyzer as well, shown in the "Debug Console" user event channel.
+        	xTraceConsoleChannelPrintF(pcPrintString);
+
             /* Send the string to the logging task for IO. */
             if( xQueueSend( xQueue, &pcPrintString, loggingDONT_BLOCK ) != pdPASS )
             {
                 /* The buffer was not sent so must be freed again. */
                 vPortFree( ( void * ) pcPrintString );
             }
+
         }
         else
         {

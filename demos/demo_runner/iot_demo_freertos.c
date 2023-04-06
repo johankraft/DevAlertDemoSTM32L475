@@ -405,7 +405,8 @@ void runDemoTask( void * pArgument )
  */
     void vApplicationMallocFailedHook()
     {
-        configPRINT_STRING( ( "ERROR: Malloc failed to allocate memory\r\n" ) );
+    	// TODO: Add Alert here
+      //  configPRINT_STRING( ( "ERROR: Malloc failed to allocate memory\r\n" ) );
         taskDISABLE_INTERRUPTS();
 
         /* Loop forever */
@@ -430,7 +431,9 @@ void runDemoTask( void * pArgument )
     void vApplicationStackOverflowHook( TaskHandle_t xTask,
                                         char * pcTaskName )
     {
-        configPRINT_STRING( ( "ERROR: stack overflow\r\n" ) );
+
+    	// TODO: Add Alert here
+    	configPRINT_STRING( ( "ERROR: stack overflow\r\n" ) );
         portDISABLE_INTERRUPTS();
 
         /* Unused Parameters */

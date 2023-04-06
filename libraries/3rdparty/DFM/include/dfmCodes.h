@@ -50,6 +50,7 @@
 
 /* Alert Types */
 /* The following Alert Types are published and will not change. */
+#define DFM_TYPE_STACK_CHK_FAILED (8) /* Stack corrupted */
 #define DFM_TYPE_HEARTBEAT (7) /* Heartbeat failure */
 #define DFM_TYPE_BAD_MESSAGE (6) /* Invalid/bad message received */
 #define DFM_TYPE_OVERLOAD (5) /* CPU Overload */

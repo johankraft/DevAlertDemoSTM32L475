@@ -43,21 +43,24 @@
  * www.percepio.com
  ******************************************************************************/
 
-#include "dfmStoragePort.h"
 #include <string.h>
+
+#include <dfm.h>
+#include "dfmStoragePort.h"
 
 #if (defined(DFM_CFG_ENABLED) && ((DFM_CFG_ENABLED) >= 1))
 
-#include <dfm.h>
-
 /* Include your specific flash header file */
+#include "FreeRTOS.h"
 #include "flash.h"
 #include "stm32l4xx_hal.h"
+
 
 #define DFM_STORAGE_PORT_ALERT_TYPE		0x34561842
 #define DFM_STORAGE_PORT_PAYLOAD_TYPE	0x82713124
 
-uint8_t FLASH_ALERT_DATA[25000] __attribute__( ( section( ".dfm_alert" ), aligned (8) ) ) = { 0 };
+dfmFlashData_t dfmFlashData __attribute__( ( section( ".dfm_alert" ), aligned (8) ) ) = { {0}, 0 };
+
 uint32_t ulWrOffset = 0;
 uint32_t ulRdOffset = 0;
 
@@ -93,13 +96,13 @@ DfmResult_t xDfmStoragePortStoreAlert(DfmEntryHandle_t xEntryHandle, uint32_t ul
 
 DfmResult_t xDfmStoragePortGetAlert(void* pvBuffer, uint32_t ulBufferSize)
 {
-	if (*((uint32_t*)&FLASH_ALERT_DATA[ulRdOffset]) == 0xffffffff)
+	if (*((uint32_t*)&dfmFlashData.data[ulRdOffset]) == 0xffffffff)
 	{
 		// Not written
 		return DFM_FAIL;
 	}
 	uint32_t ulSize;
-	if (xDfmEntryGetSize((DfmEntryHandle_t)&FLASH_ALERT_DATA[ulRdOffset], &ulSize) == DFM_FAIL)
+	if (xDfmEntryGetSize((DfmEntryHandle_t)&dfmFlashData.data[ulRdOffset], &ulSize) == DFM_FAIL)
 	{
 		return DFM_FAIL;
 	}
@@ -108,7 +111,7 @@ DfmResult_t xDfmStoragePortGetAlert(void* pvBuffer, uint32_t ulBufferSize)
 	{
 		ulSize = ulBufferSize;
 	}
-	memcpy(pvBuffer, &FLASH_ALERT_DATA[ulRdOffset], ulSize);
+	memcpy(pvBuffer, &dfmFlashData.data[ulRdOffset], ulSize);
 	ulRdOffset += ulSize;
 	ulRdOffset += (8 - (ulSize % 8));
 
@@ -127,6 +130,9 @@ DfmResult_t xDfmStoragePortGetPayloadChunk(char* szSessionId, uint32_t ulAlertId
 
 static DfmResult_t prvDfmStoragePortWrite(DfmEntryHandle_t xEntryHandle, uint32_t ulType, uint32_t ulOverwrite)
 {
+	DFM_DEBUG_PRINT("prvDfmStoragePortWrite\n");
+
+	uint32_t preserve_alert_storage_counter = dfmFlashData.alert_storage_counter;
 	if (xEntryHandle == 0)
 	{
 		return DFM_FAIL;
@@ -142,40 +148,88 @@ static DfmResult_t prvDfmStoragePortWrite(DfmEntryHandle_t xEntryHandle, uint32_
 		return DFM_FAIL;
 	}
 
-	uint32_t ulDst = (uint32_t)&FLASH_ALERT_DATA[ulWrOffset];
+	uint32_t ulDst = (uint32_t)&dfmFlashData.data[ulWrOffset];
+
 	/* Write to destination */
 	if (ulWrOffset == 0)
 	{
-		__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
-		if (FLASH_unlock_erase(ulDst, sizeof(FLASH_ALERT_DATA)) != 0)
+		preserve_alert_storage_counter++;
+
+		// This erases the flash pages (might be needed) and updates the alert storage counter.
+		if (dfmStoragePortReset(1) != DFM_SUCCESS)
 		{
 			return DFM_FAIL;
 		}
 	}
+
 	ulWrOffset += ulSize;
 	ulWrOffset += (8 - (ulSize % 8));
+
+	DFM_DEBUG_PRINTF("  Write: 0x%08X - 0x%08X (%d)\n", (unsigned int)ulDst, (unsigned int)(ulDst + ulSize), (unsigned int)ulSize);
+
 	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
-	if (FLASH_write_at(ulDst, xEntryHandle, ulSize) == 0)
+
+	if (FLASH_write_at(ulDst, xEntryHandle, ulSize) != 0)
 	{
-		return DFM_SUCCESS;
+		return DFM_FAIL;
 	}
-	return DFM_FAIL;
+
+    if (preserve_alert_storage_counter != dfmFlashData.alert_storage_counter)
+	{
+    	DFM_DEBUG_PRINT("TODO: Update alert storage counter!"); // But not here...
+
+
+    	/* 	TODO: This part below updates the needs to be done, but should probably be the last flash operation, ideally by the caller function (xDfmAlertEnd, xDfmAlertEndOffline)
+    	 *  The point is to increment the alert storage counter, that is needed to run the right test case (remember between restarts) and can be used as sessionID perhaps.*/
+
+    	/*
+		DFM_DEBUG_PRINTF("  Alert storage counter (at 0x%08X) before erase: %d\n", &dfmFlashData.alert_storage_counter, dfmFlashData.alert_storage_counter);
+
+		if (FLASH_write_at( (uint32_t)&dfmFlashData.alert_storage_counter, &preserve_alert_storage_counter, 4) != 0)
+		{
+				return DFM_FAIL;
+		}
+
+		DFM_DEBUG_PRINTF("  Alert storage counter after update: %d\n", dfmFlashData.alert_storage_counter);*/
+	}
+
+	return DFM_SUCCESS;
 }
 
 
-
-
-DfmResult_t dfmStoragePortReset(void)
+DfmResult_t dfmStoragePortReset(int isNewAlert)
 {
+	//uint32_t preserve_alert_storage_counter = dfmFlashData.alert_storage_counter;
 
-	uint32_t ulDst = (uint32_t)&FLASH_ALERT_DATA[0];
+	DFM_DEBUG_PRINTF("dfmStoragePortReset(%d)\n", isNewAlert);
+
+	DFM_DEBUG_PRINTF("  Erase: 0x%08X - 0x%08X (%d)\n", (unsigned int)&dfmFlashData, (unsigned int)((int)&dfmFlashData + sizeof(dfmFlashData)), sizeof(dfmFlashData));
+
+
+
+	// This function is called both when creating a new alert and also from main, after sending stored alerts.
+	// In the latter case, we only want to clear the stored alert(s), and should not increment the alert storage counter (but perhaps a flash erase counter)
+	// In the former case, we should increment the counter, i.e. when storing a new alert before the restart.
+	/*if (isNewAlert == 1)
+	{
+		preserve_alert_storage_counter++;
+	}*/
 
 	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
-	if (FLASH_unlock_erase(ulDst, sizeof(FLASH_ALERT_DATA)) != 0)
+
+	if (FLASH_unlock_erase((uint32_t)&dfmFlashData, sizeof(dfmFlashData)) != 0)
 	{
-			return DFM_FAIL;
+		return DFM_FAIL;
 	}
 
+	// The flash counter might be wiped by the erase, so we copy it before the erase and write it back
+	/*if (FLASH_write_at( (uint32_t)&dfmFlashData.alert_storage_counter, &preserve_alert_storage_counter, 4) != 0)
+	{
+		return DFM_FAIL;
+	}
+
+	DFM_DEBUG_PRINTF("  Alert storage counter after erase: %d\n", dfmFlashData.alert_storage_counter);
+*/
 	return DFM_SUCCESS;
 
 }

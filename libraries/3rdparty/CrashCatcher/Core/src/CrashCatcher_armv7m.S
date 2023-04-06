@@ -32,10 +32,15 @@
 	.global BusFault_Handler
     .type BusFault_Handler, %function
 
+    .global NMI_Handler
+    .type NMI_Handler, %function
+
     .thumb_func
 HardFault_Handler:
 UsageFault_Handler:
 BusFault_Handler:
+NMI_Handler:		/* NMI is used as a software trap when a crash dump is desired. */
+
     /* Push the following onto the stack (see CrashCatcherExceptionRegisters structure). The g_crashCatcherStack buffer
        is reserved for use as the stack while CrashCatcher is running.
         msp

@@ -1,0 +1,40 @@
+TODO STM32 demo:
+
+Status 2023-04-05: 
+Fixed so the current task stack is dumped automatically, based on the current stack pointer.
+
+Was trying to update the alert storage counter in prvDfmStoragePortWrite, but this is not the right place to do it.
+See the comment in prvDfmStoragePortWrite, around DFM_DEBUG_PRINT("TODO: Update alert storage counter!");
+
+
+NEXT (AFTER the demo)
+
+TODO: Add a check and warning if trying to write too much to flash! (FLASH_write_at into dfmFlashData.data)
+
+TODO: Reduce flash buffer from 25 KB to 8-10 KB (using only 5 KB now)
+
+TODO: Add FreeRTOS stack overflow alert and printout, see replace iot_demo_freertos.c function "void vApplicationStackOverflowHook( TaskHandle_t xTask, char * pcTaskName )"
+
+TODO: Fix the update of the alert storage counter (in flash) and use that instead of hardware_rand for the test case selection (and SessionID)
+
+TODO: Add a setting/check to avoid that the dynamic stack dumps (SP-relative) are trying to read reserved/illegal memory ranges, if following the stack.
+This could be a setting like DFM_STACK_BOUNDARY. If SP is say 600 bytes below this boundary at the default capture is larger, the capture size must be changed to BOUNDARY-SP (-1 or something?)
+
+
+
+TODO: Investigate how to preserve the DFM flash storage (alert storage counter!) when programming the chip.
+See C:\src\DevAlertDemoSTM32L475-2023\vendors\st\boards\stm32l475_discovery\aws_demos\STM32L475VGTx_FLASH.ld
+See https://www.embedic.com/technology/details/stm32-variables-are-stored-in-the-specified-location-in-the-on-chip-flash
+It seems we could use __attribute__((section("UNINIT_FIXED_LOC"))); instead of defining our own region in the ld file.
+
+(DONE) TODO: Add stack overflow detection for the internal CrashCatcher stack.
+This was important, was overflowing a lot! Increased the stack size from 125 to 250.
+
+(DONE) TODO: ADD SETTINGS for all currently hardcoded buffer sizes (FreeRTOS stack dump size, flash buffer size, Trace buffer size, something else? All collected in the same place!)
+Added in dfmConfig.h
+
+(DONE) TODO: Can we skip the main stack (0x800 bytes, pretty big and don't think it is needed or even used? (Was added speculatively when messing with the eclipse post-mortem debugging)
+Yes, we could! The crash dump size is now only 768 bytes!
+
+(DONE) TODO: Add a check in CrashCatcher_DumpMemory to avoid writing outside the buffer (ucDataBuffer).
+Fixed, with an error message. Also added DFM_DEBUG_PRINTF reporting of actual usage.

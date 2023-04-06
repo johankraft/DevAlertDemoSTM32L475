@@ -19,7 +19,7 @@
 
 /* Definitions used by assembly language and C code. */
 #if !defined(CRASH_CATCHER_STACK_WORD_COUNT)
-#define CRASH_CATCHER_STACK_WORD_COUNT 125
+#define CRASH_CATCHER_STACK_WORD_COUNT 250	// Was increased from 125, over 200 is needed when calling DFM and printing diagnostic messages.
 #endif
 
 /* Does this device support THUMB instructions for FPU access? */
