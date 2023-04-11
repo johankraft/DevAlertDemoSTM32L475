@@ -13,6 +13,6 @@ To port this to another target, you may need to update the following files:
 - dfmStoragePort.c - How to store Alerts to flash (before restarting) - currently using "libraries\3rdparty\DFM\storageports\Dummy\dfmStoragePort.c"
 - dfmCloudPort.c - How to upload Alerts to the device backend (e.g. an AWS account). See \libraries\3rdparty\DFM\kernelports\FreeRTOS\cloudports\AWS_MQTT\dfmCloudPort.c
 
-
+You also need to update aws_clientcredential.h and aws_clientcredential_keys.h in \demos\include as described on https://docs.aws.amazon.com/freertos/latest/userguide/freertos-prereqs.html
 
 
