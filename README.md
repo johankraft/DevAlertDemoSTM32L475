@@ -1,4 +1,4 @@
-# DevAlertDemoSTM32L475
+# DevAlert Demo on STM32L4 IoT Discovery Kit
 
 This project demonstrates Percepio DevAlert (https://percepio.com/devalert) on the STM32L4 IoT Discovery kit, https://www.st.com/en/evaluation-tools/b-l475e-iot01a.html, with FreeRTOS. This demo project is currently a work in progress, but is working. The instructions are however not yet complete and the code needs a bit more polishing. This is not yet an official demo...
 
