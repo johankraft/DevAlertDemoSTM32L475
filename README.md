@@ -1,6 +1,7 @@
 # DevAlertDemoSTM32L475
 
-This project demonstrates Percepio DevAlert (https://percepio.com/devalert) on an STM32L475 device. Currently this is still a work in progress, but is working. The instructions for viewing crash dumps are however not yet complete.
+This project demonstrates Percepio DevAlert (https://percepio.com/devalert) on an STM32L475 device with FreeRTOS. 
+Currently this is still a work in progress, but is working. The instructions are however not yet complete.
 
 The development tools used is SW4STM32 (https://www.openstm32.org/System%2BWorkbench%2Bfor%2BSTM32) but it should be possible to import the project into STM32CubeIDE.
 
