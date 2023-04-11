@@ -1,13 +1,15 @@
 # DevAlertDemoSTM32L475
 
-This project demonstrates Percepio DevAlert (https://percepio.com/devalert) on an STM32L475 device with FreeRTOS. 
-Currently this is still a work in progress, but is working. The instructions are however not yet complete.
+This project demonstrates Percepio DevAlert (https://percepio.com/devalert) on the STM32L4 IoT Discovery kit, https://www.st.com/en/evaluation-tools/b-l475e-iot01a.html, with FreeRTOS. This demo project is currently a work in progress, but is working. The instructions are however not yet complete and the code needs a bit more polishing. This is not yet an official demo...
 
-The development tools used is SW4STM32 (https://www.openstm32.org/System%2BWorkbench%2Bfor%2BSTM32) but it should be possible to import the project into STM32CubeIDE.
-
-There are multiple projects here, the one to run is "aws_demos". This includes the DevAlert target library (DFM) extended with the CrashCatcher library, and as well as the TraceRecorder library for Tracealyzer. These are found under \libraries\3rdparty.
+The demo includes the DevAlert target library (DFM) extended with the CrashCatcher library (for crash dumps), and as well as the TraceRecorder library for providing traces to Tracealyzer. These libraries are found under \libraries\3rdparty.
 
 Examples of how to use the DFM library is found in main.c (vendors\st\boards\stm32l475_discovery\aws_demos\application_code\main.c)
+
+The development tool used for this project is SW4STM32 (https://www.openstm32.org/System%2BWorkbench%2Bfor%2BSTM32) but it should be possible to import the project into STM32CubeIDE.
+To import the project into SW4STM32, select "Import...", "Projects from Folder or Archive" and include all projects found.
+The relevant one is "aws_demos", but it seems the others are needed to the build to work.
+
 
 To port this to another target, you may need to update the following files:
 - dfmUser.c - Used-defined definitions needed by DFM.
