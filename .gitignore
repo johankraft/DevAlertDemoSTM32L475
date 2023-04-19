@@ -50,3 +50,4 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+projects/st/stm32l475_discovery/ac6/aws_demos/aws_demos Debug J-Link.cfg

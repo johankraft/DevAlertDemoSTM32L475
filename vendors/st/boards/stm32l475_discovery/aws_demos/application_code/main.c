@@ -52,6 +52,7 @@
 
 #include "dfm.h"
 #include "dfmCrashCatcher.h"
+#include "dfmStoragePort.h"
 
 /* WiFi driver includes. */
 #include "es_wifi.h"
@@ -111,6 +112,10 @@ static void prvMiscInitialization( void );
  */
 static void prvInitializeHeap( void );
 
+
+
+unsigned int getHardwareRand(void);
+
 #ifdef USE_OFFLOAD_SSL
 
 /**
@@ -136,56 +141,6 @@ typedef struct task_arg {
 
 SemaphoreHandle_t xSemaphore;
 
-uint32_t hardware_rand(void)
-{
-    uint32_t rand;
-    HAL_RNG_GenerateRandomNumber(&xHrng, &rand);
-    return rand;
-}
-
-void OnAssertFailed(const char* filename, int line)
-{
-	DfmAlertHandle_t alertHandle = NULL;
-	static TraceStringHandle_t chn = NULL;
-	char msg[80] = "";
-
-	// For this demo, the "assert failed" alert is sent directly, without restarting the device.
-	// Otherwise, DFM_CLOUD_STRATEGY_OFFLINE is used to store the alert in flash, restart, and then send it using xDfmSendAll(), after xDfmInitialize.
-	xDfmSessionSetCloudStrategy(DFM_CLOUD_STRATEGY_ONLINE);
-
-	// First time only, register a user event channel for logging the alert in the trace.
-	if (chn == NULL)
-		xTraceStringRegister("ALERT", &chn);
-
-	// Create a message string for both the trace logging and the alert description.
-	snprintf(msg, sizeof(msg), "Assert failed at %s:%d", strrchr(filename, '/')+1, line);
-	xTracePrint(chn, msg);
-
-	/* Disable tracing while reading the trace buffer. We don't want new events added in the middle of the upload. */
-	xTraceDisable();
-
-	if (xDfmAlertBegin(DFM_TYPE_ASSERT_FAILED, msg, &alertHandle) == DFM_SUCCESS)
-	{
-		void* pvBuffer = (void*)0;
-		uint32_t ulBufferSize = 0;
-
-		// The symptoms provide a "fingerprint" of the issue, must be numerical...
-		xDfmAlertAddSymptom(alertHandle, DFM_SYMPTOM_CURRENT_TASK, simplechecksum32(pcTaskGetName( xTaskGetCurrentTaskHandle() ))); // using the 4 first bytes as an int
-		xDfmAlertAddSymptom(alertHandle, DFM_SYMPTOM_FILE, simplechecksum32(filename));
-		xDfmAlertAddSymptom(alertHandle, DFM_SYMPTOM_LINE, line);
-
-		// Store the trace
-	    xTraceGetEventBuffer(&pvBuffer, &ulBufferSize);
-	    xDfmAlertAddPayload(alertHandle, pvBuffer, ulBufferSize, "dfm_trace.psfs");
-
-		// Commit the alert (store or send, depending on "cloud strategy" setting
-		xDfmAlertEnd(alertHandle);
-	}
-
-	xTraceResume();
-}
-
-
 // Provokes a hard fault exception
 static int MakeFaultExceptionByIllegalRead(void)
 {
@@ -208,24 +163,38 @@ int dosomething(int n)
 	return 0;
 }
 
+#define MAX_MESSAGE_SIZE 12
 
-// Uses a gcc/clang feature to detect stack corruption on return from this function
-// See the error handler __stack_chk_fail in dfmCrashCatcher.c
-void testStackCorruption(void)
+void getNetworkMessage(char* data)
 {
-	volatile char buf[12];
-
-	sprintf(buf, "Too long data!");
+	sprintf(data, "Incoming data");
 }
 
-// Todo: Extend DFM_TRAP to allow for symptoms, if to restart, etc...
+void processNetworkMessage(char* data)
+{
+	configPRINT_STRING("  Simulated network message: \"");
+	configPRINT_STRING(data);
+	configPRINT_STRING("\"\n");
+}
+
+void prvCheckForNetworkMessages(void)
+{
+	char message[MAX_MESSAGE_SIZE];
+	getNetworkMessage(message);
+	processNetworkMessage(message);
+}
+
+// This will cause a buffer overrun. See the error handler __stack_chk_fail in dfmCrashCatcher.c
+void testBufferOverrun(void)
+{
+	prvCheckForNetworkMessages();
+}
+
 /**
  * Button checker
  */
 
 TaskHandle_t xBhjHandle = NULL;
-
-extern dfmFlashData_t dfmFlashData;
 
 void ButtonTask(void* argument)
 {
@@ -235,27 +204,21 @@ void ButtonTask(void* argument)
 
     for(;;)
     {
-    	//configPRINTF(("Alert storage counter: %d\n", dfmFlashData.alert_storage_counter));
-
-        switch(/*dfmFlashData.alert_storage_counter*/ hardware_rand() % 4)
+    	switch(getHardwareRand() % 4)
         {
         		case 0:
 
-        			configPRINTF( ( "Test case: assert failed (not restarting)\n") );
+        			configPRINTF(( "Test case: assert failed\n"));
 
         			vTaskDelay(1000);
 
         			configASSERT( 1 == 0 );
 
-        			configPRINTF( ( "Testing something else now...\n") );
-
-        	        vTaskDelay(1000);
-
-        			//break; //intentionally no break...
+        			break;
 
         		case 1:
 
-        			configPRINTF( ( "Test case: malloc failed (will restart)\n") );
+        			configPRINTF(( "Test case: malloc failed\n"));
 
         			vTaskDelay(1000);
 
@@ -265,25 +228,23 @@ void ButtonTask(void* argument)
 
         		case 2:
 
-        			configPRINTF( ( "Test case: Hardware fault exception (will restart)\n") );
+        			configPRINTF(( "Test case: Hardware fault exception\n"));
 
         			vTaskDelay(1000);
 
-        			volatile int x = dosomething(3);
+        			dosomething(3);
 
         			break;
 
         		case 3:
 
-        			configPRINTF( ( "Test case: Stack corruption (will restart)\n") );
+        			configPRINTF(( "Test case: Buffer overrun\n"));
 
         			vTaskDelay(1000);
 
-        			testStackCorruption();
+        			testBufferOverrun();
         			break;
         }
-    //	counter = (counter + 1  % 4); //hardware_rand() % 8;
-
     }
 }
 
@@ -338,7 +299,7 @@ void prvRXTask(void* argument)
  	    for (dummy = 0; dummy < (1000 * len); dummy++);
 
     	// Simulate timing of incoming messages
-    	delay = 5 + hardware_rand() % 85;
+    	delay = 5 + getHardwareRand() % 85;
 
     	xTraceStateMachineSetState(myfsm, myfsm_stateIn);
 
@@ -361,7 +322,7 @@ int main( void )
 
     if( xTaskCreate( prvRXTask, "RX", 1000, NULL, 6, NULL ) != pdPASS )
     {
-    	configPRINTF(("Failed creating task!"));
+    	configPRINTF(("Failed creating task."));
     }
 
     /* Create tasks that are not dependent on the WiFi being initialized. */
@@ -378,6 +339,13 @@ int main( void )
 }
 /*-----------------------------------------------------------*/
 
+/* For STM32, tested on STM32L475 */
+unsigned int getHardwareRand(void)
+{
+    uint32_t rand;
+    HAL_RNG_GenerateRandomNumber(&xHrng, &rand);
+    return rand;
+}
 
 void vApplicationDaemonTaskStartupHook( void )
 {
@@ -401,14 +369,15 @@ void vApplicationDaemonTaskStartupHook( void )
          * by production ready key provisioning mechanism. */
 
         // Not needed, right? (slow!) Possibly if using a new board, or changing the wifi or certificate?
-        // vDevModeKeyProvisioning();
+        vDevModeKeyProvisioning();
 
         if( SYSTEM_Init() == pdPASS )
         {
             /* Connect to the WiFi before running the demos */
             prvWifiConnect();
 
-            srand(hardware_rand());
+            srand(getHardwareRand());
+
             if (xDfmInitialize() == DFM_FAIL)
             {
                 configPRINTF(("Failed to initialize DFM\r\n"));
@@ -421,18 +390,15 @@ void vApplicationDaemonTaskStartupHook( void )
 
             #endif /* USE_OFFLOAD_SSL */
 
-            BaseType_t xReturned;
+            // Not used, might be needed later
             xSemaphore = xSemaphoreCreateMutex();
 
-            /* BHJ - Create task for sending alert when user button is pressed */
-            LogInfo( ("BHJ -- Create Task\r\n") );
-            xReturned = xTaskCreate(
-                            ButtonTask,       /* Function that implements the task. */
-                            "DemoTask1",          /* Text name for the task. */
-                            1024,           /* Stack size in words, not bytes. */
-                            NULL,    		/* Parameter passed into the task. */
-                            tskIDLE_PRIORITY,/* Priority at which the task is created. */
-                            &xBhjHandle );      /* Used to pass out the created task's handle. */
+            xTaskCreate(ButtonTask,       /* Function that implements the task. */
+                        "DemoTask1",          /* Text name for the task. */
+                        1024,           /* Stack size in words, not bytes. */
+                        NULL,    		/* Parameter passed into the task. */
+                        tskIDLE_PRIORITY,/* Priority at which the task is created. */
+                        &xBhjHandle );      /* Used to pass out the created task's handle. */
 
 
             /* Try sending any stored alerts from a prior crash */
@@ -446,7 +412,8 @@ void vApplicationDaemonTaskStartupHook( void )
             {
             	configPRINTF(("DFM: Found and uploaded alerts.\n\n"));
 
-            	dfmStoragePortReset(0); // Don't increment alert storage counter
+            	/* Erase stored alerts to avoid they are sent repeatedly */
+            	xDfmStoragePortReset();
 
             }
             else
@@ -454,7 +421,7 @@ void vApplicationDaemonTaskStartupHook( void )
             	configPRINTF(("DFM: Unexpected return code (%d)!\n\n", dfmResult));
             }
 
-            // TODO: This shouldn't be needed?
+            // IS THIS NEEDED?
             xDfmSessionSetStorageStrategy(DFM_STORAGE_STRATEGY_OVERWRITE);
 
             BSP_LED_On( LED_GREEN );
@@ -757,6 +724,7 @@ static void prvMiscInitialization( void )
      * heap must be initialized. */
     prvInitializeHeap();
 
+
 	// Enable usage fault and bus fault
 	SCB->SHCSR |= SCB_SHCSR_USGFAULTENA_Msk | SCB_SHCSR_BUSFAULTENA_Msk;
 
@@ -765,6 +733,16 @@ static void prvMiscInitialization( void )
 
     // Enables "compact logging" with e.g. xTracePrintCompactF1(). The dispatcher tool must have access to the elf file.
     xTraceDependencyRegister("aws_demos.elf", TRC_DEPENDENCY_TYPE_ELF);
+
+#if (DFM_CFG_SERIAL_UPLOAD_ONLY == 1)
+
+    if (xDfmInitialize() == DFM_FAIL)
+    {
+    	configPRINTF(("Failed to initialize DFM\r\n"));
+    }
+
+
+#endif
 
     BSP_LED_Init( LED_GREEN );
     BSP_PB_Init( BUTTON_USER, BUTTON_MODE_EXTI );
@@ -979,12 +957,9 @@ uint8_t ucHeap1[ configTOTAL_HEAP_SIZE ];
 
 static void prvInitializeHeap( void )
 {
-    //static uint8_t ucHeap2[ 25 * 1024 ] __attribute__( ( section( ".freertos_heap2" ) ) );
-
     HeapRegion_t xHeapRegions[] =
     {
         { ( unsigned char * ) ucHeap1, sizeof( ucHeap1 ) },
-      //  { ( unsigned char * ) ucHeap2, sizeof( ucHeap2 ) },
         { NULL,                        0                 }
     };
 

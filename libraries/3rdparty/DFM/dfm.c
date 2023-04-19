@@ -23,6 +23,9 @@
 static DfmData_t xDfmData;
 static DfmData_t* pxDfmData = &xDfmData;
 
+/* Used for snprintf calls */
+char dfmPrintBuffer[128];
+
 DfmResult_t xDfmInitialize()
 {
 	if (pxDfmData == (void*)0)
@@ -52,6 +55,8 @@ DfmResult_t xDfmInitialize()
 		return DFM_FAIL;
 	}
 
+/* Cloud port not needed if using serial port upload */
+#if (DFM_CFG_SERIAL_UPLOAD_ONLY != 1)
 	if (xDfmCloudInitialize(&pxDfmData->xCloudData) == DFM_FAIL)
 	{
 		return DFM_FAIL;
@@ -61,6 +66,7 @@ DfmResult_t xDfmInitialize()
 	{
 		return DFM_FAIL;
 	}
+#endif
 
 	pxDfmData->ulDfmInitialized = 1;
 

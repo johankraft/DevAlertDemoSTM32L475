@@ -56,7 +56,7 @@
 #define configTICK_RATE_HZ                           ( ( TickType_t ) 1000 )
 #define configMAX_PRIORITIES                         ( 7 )
 #define configMINIMAL_STACK_SIZE                     ( ( uint16_t ) 90 )
-#define configTOTAL_HEAP_SIZE                        (20 * 1024)
+#define configTOTAL_HEAP_SIZE                        (23 * 1024)
 #define configMAX_TASK_NAME_LEN                      ( 16 )
 #define configUSE_TRACE_FACILITY                     1
 #define configUSE_16_BIT_TICKS                       0
@@ -132,10 +132,11 @@
     }
 */
 
-void OnAssertFailed(const char* filename, int line);
+#include "dfm.h"
+#include "dfmCrashCatcher.h"
 
-#define configASSERT( x )  if( ( x ) == 0 ){ OnAssertFailed(__FILE__, __LINE__); }
-
+/* Use DevAlert to catch failed asserts */
+#define configASSERT( x )  if( ( x ) == 0 ){ DFM_TRAP(DFM_TYPE_ASSERT_FAILED, "Assert failed") }
 
 /* Logging task definitions. */
 extern void vMainUARTPrintString( char * pcString );

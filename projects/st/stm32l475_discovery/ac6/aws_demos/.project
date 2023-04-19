@@ -603,7 +603,7 @@
 		<link>
 			<name>libraries/3rdparty/DFM/dfmStoragePort.c</name>
 			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/libraries/3rdparty/DFM/storageports/Dummy/dfmStoragePort.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/libraries/3rdparty/DFM/storageports/FLASH/dfmStoragePort.c</locationURI>
 		</link>
 		<link>
 			<name>libraries/3rdparty/DFM/dfmUser.c</name>
@@ -808,7 +808,7 @@
 		<link>
 			<name>libraries/3rdparty/DFM/include/dfmStoragePort.h</name>
 			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/libraries/3rdparty/DFM/storageports/Dummy/include/dfmStoragePort.h</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/libraries/3rdparty/DFM/storageports/FLASH/include/dfmStoragePort.h</locationURI>
 		</link>
 		<link>
 			<name>libraries/3rdparty/DFM/include/dfmTypes.h</name>

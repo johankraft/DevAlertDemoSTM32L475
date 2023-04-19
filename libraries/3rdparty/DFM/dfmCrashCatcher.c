@@ -8,9 +8,6 @@
  * DFM Crash Catcher integration
  */
 
-
-#include <FreeRTOS.h>
-#include "task.h"
 #include <CrashCatcher.h>
 #include <string.h>
 #include "dfm.h"
@@ -24,29 +21,22 @@
 static void prvAddTracePayload();
 #endif
 
+/* See https://developer.arm.com/documentation/dui0552/a/cortex-m3-peripherals/system-control-block/configurable-fault-status-register*/
+#define ARM_CORTEX_M_CFSR_REGISTER *(uint32_t*)0xE000ED28
 
 DfmAlertHandle_t xAlertHandle;
 
 uint8_t dfmAlertStarted = 0;
 
-dfmTrapInfo_t dfmTrapInfo = {-1, ""};
+dfmTrapInfo_t dfmTrapInfo = {-1, NULL, NULL, -1};
 
 TraceStringHandle_t TzUserEventChannel = NULL;
 
+// TODO: Better to use a random number here, so it is harder to spoof?
 void *__stack_chk_guard = (void *)0xdeadbeef;
 
 static uint8_t* ucBufferPos;
 static uint8_t ucDataBuffer[CRASH_DUMP_BUFFER_SIZE] __attribute__ ((aligned (8)));
-
-#if (DFM_DEBUG_LOG == 1)
-
-// used by DFM_DEBUG_PRINTF (right after ucDataBuffer is a good location)
-char dfmCrashCatcherPrintBuffer[256];
-
-#endif
-
-static void CrashCatcher_DumpStart_OnFault(const CrashCatcherInfo* pInfo);
-static void CrashCatcher_DumpStart_OnTrap(const CrashCatcherInfo* pInfo);
 
 static void dumpHalfWords(const uint16_t* pMemory, size_t elementCount);
 static void dumpWords(const uint32_t* pMemory, size_t elementCount);
@@ -62,6 +52,7 @@ const CrashCatcherMemoryRegion* CrashCatcher_GetMemoryRegions(void)
 			{CRASH_MEM_REGION3_START, CRASH_MEM_REGION3_START + CRASH_MEM_REGION3_SIZE, CRASH_CATCHER_BYTE}
     };
 
+    /* Region 0 is reserved, always relative to the current stack pointer */
 	regions[0].startAddress = stackPointer;
     regions[0].endAddress = stackPointer + CRASH_STACK_CAPTURE_SIZE;
 
@@ -70,6 +61,8 @@ const CrashCatcherMemoryRegion* CrashCatcher_GetMemoryRegions(void)
 
 void CrashCatcher_DumpStart(const CrashCatcherInfo* pInfo)
 {
+	int alerttype;
+	char* file_without_path = NULL;
 
 	stackPointer = pInfo->sp;
 
@@ -80,83 +73,82 @@ void CrashCatcher_DumpStart(const CrashCatcherInfo* pInfo)
 	}
 #endif
 
-	configPRINT_STRING("\nDFM Alert\n");
+	ucBufferPos = &ucDataBuffer[0];
+
+	/* Store the alert, send after restart */
+    xDfmSessionSetCloudStrategy(DFM_CLOUD_STRATEGY_OFFLINE);
+
+    DFM_DEBUG_PRINT("\nDFM Alert\n");
 
 	if (dfmTrapInfo.alertType >= 0)
 	{
-		/* On the DFM_TRAP macro. This sets dfmTrapInfo.alertType and then generates an NMI exception to trigger this error handler. */
-		CrashCatcher_DumpStart_OnTrap(pInfo);
+		/* On the DFM_TRAP macro.
+		 * This sets dfmTrapInfo and then generates an NMI exception to trigger this error handler.
+		 * dfmTrapInfo.message = "Assert failed" or similar.
+		 * dfmTrapInfo.file = __FILE__ (full path, extract the filename from this!)
+		 * dfmTrapInfo.line = __LINE__ (integer)
+		 * */
+		file_without_path = DFM_CFG_GET_FILENAME_FROM_PATH(dfmTrapInfo.file);
+		snprintf(dfmPrintBuffer, sizeof(dfmPrintBuffer), "%s at %s:%u", dfmTrapInfo.message, file_without_path, dfmTrapInfo.line);
+
+		DFM_DEBUG_PRINT("  DFM_TRAP(): ");
+		DFM_DEBUG_PRINT(dfmPrintBuffer);
+		DFM_DEBUG_PRINT("\n");
+
+		alerttype = dfmTrapInfo.alertType;
+
 	}
-    else
-    {
-    	/* On hardware fault exceptions */
-    	CrashCatcher_DumpStart_OnFault(pInfo);
-    }
-}
+	else
+	{
+		DFM_DEBUG_PRINT("  DFM: Hard fault\n");
 
-// We get a hard fault in CrashCatcher_DumpEnd, hard fault on hard fault...
-// Why??? (could be the changes I made in dfmStoragePort.c?) - don't think so, we never get there.
-// pxDfmSessionData is 0xa5a5a5a5 at DumpEnd, is the crash dump overflowing the buffer?
+		snprintf(dfmPrintBuffer, sizeof(dfmPrintBuffer), "Hard fault exception (CFSR reg: 0x%08X)", (unsigned int)ARM_CORTEX_M_CFSR_REGISTER);
 
-static void CrashCatcher_DumpStart_OnFault(const CrashCatcherInfo* pInfo)
-{
+		alerttype = DFM_TYPE_HARDFAULT;
+	}
 
-	configPRINT_STRING("  DFM: Hard fault\n");
+	if (xDfmAlertBegin(alerttype, dfmPrintBuffer, &xAlertHandle) == DFM_SUCCESS)
+	{
+		xDfmAlertAddSymptom(xAlertHandle, DFM_SYMPTOM_CURRENT_TASK, DFM_CFG_GET_TASKNAME_CHECKSUM);
+		xDfmAlertAddSymptom(xAlertHandle, DFM_SYMPTOM_STACKPTR, pInfo->sp);
 
-	ucBufferPos = &ucDataBuffer[0];
-    /* Do not try to send the alert */
-    xDfmSessionSetCloudStrategy(DFM_CLOUD_STRATEGY_OFFLINE);
-    if (xDfmAlertBegin(DFM_TYPE_HARDFAULT, "Fault Exception", &xAlertHandle) == DFM_SUCCESS)
-    {
-    	xDfmAlertAddSymptom(xAlertHandle, DFM_SYMPTOM_CURRENT_TASK, simplechecksum32(pcTaskGetName( xTaskGetCurrentTaskHandle() )));
-    	xDfmAlertAddSymptom(xAlertHandle, DFM_SYMPTOM_STACKPTR, pInfo->sp);
+		if (dfmTrapInfo.alertType >= 0)
+		{
+			/* On DFM_TRAP */
+			xDfmAlertAddSymptom(xAlertHandle, DFM_SYMPTOM_FILE, DFM_CFG_GET_FILENAME_CHECKSUM(file_without_path));
+			xDfmAlertAddSymptom(xAlertHandle, DFM_SYMPTOM_LINE, dfmTrapInfo.line);
+		}
+		else
+		{
+			/* On hard faults */
+			xDfmAlertAddSymptom(xAlertHandle, DFM_SYMPTOM_ARM_SCB_FCSR, ARM_CORTEX_M_CFSR_REGISTER);
 
-#if ((CRASH_ADD_TRACE) >= 1)
-    	xTracePrintF(TzUserEventChannel, "Fault exception! See crash dump for details.");
-        prvAddTracePayload();
-#endif
-        dfmAlertStarted = 1;
-        configPRINT_STRING("  DFM: Storing the alert.\n");
-
-    }else{
-    	configPRINT_STRING("  DFM: Not yet initialized. Alert ignored.\n"); // Always log this!
-    }
-    configPRINT_STRING("\n");
-
-}
-
-static void CrashCatcher_DumpStart_OnTrap(const CrashCatcherInfo* pInfo)
-{
-	// Always log this!
-	configPRINT_STRING("  DFM: Software trap (");
-	configPRINT_STRING(dfmTrapInfo.message);
-	configPRINT_STRING(")\n");
-
-	ucBufferPos = &ucDataBuffer[0];
-    /* Do not try to send the alert */
-    xDfmSessionSetCloudStrategy(DFM_CLOUD_STRATEGY_OFFLINE);
-    if (xDfmAlertBegin(dfmTrapInfo.alertType, dfmTrapInfo.message, &xAlertHandle) == DFM_SUCCESS)
-    {
-    	xDfmAlertAddSymptom(xAlertHandle, DFM_SYMPTOM_CURRENT_TASK, simplechecksum32(pcTaskGetName( xTaskGetCurrentTaskHandle() )));
-    	xDfmAlertAddSymptom(xAlertHandle, DFM_SYMPTOM_STACKPTR, pInfo->sp);
+			/******************************************************************
+			 * TODO: Add MMAR and BFAR regs here as symptoms to get the address
+			 * of the problematic instruction. Would be a good symptom.
+			 *****************************************************************/
+		}
 
 #if ((CRASH_ADD_TRACE) >= 1)
-    	xTracePrintF(TzUserEventChannel, "DFM Trap: \"%s\". See crash dump for details.", dfmTrapInfo.message);
-        prvAddTracePayload();
+		xTracePrint(TzUserEventChannel, dfmPrintBuffer);
+		prvAddTracePayload();
 #endif
-        dfmAlertStarted = 1;
-        configPRINT_STRING("  DFM: Storing the alert.\n");
 
-    }
-    else{
-    	configPRINT_STRING("  DFM: Not yet initialized. Alert ignored.\n"); // Always log this!
-    }
-    configPRINT_STRING("\n");
+		dfmAlertStarted = 1;
+		DFM_DEBUG_PRINT("  DFM: Storing the alert.\n");
+	}
+	else
+	{
+		DFM_DEBUG_PRINT("  DFM: Not yet initialized. Alert ignored.\n"); // Always log this!
+	}
+	DFM_DEBUG_PRINT("\n");
 
-    dfmTrapInfo.alertType = -1;
-    dfmTrapInfo.message = NULL;
+	dfmTrapInfo.alertType = -1;
+	dfmTrapInfo.message = NULL;
+
 }
 
+#if ((CRASH_ADD_TRACE) >= 1)
 static void prvAddTracePayload()
 {
     char* szName;
@@ -173,23 +165,22 @@ static void prvAddTracePayload()
 
     if (xTraceIsRecorderEnabled() == 1)
     {
-
         xTraceDisable();
     }
     xTraceGetEventBuffer(&pvBuffer, &ulBufferSize);
     xDfmAlertAddPayload(xAlertHandle, pvBuffer, ulBufferSize, szName);
 }
+#endif
 
 void CrashCatcher_DumpMemory(const void* pvMemory, CrashCatcherElementSizes elementSize, size_t elementCount)
 {
 	int32_t current_usage = (uint32_t)ucBufferPos - (uint32_t)ucDataBuffer;
-	int32_t bytesWritten = 0;
 
 	/* This function is called when CrashCatcher detects an internal stack overflow (it has a separate stack) */
 	if (g_crashCatcherStack[0] != CRASH_CATCHER_STACK_SENTINEL)
 	{
-		// This might actually not print, as the memory has been partially corrupted (e.g. UART address)
-		configPRINT_STRING("DFM: ERROR, stack overflow in CrashCatcher, see comment in dfmCrashCatcher.c\n");
+		/* Always try to print this error. But it might actually not print since the memory has been corrupted. */
+		DFM_PRINT_ERROR("DFM: ERROR, stack overflow in CrashCatcher, see comment in dfmCrashCatcher.c\n");
 
 		/**********************************************************************************************************
 
@@ -197,7 +188,7 @@ void CrashCatcher_DumpMemory(const void* pvMemory, CrashCatcherElementSizes elem
 		This is separate from the main stack and defined in CrashCatcher.c (g_crashCatcherStack).
 
 		This error might happen because of diagnostic prints and other function calls while saving the alert.
-		You may increase the stack size in CrashCatcherPriv.h or turn off diagnostic prints (e.g. DFM_DEBUG_LOG).
+		You may increase the stack size in CrashCatcherPriv.h or turn off the logging (DFM_CFG_USE_DEBUG_LOGGING).
 
 		***********************************************************************************************************/
 
@@ -208,7 +199,7 @@ void CrashCatcher_DumpMemory(const void* pvMemory, CrashCatcherElementSizes elem
 	if (elementCount == 0)
 	{
 		/* May happen if CRASH_MEM_REGION<X>_SIZE is set to 0 by mistake (e.g. if using 0 instead of 0xFFFFFFFF for CRASH_MEM_REGION<X>_START on unused slots. */
-		configPRINT_STRING("DFM: Warning, memory region size is zero, ignoring this!\n");
+		DFM_PRINT_ERROR("DFM: Warning, memory region size is zero!\n");
 		return;
 	}
 
@@ -221,46 +212,43 @@ void CrashCatcher_DumpMemory(const void* pvMemory, CrashCatcherElementSizes elem
 
 			if ( current_usage + elementCount >= CRASH_DUMP_BUFFER_SIZE)
 			{
-				configPRINT_STRING("\nDFM: Error, ucDataBuffer not large enough!\n\n");
+				DFM_PRINT_ERROR("\nDFM: Error, ucDataBuffer not large enough!\n\n");
 				return;
 			}
 
 			memcpy((void*)ucBufferPos, pvMemory, elementCount);
 			ucBufferPos += elementCount;
-			bytesWritten = elementCount;
 			break;
 
     	case CRASH_CATCHER_HALFWORD:
 
 			if ( current_usage + elementCount*2 >= CRASH_DUMP_BUFFER_SIZE)
 			{
-				configPRINT_STRING("\nDFM: Error, ucDataBuffer not large enough!\n\n");
+				DFM_PRINT_ERROR("\nDFM: Error, ucDataBuffer not large enough!\n\n");
 				return;
 			}
 			dumpHalfWords(pvMemory, elementCount);
 
-			bytesWritten = elementCount * 2;
 			break;
 
     	case CRASH_CATCHER_WORD:
 
 			if ( current_usage + elementCount*4 >= CRASH_DUMP_BUFFER_SIZE)
 			{
-				configPRINT_STRING("\nDFM: Error, ucDataBuffer not large enough!\n\n");
+				DFM_PRINT_ERROR("\nDFM: Error, ucDataBuffer not large enough!\n\n");
 				return;
 			}
 
 			dumpWords(pvMemory, elementCount);
 
-			bytesWritten = elementCount * 4;
 			break;
 
     	default:
-    		configPRINT_STRING("\nDFM: Error, unhandled case!\n\n");
+    		DFM_PRINT_ERROR("\nDFM: Error, unhandled case!\n\n");
     		break;
     }
 
-    DFM_DEBUG_PRINTF(" OK. Usage now %d/%d bytes\n", (uint32_t)ucBufferPos - (uint32_t)ucDataBuffer, CRASH_DUMP_BUFFER_SIZE);
+    DFM_DEBUG_PRINTF(" OK. Usage now %u/%u bytes\n", ucBufferPos - ucDataBuffer, CRASH_DUMP_BUFFER_SIZE);
 }
 
 static void dumpHalfWords(const uint16_t* pMemory, size_t elementCount)
@@ -296,7 +284,7 @@ CrashCatcherReturnCodes CrashCatcher_DumpEnd(void)
         }
         else
         {
-        	DFM_DEBUG_PRINT("  DFM: Failed storing crash dump.\n")
+        	DFM_PRINT_ERROR("  DFM: Failed storing crash dump.\n");
         }
 
         if (xDfmAlertEndOffline(xAlertHandle) == DFM_SUCCESS)
@@ -305,7 +293,7 @@ CrashCatcherReturnCodes CrashCatcher_DumpEnd(void)
         }
         else
         {
-           DFM_DEBUG_PRINT("  DFM: Failed storing alert.\n");
+        	DFM_PRINT_ERROR("  DFM: Failed storing alert.\n");
         }
 
     }
@@ -315,12 +303,12 @@ CrashCatcherReturnCodes CrashCatcher_DumpEnd(void)
 }
 
 
-/* Called by GCC instrumentation if using one of the gcc options -fstack-protector, -fstack-protector-strong or -fstack-protector-all */
+/* Called by gcc stack-checking code when using the gcc option -fstack-protector-strong */
 void __stack_chk_fail(void)
 {
     // If this happens, the stack has been corrupted by the previous function in the call stack.
 	// Note that the exact location of the stack corruption is not known, since detected when exiting the function.
-	DFM_TRAP(DFM_TYPE_STACK_CHK_FAILED, "Stack corrupted");
+	DFM_TRAP(DFM_TYPE_STACK_CHK_FAILED, "Stack corruption detected");
 }
 
 #endif

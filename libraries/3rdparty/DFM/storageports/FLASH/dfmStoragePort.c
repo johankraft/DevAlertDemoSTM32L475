@@ -8,12 +8,13 @@
  * FLASH Example implementation
  */
 
-#include "dfmStoragePort.h"
-#include <string.h>
+#include <dfm.h>
 
 #if (defined(DFM_CFG_ENABLED) && ((DFM_CFG_ENABLED) >= 1))
 
-#include <dfm.h>
+#include "dfmStoragePort.h"
+
+#include <string.h> // for memcpy
 
 /* Include your specific flash header file */
 #include "flash.h"
@@ -22,7 +23,8 @@
 #define DFM_STORAGE_PORT_ALERT_TYPE		0x34561842
 #define DFM_STORAGE_PORT_PAYLOAD_TYPE	0x82713124
 
-uint8_t FLASH_ALERT_DATA[11000] __attribute__( ( section( ".dfm_alert" ), aligned (8) ) ) = { 0 };
+dfmFlashData_t dfmFlashData __attribute__( ( section( ".dfm_alert" ), aligned (8) ) ) = { {0}, 0 };
+
 uint32_t ulWrOffset = 0;
 uint32_t ulRdOffset = 0;
 
@@ -37,6 +39,8 @@ typedef struct DfmStorageMetadata {
 
 DfmResult_t xDfmStoragePortInitialize(DfmStoragePortData_t *pxBuffer)
 {
+	ulWrOffset = 0;
+	ulRdOffset = 0;
 	return DFM_SUCCESS;
 }
 
@@ -58,13 +62,13 @@ DfmResult_t xDfmStoragePortStoreAlert(DfmEntryHandle_t xEntryHandle, uint32_t ul
 
 DfmResult_t xDfmStoragePortGetAlert(void* pvBuffer, uint32_t ulBufferSize)
 {
-	if (*((uint32_t*)&FLASH_ALERT_DATA[ulRdOffset]) == 0xffffffff)
+	if (*((uint32_t*)&dfmFlashData.data[ulRdOffset]) == 0xffffffff)
 	{
 		// Not written
 		return DFM_FAIL;
 	}
 	uint32_t ulSize;
-	if (xDfmEntryGetSize((DfmEntryHandle_t)&FLASH_ALERT_DATA[ulRdOffset], &ulSize) == DFM_FAIL)
+	if (xDfmEntryGetSize((DfmEntryHandle_t)&dfmFlashData.data[ulRdOffset], &ulSize) == DFM_FAIL)
 	{
 		return DFM_FAIL;
 	}
@@ -73,7 +77,7 @@ DfmResult_t xDfmStoragePortGetAlert(void* pvBuffer, uint32_t ulBufferSize)
 	{
 		ulSize = ulBufferSize;
 	}
-	memcpy(pvBuffer, &FLASH_ALERT_DATA[ulRdOffset], ulSize);
+	memcpy(pvBuffer, &dfmFlashData.data[ulRdOffset], ulSize);
 	ulRdOffset += ulSize;
 	ulRdOffset += (8 - (ulSize % 8));
 	return DFM_SUCCESS;
@@ -89,8 +93,12 @@ DfmResult_t xDfmStoragePortGetPayloadChunk(char* szSessionId, uint32_t ulAlertId
 	return xDfmStoragePortGetAlert(pvBuffer, ulBufferSize);
 }
 
+/* Note: This function assumes the affected flash pages are only used for DFM alert storage.
+ * It does not preserve other data that might be present on these pages (future improvement!) */
 static DfmResult_t prvDfmStoragePortWrite(DfmEntryHandle_t xEntryHandle, uint32_t ulType, uint32_t ulOverwrite)
 {
+	DFM_DEBUG_PRINT("prvDfmStoragePortWrite\n");
+
 	if (xEntryHandle == 0)
 	{
 		return DFM_FAIL;
@@ -106,23 +114,56 @@ static DfmResult_t prvDfmStoragePortWrite(DfmEntryHandle_t xEntryHandle, uint32_
 		return DFM_FAIL;
 	}
 
-	uint32_t ulDst = (uint32_t)&FLASH_ALERT_DATA[ulWrOffset];
+	uint32_t ulDst = (uint32_t)&dfmFlashData.data[ulWrOffset];
+
 	/* Write to destination */
 	if (ulWrOffset == 0)
 	{
-		__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
-		if (FLASH_unlock_erase(ulDst, sizeof(FLASH_ALERT_DATA)) != 0)
+
+		/* This erases the affected flash pages, needed before write. */
+		if (xDfmStoragePortReset() != DFM_SUCCESS)
 		{
 			return DFM_FAIL;
 		}
 	}
+	
 	ulWrOffset += ulSize;
 	ulWrOffset += (8 - (ulSize % 8));
-	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
-	if (FLASH_write_at(ulDst, xEntryHandle, ulSize) == 0)
+
+	if ( ulWrOffset >= sizeof(dfmFlashData.data))
 	{
-		return DFM_SUCCESS;
+		/* If this happens, you may increase DFM_DEMO_FLASHSTORAGE_SIZE */
+		DFM_PRINT_ERROR("\nDFM: Error - Not enough space in dfmFlashData.data.\n");
+		DFM_DEBUG_PRINTF("  Attempted to write: 0x%08X - 0x%08X (%d bytes)\n", (unsigned int)ulDst, (unsigned int)(ulDst + ulSize), (unsigned int)ulSize);
+		return DFM_FAIL;
 	}
-	return DFM_FAIL;
+
+	DFM_DEBUG_PRINTF("  Write: 0x%08X - 0x%08X, bytes written so far: %d\n", (unsigned int)ulDst, (unsigned int)(ulDst + ulSize), (unsigned int)ulWrOffset);
+
+	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
+
+	if (FLASH_write_at(ulDst, xEntryHandle, ulSize) != 0)
+	{
+		return DFM_FAIL;
+	}
+
+	return DFM_SUCCESS;
 }
+
+DfmResult_t xDfmStoragePortReset(void)
+{
+	DFM_DEBUG_PRINT("xDfmStoragePortReset()\n");
+
+	DFM_DEBUG_PRINTF("  Erase: 0x%08X - 0x%08X (%d)\n", (unsigned int)&dfmFlashData, (unsigned int)((int)&dfmFlashData + sizeof(dfmFlashData)), sizeof(dfmFlashData));
+
+	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
+
+	if (FLASH_unlock_erase((uint32_t)&dfmFlashData, sizeof(dfmFlashData)) != 0)
+	{
+		return DFM_FAIL;
+	}
+
+	return DFM_SUCCESS;
+}
+
 #endif

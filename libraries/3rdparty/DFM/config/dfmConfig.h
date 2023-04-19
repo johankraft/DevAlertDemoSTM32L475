@@ -33,15 +33,67 @@ extern "C" {
  * @brief An identifier of the product type.
  */
 #define DFM_CFG_PRODUCTID (12)
+
 #if DFM_CFG_PRODUCTID == 0
 #error "DFM_CFG_PRODUCTID needs to be set."
 #endif
 
 
-/* Main settings for Demo (all collected here) */
-#define DFM_DEMO_STACKDUMP_SIZE 200
-#define DFM_DEMO_TRACEBUFFER_SIZE (1500) /* Added */
-#define DFM_DEMO_FLASHSTORAGE_SIZE (25500) /* Added */
+/* How many bytes to dump from the stack (relative to current stack pointer)*/
+#define DFM_CFG_STACKDUMP_SIZE 300
+
+/* How long trace to keep for Tracealyzer */
+#define DFM_CFG_TRACEBUFFER_SIZE (1500)
+
+/* How much space is needed to store the alert to flash.
+ * This should be a multiple of the flash page size (= 2048 on STM32L475). */
+#define DFM_CFG_FLASHSTORAGE_SIZE (3 * 2048)
+
+/* If 1, the alert is not sent to the storage or cloud, but instead written to the serial port using DFM_PRINT_ALERT_DATA.*/
+#define DFM_CFG_SERIAL_UPLOAD_ONLY 1
+
+/* If to print diagnostic messages in the console. Any errors are printed in either case. */
+#define DFM_CFG_USE_DEBUG_LOGGING 0
+
+/* Prototype for the print function */
+extern void vMainUARTPrintString( char * pcString );
+
+/* Update this to match your serial console print function */
+#define DFM_PRINT_ERROR(msg) vMainUARTPrintString(msg)
+
+/* Update this to match your serial console print function */
+#define DFM_PRINT_ALERT_DATA(msg) vMainUARTPrintString(msg)
+
+#if (DFM_CFG_USE_DEBUG_LOGGING == 1)
+	/* Update this to match your serial printf function */
+	#define DFM_DEBUG_PRINT(msg) vMainUARTPrintString(msg)
+#else
+	#define DFM_DEBUG_PRINT(msg)
+#endif
+
+extern uint32_t ucDfmUserChecksum(char *ptr, size_t maxlen);
+
+/* This function can be modified if another RTOS is used, see dfmUser.c */
+extern char* xcDfmUserGetTaskName(void);
+
+/**
+ * Provides the filename (e.g "foo.c") from a full file name with path.
+ * This is used for __FILE__ strings (__FILENAME__ isn't available on all compilers)
+ * The "+1" is to exclude the last '/' character.
+ */
+#define DFM_CFG_GET_FILENAME_FROM_PATH(str) strrchr(str, '/')+1
+
+/** 
+ * @brief Calculates a checksum from __FILE__ strings, where the checksum calculation ends at zero termination. 
+ * Max length 256 just in case. This is intended for the DFM symptoms (numerical). 
+ * Using the task address as a symptom isn't recommended as it may change in between builds.
+ */
+#define DFM_CFG_GET_FILENAME_CHECKSUM(filename) ucDfmUserChecksum(filename, 256)
+
+/**
+ * @brief Calculates a checksum from the task name, since symptoms should be numerical (the TCB address may change in between builds). 
+ */
+#define DFM_CFG_GET_TASKNAME_CHECKSUM ucDfmUserChecksum(xcDfmUserGetTaskName(), configMAX_TASK_NAME_LEN)
 
 /**
  * @brief The maximum size of a "chunk" that will be stored or sent.
@@ -111,12 +163,6 @@ extern "C" {
  *	DFM_DEVICE_NAME_STRATEGY_ONDEVICE	This device knows its' name, get it
  */
 #define DFM_CFG_DEVICENAME_STRATEGY DFM_DEVICE_NAME_STRATEGY_ONDEVICE
-
-
-static inline int simplechecksum32(char* str)
-{
-	return *(int*)str;
-}
 
 
 #ifdef __cplusplus

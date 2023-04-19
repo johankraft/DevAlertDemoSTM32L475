@@ -19,9 +19,11 @@
 extern "C" {
 #endif
 
+
 #include <stdio.h>
-#include <stdlib.h>
+#include <string.h>
 #include <stdint.h>
+#include <stdarg.h>
 
 #include <dfmDefines.h>
 #include <dfmTypes.h>
@@ -46,8 +48,6 @@ extern "C" {
 
 #include <dfmCodes.h>
 
-#include "FreeRTOS.h"
-
 #ifndef DFM_CFG_ENABLED
 #error DFM_CFG_ENABLED not set in dfmConfig.h!
 #endif
@@ -56,28 +56,22 @@ extern "C" {
 #error DFM_CFG_FIRMWARE_VERSION_MAX_LEN not set in dfmConfig.h!
 #endif
 
+extern char dfmPrintBuffer[128];
 
-#define DFM_DEBUG_LOG 1
+#if (DFM_CFG_USE_DEBUG_LOGGING == 1)
 
-#if (DFM_DEBUG_LOG == 1)
-
-#define DFM_DEBUG_PRINT(msg) configPRINT_STRING(msg)
-
-extern char dfmCrashCatcherPrintBuffer[256];
-// Note, must not be used without arguments. Will cause a build error if __VA_ARGS__ is empty, due to the comma before it.
-#define DFM_DEBUG_PRINTF(msg, ...) { snprintf(dfmCrashCatcherPrintBuffer, 256, msg, __VA_ARGS__); configPRINT_STRING(dfmCrashCatcherPrintBuffer); }
+	/* Note, DFM_DEBUG_PRINTF must not be used without arguments.
+	It causes a build error if __VA_ARGS__ is empty, due to the comma before it.*/
+	#define DFM_DEBUG_PRINTF(msg, ...) { snprintf(dfmPrintBuffer, sizeof(dfmPrintBuffer), msg, __VA_ARGS__); DFM_DEBUG_PRINT(dfmPrintBuffer); }
 
 #else
-
-#define DFM_DEBUG_PRINT(msg)
-#define DFM_DEBUG_PRINTF(msg, ...)
-
+	#define DFM_DEBUG_PRINTF(msg, ...)
 #endif
 
 #include "dfmConfig.h"
 
 typedef struct{
-	uint8_t data[DFM_DEMO_FLASHSTORAGE_SIZE];
+	uint8_t data[DFM_CFG_FLASHSTORAGE_SIZE];
     uint32_t alert_storage_counter;
 } dfmFlashData_t;
 

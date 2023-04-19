@@ -117,6 +117,14 @@ DfmResult_t xDfmStoragePortStorePayloadChunk(DfmEntryHandle_t xEntryHandle, uint
  */
 DfmResult_t xDfmStoragePortGetPayloadChunk(char* szSessionId, uint32_t ulAlertId, void* pvBuffer, uint32_t ulBufferSize);
 
+/**
+ * @brief Remove all stored alerts
+ *
+ * @retval DFM_FAIL Failure
+ * @retval DFM_SUCCESS Success
+ */
+DfmResult_t xDfmStoragePortReset(void);
+
 /** @} */
 
 #ifdef __cplusplus

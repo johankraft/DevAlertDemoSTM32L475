@@ -51,9 +51,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include "FreeRTOS.h"
 
-#define printf vLoggingPrintf
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private defines -----------------------------------------------------------*/

@@ -303,7 +303,26 @@ DfmResult_t xDfmAlertSendAll(void);
  */
 DfmResult_t xDfmAlertGetAll(DfmAlertEntryCallback_t xCallback);
 
+/**
+* @brief Generare the "alert key" used for e.g. MQTT topic.
+ *
+ * @param[in] cTopicBuffer Where to write the Alert Key string
+ * @param[in] ulBufferSize Maximum size for Alert Key (size of cTopicBuffer)
+ * @param[in] szMQTTPrefix Optional prefix to add before the Alert Key
+ * @param[in] xEntryHandle The alert entry
+ *
+ *
+ * @retval DFM_FAIL Failure
+ * @retval DFM_SUCCESS Success
+ */
+DfmResult_t xDfmAlertGenerateAlertKey(char* cTopicBuffer, uint32_t ulBufferSize, const char* szMQTTPrefix, DfmEntryHandle_t xEntryHandle);
+
+
 /** @} */
+
+
+
+
 
 #else
 
