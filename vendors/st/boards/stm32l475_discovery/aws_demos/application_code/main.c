@@ -79,8 +79,10 @@ extern void SPI_WIFI_ISR( void );
 extern SPI_HandleTypeDef hspi;
 
 #ifdef USE_OFFLOAD_SSL
+#if (DFM_CFG_SERIAL_UPLOAD_ONLY != 1)
     /* Defined in iot_wifi.c. */
     extern WIFIReturnCode_t WIFI_GetFirmwareVersion( uint8_t * pucBuffer );
+#endif
 #endif /* USE_OFFLOAD_SSL */
 
 /**********************
@@ -95,7 +97,10 @@ IotUARTHandle_t xConsoleUart;
 static void SystemClock_Config( void );
 static void Console_UART_Init( void );
 static void RTC_Init( void );
+
+#if (DFM_CFG_SERIAL_UPLOAD_ONLY != 1)
 static void prvWifiConnect( void );
+#endif
 
 /**
  * @brief Initializes the STM32L475 IoT node board.
@@ -124,7 +129,9 @@ unsigned int getHardwareRand(void);
  *
  * Prints a message to inform the user to update the WiFi firmware.
  */
+#if (DFM_CFG_SERIAL_UPLOAD_ONLY != 1)
     static void prvCheckWiFiFirmwareVersion( void );
+#endif
 
 #endif /* USE_OFFLOAD_SSL */
 /*-----------------------------------------------------------*/
@@ -190,11 +197,20 @@ void testBufferOverrun(void)
 	prvCheckForNetworkMessages();
 }
 
+void testAssertFailed(char* str)
+{
+	configASSERT( str != NULL );
+
+	configPRINTF(("Input: %s", str));
+}
+
 /**
  * Button checker
  */
 
 TaskHandle_t xBhjHandle = NULL;
+
+char* ptr = NULL;
 
 void ButtonTask(void* argument)
 {
@@ -212,7 +228,7 @@ void ButtonTask(void* argument)
 
         			vTaskDelay(1000);
 
-        			configASSERT( 1 == 0 );
+        			testAssertFailed(ptr);
 
         			break;
 
@@ -349,15 +365,24 @@ unsigned int getHardwareRand(void)
 
 void vApplicationDaemonTaskStartupHook( void )
 {
-    WIFIReturnCode_t xWifiStatus;
-    int dfmResult = DFM_SUCCESS;
+#if (DFM_CFG_SERIAL_UPLOAD_ONLY != 1)
+	int dfmResult = DFM_SUCCESS;
+#endif
 
     configPRINTF( ( "\n\n\n\n------ Starting up DevAlert demo ------\n" ) );
+
+    configPRINTF(("Firmware revision: " DFM_CFG_FIRMWARE_VERSION "\n"));
+
+/* For testing the serial port upload, Wifi/AWS connectivity not needed */
+#if (DFM_CFG_SERIAL_UPLOAD_ONLY != 1)
+
+    WIFIReturnCode_t xWifiStatus;
 
     /* Turn on the WiFi before key provisioning. This is needed because
      * if we want to use offload SSL, device certificate and key is stored
      * on the WiFi module during key provisioning which requires the WiFi
      * module to be initialized. */
+
     xWifiStatus = WIFI_On();
 
     if( xWifiStatus == eWiFiSuccess )
@@ -426,7 +451,6 @@ void vApplicationDaemonTaskStartupHook( void )
 
             BSP_LED_On( LED_GREEN );
 
-
         }
     }
     else
@@ -436,8 +460,52 @@ void vApplicationDaemonTaskStartupHook( void )
         /* Stop here if we fail to initialize WiFi. */
         configASSERT( xWifiStatus == eWiFiSuccess );
     }
+
+#else
+
+    /* Basic demo initialization for serial port upload */
+
+	xTaskCreate(ButtonTask,       /* Function that implements the task. */
+			   "DemoTask1",          /* Text name for the task. */
+			   1024,           /* Stack size in words, not bytes. */
+			   NULL,    		/* Parameter passed into the task. */
+			   tskIDLE_PRIORITY,/* Priority at which the task is created. */
+			   &xBhjHandle );      /* Used to pass out the created task's handle. */
+
+
+#if (0)
+	/* Try sending any stored alerts from a prior crash */
+	dfmResult = xDfmAlertSendAll();
+
+	if ((dfmResult == DFM_FAIL) || (dfmResult == DFM_NO_ALERTS))
+	{
+	   configPRINTF(("DFM: No stored alerts.\n\n"));
+	}
+	else if (dfmResult == DFM_SUCCESS)
+	{
+	configPRINTF(("DFM: Found and uploaded alerts.\n\n"));
+
+	/* Erase stored alerts to avoid they are sent repeatedly */
+	xDfmStoragePortReset();
+
+	}
+	else
+	{
+	configPRINTF(("DFM: Unexpected return code (%d)!\n\n", dfmResult));
+	}
+
+	// IS THIS NEEDED?
+	xDfmSessionSetStorageStrategy(DFM_STORAGE_STRATEGY_OVERWRITE);
+#endif
+
+	BSP_LED_On( LED_GREEN );
+
+#endif
+
 }
 /*-----------------------------------------------------------*/
+
+#if (DFM_CFG_SERIAL_UPLOAD_ONLY != 1)
 
 static void prvWifiConnect( void )
 {
@@ -587,6 +655,7 @@ static void prvWifiConnect( void )
 
     configASSERT( xWifiStatus == eWiFiSuccess );
 }
+#endif
 /*-----------------------------------------------------------*/
 
 /* configUSE_STATIC_ALLOCATION is set to 1, so the application must provide an
@@ -709,6 +778,57 @@ void vSTM32L475getc( void * pv,
 }
 /*-----------------------------------------------------------*/
 
+#if (DFM_CFG_SERIAL_UPLOAD_ONLY == 1)
+#if (TEST_SERIAL_DECODING == 1)
+
+extern uint32_t prvPrintDataAsHex(uint8_t* data, int size);
+
+char data1[] = "ABCDEF";
+char data2[] = "0123456789ABCDE_JKJHGs";
+char data3[] = "0123456789ABCDE_0123456789ABCDE_0123456789ABCDE_0123456789ABCDE_0123456789ABCDE_0123456789ABCDE_0123456789ABCDE_0123456789ABCDE";
+
+/* Test of the basic decoding in devalertserial.py */
+void testSerialUpload(void)
+{
+	char buf[10];
+
+	while (1)
+	{
+		int checksum = 0;
+		int sel = 0;
+
+		DFM_PRINT_ALERT_DATA("\n[[ DevAlert Data Begins ]]\n");
+		checksum = 0; // Make sure to clear this
+
+		sel = getHardwareRand() % 3;
+
+		switch(sel)
+		{
+
+		case 0:	checksum += prvPrintDataAsHex((uint8_t*)&data1, strlen(data1));
+				break;
+
+		case 1: checksum += prvPrintDataAsHex((uint8_t*)&data2, strlen(data2));
+				break;
+
+		case 2: checksum += prvPrintDataAsHex((uint8_t*)&data3, strlen(data3));
+				break;
+		}
+
+		DFM_PRINT_ALERT_DATA("\n[[ DevAlert Data Ended. Checksum: ");
+		snprintf(buf, sizeof(buf), "%d", (unsigned int)checksum);
+		DFM_PRINT_ALERT_DATA(buf);
+		DFM_PRINT_ALERT_DATA(" ]]\n");
+
+		for (volatile int i=0; i < 1000000; i++);
+
+	}
+
+}
+
+#endif
+#endif
+
 /**
  * @brief Initializes the board.
  */
@@ -734,16 +854,6 @@ static void prvMiscInitialization( void )
     // Enables "compact logging" with e.g. xTracePrintCompactF1(). The dispatcher tool must have access to the elf file.
     xTraceDependencyRegister("aws_demos.elf", TRC_DEPENDENCY_TYPE_ELF);
 
-#if (DFM_CFG_SERIAL_UPLOAD_ONLY == 1)
-
-    if (xDfmInitialize() == DFM_FAIL)
-    {
-    	configPRINTF(("Failed to initialize DFM\r\n"));
-    }
-
-
-#endif
-
     BSP_LED_Init( LED_GREEN );
     BSP_PB_Init( BUTTON_USER, BUTTON_MODE_EXTI );
 
@@ -760,6 +870,17 @@ static void prvMiscInitialization( void )
 
     /* UART console init. */
     Console_UART_Init();
+
+
+#if (DFM_CFG_SERIAL_UPLOAD_ONLY == 1)
+
+    if (xDfmInitialize() == DFM_FAIL)
+    {
+    	configPRINTF(("Failed to initialize DFM\r\n"));
+    }
+
+#endif
+
 }
 /*-----------------------------------------------------------*/
 
@@ -925,26 +1046,6 @@ void vApplicationIdleHook( void )
 }
 /*-----------------------------------------------------------*/
 
-#if (0)
-
-void * malloc( size_t xSize )
-{
-    configASSERT( xSize == ~0 );
-
-    return NULL;
-}
-/*-----------------------------------------------------------*/
-
-
-void vOutputChar( const char cChar,
-                  const TickType_t xTicksToWait )
-{
-    ( void ) cChar;
-    ( void ) xTicksToWait;
-}
-/*-----------------------------------------------------------*/
-#endif
-
 void vMainUARTPrintString( char * pcString )
 {
 
@@ -974,6 +1075,7 @@ void vApplicationMallocFailedHook(void)
 /*-----------------------------------------------------------*/
 
 #ifdef USE_OFFLOAD_SSL
+#if (DFM_CFG_SERIAL_UPLOAD_ONLY != 1)
 
     static void prvCheckWiFiFirmwareVersion( void )
     {
@@ -1046,8 +1148,10 @@ void vApplicationMallocFailedHook(void)
         }
     }
 
+#endif
 #endif /* USE_OFFLOAD_SSL */
-/*-----------------------------------------------------------*/
+
+    /*-----------------------------------------------------------*/
 
 /**
  * @brief  EXTI line detection callback.

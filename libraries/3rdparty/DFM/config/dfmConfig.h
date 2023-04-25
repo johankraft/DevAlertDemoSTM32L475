@@ -27,7 +27,12 @@ extern "C" {
 /**
  * @brief The firmware version. This needs to be set to differentiate the alerts between versions.
  */
-#define DFM_CFG_FIRMWARE_VERSION "1.0-beta"
+
+// The revision/version name is provided to DevAlert Dispatcher when downloading an alert. This is used in the "fetch_elf_file.bat" script to fetch the right elf file from the "elf-files" folder.
+//#define DFM_CFG_FIRMWARE_VERSION "aws_demos-2023-04-21"
+
+// This revision name has a special meaning in the "fetch_elf_file.bat" script. When using this label, it loads the latest ELF file from eclipse instead of using an archived elf file.
+#define DFM_CFG_FIRMWARE_VERSION "v1.0-LatestDevBuild"
 
 /**
  * @brief An identifier of the product type.
@@ -40,7 +45,7 @@ extern "C" {
 
 
 /* How many bytes to dump from the stack (relative to current stack pointer)*/
-#define DFM_CFG_STACKDUMP_SIZE 300
+#define DFM_CFG_STACKDUMP_SIZE 350
 
 /* How long trace to keep for Tracealyzer */
 #define DFM_CFG_TRACEBUFFER_SIZE (1500)
@@ -50,7 +55,7 @@ extern "C" {
 #define DFM_CFG_FLASHSTORAGE_SIZE (3 * 2048)
 
 /* If 1, the alert is not sent to the storage or cloud, but instead written to the serial port using DFM_PRINT_ALERT_DATA.*/
-#define DFM_CFG_SERIAL_UPLOAD_ONLY 1
+#define DFM_CFG_SERIAL_UPLOAD_ONLY 0
 
 /* If to print diagnostic messages in the console. Any errors are printed in either case. */
 #define DFM_CFG_USE_DEBUG_LOGGING 0
@@ -61,7 +66,13 @@ extern void vMainUARTPrintString( char * pcString );
 /* Update this to match your serial console print function */
 #define DFM_PRINT_ERROR(msg) vMainUARTPrintString(msg)
 
-/* Update this to match your serial console print function */
+#include "FreeRTOS.h"
+
+/* Should not be needed as prints are from exception handler */
+#define DFM_CFG_LOCK_SERIAL()  /* vTaskSuspendAll() */
+#define DFM_CFG_UNLOCK_SERIAL()  /* xTaskResumeAll() */
+
+/* Update this to match your serial console print function - Make sure to avoid task-switches here! */
 #define DFM_PRINT_ALERT_DATA(msg) vMainUARTPrintString(msg)
 
 #if (DFM_CFG_USE_DEBUG_LOGGING == 1)

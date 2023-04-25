@@ -51,29 +51,39 @@ static DfmResult_t prvSendPayloadChunk(DfmEntryHandle_t xEntryHandle)
 
 #if (defined(DFM_CFG_SERIAL_UPLOAD_ONLY) && DFM_CFG_SERIAL_UPLOAD_ONLY == 1)
 
-char buf[32];
+char buf[80];
 
-static uint32_t prvPrintDataAsHex(uint8_t* data, int size, int* counter)
+uint32_t prvPrintDataAsHex(uint8_t* data, int size)
 {
 	uint32_t checksum = 0;
-	int c = *counter;
+	int i;
 
-	DFM_PRINT_ALERT_DATA(("\n  ### DATA:"));
-	for (int i = 0; i < size; i++)
+	for (i = 0; i < size; i++)
 	{
 		uint8_t byte = data[i];
 		checksum += byte;
 		snprintf(buf, sizeof(buf), " %02X", (unsigned int)byte);
 
+		if (i % 20 == 0)
+		{
+			DFM_CFG_LOCK_SERIAL();
+			DFM_PRINT_ALERT_DATA(("[[ DATA:"));
+		}
+
 		DFM_PRINT_ALERT_DATA(buf);
 
-		// Format the output in 16 nice columns
-		if ((++c) % 16 == 0)
+		if ( (i+1) % 20 == 0)
 		{
-			DFM_PRINT_ALERT_DATA(("\n  ### DATA:"));
+			DFM_PRINT_ALERT_DATA((" ]]\n"));
+			DFM_CFG_UNLOCK_SERIAL();
 		}
 	}
-	*counter = c;
+
+	if (i % 20 != 0)
+	{
+		DFM_PRINT_ALERT_DATA((" ]]\n"));
+		DFM_CFG_UNLOCK_SERIAL();
+	}
 
 	return checksum;
 }
@@ -95,13 +105,10 @@ static DfmResult_t prvSerialPortUploadAlert(DfmEntryHandle_t xEntryHandle)
 	uint32_t datalen;
 	void* dataptr;
 
-	int counter = 0;
-
 	if (xEntryHandle == 0)
 	{
 		return DFM_FAIL;
 	}
-
 
     if (xDfmEntryGetData(xEntryHandle, &dataptr) == DFM_FAIL)
     {
@@ -137,18 +144,25 @@ static DfmResult_t prvSerialPortUploadAlert(DfmEntryHandle_t xEntryHandle)
     	return DFM_FAIL;
 	}
 
-	DFM_PRINT_ALERT_DATA("\n  ### DevAlert Data Begins");
+	DFM_CFG_LOCK_SERIAL();
+	DFM_PRINT_ALERT_DATA("\n[[ DevAlert Data Begins ]]\n");
+	DFM_CFG_UNLOCK_SERIAL();
+
 	checksum = 0; // Make sure to clear this
-	checksum += prvPrintDataAsHex((uint8_t*)&DfmSerialHeader, sizeof(DfmSerialHeader_t), &counter);
-	checksum += prvPrintDataAsHex((uint8_t*)cKeyBuffer, DfmSerialHeader.keylen, &counter);
-	checksum += prvPrintDataAsHex((uint8_t*)dataptr, DfmSerialHeader.datalen, &counter); // This is wrong, includes too much data!
-	DFM_PRINT_ALERT_DATA("\n  ### DevAlert Data Ended. Checksum:");
-	snprintf(buf, sizeof(buf), "%d", (unsigned int)checksum);
+	checksum += prvPrintDataAsHex((uint8_t*)&DfmSerialHeader, sizeof(DfmSerialHeader_t));
+	checksum += prvPrintDataAsHex((uint8_t*)cKeyBuffer, DfmSerialHeader.keylen);
+	checksum += prvPrintDataAsHex((uint8_t*)dataptr, DfmSerialHeader.datalen);
+
+	/* Keep outside lock section */
+	snprintf(buf, sizeof(buf), "\n[[ DevAlert Data Ended. Checksum: %d ]]\n\n", (unsigned int)checksum);
+
+	DFM_CFG_LOCK_SERIAL();
 	DFM_PRINT_ALERT_DATA(buf);
-	DFM_PRINT_ALERT_DATA("\n");
+	DFM_CFG_UNLOCK_SERIAL();
 
 	return DFM_SUCCESS;
 }
+
 
 static DfmResult_t prvSerialPortUploadPayloadChunk(DfmEntryHandle_t xEntryHandle)
 {
