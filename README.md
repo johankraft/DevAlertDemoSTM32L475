@@ -14,11 +14,18 @@ Important folders and files:
 - /demos/include/aws_clientcredential_keys.h
 
 Examples of how to use the DFM library and TraceRecorder is found in main.c and in FreeRTOSConfig.h.
+
+In main.c, the important parts are:
+ - DevAlert test cases, https://github.com/johankraft/DevAlertDemoSTM32L475/blob/main/vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c#L223
+ - Tracing a state machine, https://github.com/johankraft/DevAlertDemoSTM32L475/blob/main/vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c#L287
+ - Initializing DFM, https://github.com/johankraft/DevAlertDemoSTM32L475/blob/main/vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c#L406
+ - Initializing TraceRecorder, https://github.com/johankraft/DevAlertDemoSTM32L475/blob/main/vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c#L789
+
 In FreeRTOSConfig.h, the important parts are:
 
 - #define configASSERT( x ) ... definition and the related #includes (just above)
-- #define configUSE_TRACE_FACILITY 1
-- #include "trcRecorder.h"
+- #define configUSE_TRACE_FACILITY 1 -- Critical for recording kernel events
+- #include "trcRecorder.h" -- Critical for recording kernel events
 
 ## Building the demo
 
