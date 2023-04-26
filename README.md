@@ -35,6 +35,10 @@ To build the project in SW4STM32, import it using "Import...", "Projects from Fo
 
 To connect to Wifi and AWS IoT Core, you need to update aws_clientcredential.h and aws_clientcredential_keys.h (see \demos\include) as described on https://docs.aws.amazon.com/freertos/latest/userguide/freertos-prereqs.html.
 
+There are two build configurations:
+- "Debug" is for uploading alerts to your AWS account via AWS IoT Core/MQTT. The AWS account must have been configured for DevAlert by running a CloudFormation script.
+- "Debug-SerialOnly" writes the alerts to the serial port and skips connecting to Wifi and AWS IoT Core. This is intended to be used together with a script and tool that uploads the data to an Amazon S3 bucket (on the development computer).
+
 ## Demo operation
 
 Just start it and it should begin generating errors and alerts randomly. The system is configured to restart after each error/alert.
