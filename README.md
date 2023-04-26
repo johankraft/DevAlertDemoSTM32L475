@@ -57,16 +57,16 @@ The demo includes the TraceRecorder library that produces event traces for Trace
 ### Viewing crash dumps with GDB/CrashDebug
 
 Copy the crash_debug.bat or crash_debug.sh script from the <dispatcher>/template directory and update the File Mappin rule for "dmp" so that it is called with the right arguments. For example:
-Extension: dmp
-Executable: C:\DevAlertDispatcher\crash_debug.bat
-Startup folder: C:\DevAlertDispatcher
-Parameters: ./latestcrashdump/aws_demos.elf ./latestcrashdump/latest.dmp --gdb
+- Extension: dmp
+- Executable: C:\DevAlertDispatcher\crash_debug.bat
+- Startup folder: C:\DevAlertDispatcher
+- Parameters: ./latestcrashdump/aws_demos.elf ./latestcrashdump/latest.dmp --gdb
 
-In general, CrashDebug is called from the GDB client in the following way:
+In general, CrashDebug is called via the GDB client, in the following way:
 
     arm-none-eabi-gdb main.elf -ex "set target-charset ASCII" -ex "target remote | CrashDebug --elf main.elf
 
-But Dispatcher include scripts that take care of this for you. 
+But Dispatcher include scripts that take care of this for you, crash_debug.bat (for Windows) and crash_debug.sh (for Linux). 
 
 Note that CrashDebug is only available for Arm Cortex-M devices, but similar integrations are possible for other processors.
 
