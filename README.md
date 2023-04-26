@@ -56,12 +56,12 @@ The demo includes the TraceRecorder library that produces event traces for Trace
 
 ### Viewing crash dumps with GDB/CrashDebug
 
-Copy the crash_debug.bat or crash_debug.sh script from the <dispatcher>/template directory and update the File Mappin rule for "dmp" so that it is called with the right arguments. For example:
+Copy the crash_debug.bat or crash_debug.sh script from the <dispatcher>/template directory and update the "File Mapping" entry for "dmp" so that it is called with the right arguments. For example:
 - Extension: dmp
 - Executable: C:\DevAlertDispatcher\crash_debug.bat
 - Startup folder: C:\DevAlertDispatcher
-- Parameters: ./latestcrashdump/aws_demos.elf ./latestcrashdump/latest.dmp --gdb
-
+- Parameters: /path/to/firmware-${revision}.elf ${file} --gdb
+ 
 In general, CrashDebug is called via the GDB client, in the following way:
 
     arm-none-eabi-gdb main.elf -ex "set target-charset ASCII" -ex "target remote | CrashDebug --elf main.elf
@@ -85,11 +85,11 @@ This is used in an Eclipse debug configuration of the type "GDB Hardware Debuggi
 - Startup / Initialization commands: "source /path/to/loadcrashdump.cfg"
 - Startup / Other things: All unchecked (don't "load image" or "load symbols", this is done by loadcrashdump.cfg)
 
-Note that this assumes that the elf and dmp files can be found by loadcrashdump.cfg. This example uses a hardcoded folder for this, where the trace and dmp files from Dispatcher are copied by a modified version of the crashdebug script. For example by adding:
+Note that this assumes that the elf and dmp files can be found by loadcrashdump.cfg. This example uses a hardcoded folder for this, where the trace and dmp files from Dispatcher are copied by slightly a modified version of the crashdebug script. For example by adding:
 
     cp %1 ./latestcrashdump/latest.elf
     cp %2 ./latestcrashdump/latest.dmp
-
+ 
 ## Porting / Integration
 
 To port this to another target, you may need to update the following files:
