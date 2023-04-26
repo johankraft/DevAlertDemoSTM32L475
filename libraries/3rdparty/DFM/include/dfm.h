@@ -56,25 +56,19 @@ extern "C" {
 #error DFM_CFG_FIRMWARE_VERSION_MAX_LEN not set in dfmConfig.h!
 #endif
 
-extern char dfmPrintBuffer[128];
-
-#if (DFM_CFG_USE_DEBUG_LOGGING == 1)
-
-	/* Note, DFM_DEBUG_PRINTF must not be used without arguments.
-	It causes a build error if __VA_ARGS__ is empty, due to the comma before it.*/
-	#define DFM_DEBUG_PRINTF(msg, ...) { snprintf(dfmPrintBuffer, sizeof(dfmPrintBuffer), msg, __VA_ARGS__); DFM_DEBUG_PRINT(dfmPrintBuffer); }
-
-#else
-	#define DFM_DEBUG_PRINTF(msg, ...)
+#if DFM_CFG_PRODUCTID == 0
+#error DFM_CFG_PRODUCTID not set in dfmConfig.h!
 #endif
 
-#include "dfmConfig.h"
+#ifndef DFM_ERROR_PRINT
+#define DFM_ERROR_PRINT(msg) 
+#endif
 
-typedef struct{
-	uint8_t data[DFM_CFG_FLASHSTORAGE_SIZE];
-    uint32_t alert_storage_counter;
-} dfmFlashData_t;
-
+#if (DFM_CFG_ENABLE_DEBUG_PRINT == 1)
+#define DFM_DEBUG_PRINT(msg) DFM_ERROR_PRINT(msg)
+#else
+#define DFM_DEBUG_PRINT(msg) ((void)msg)
+#endif
 
 #if ((DFM_CFG_ENABLED) == 1)
 

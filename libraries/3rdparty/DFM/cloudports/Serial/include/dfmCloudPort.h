@@ -9,7 +9,7 @@
 /**
  * @file
  *
- * @brief DFM dummy Cloud port API
+ * @brief DFM serial port Cloud port API
  */
 
 #ifndef DFM_CLOUD_PORT_H
@@ -17,23 +17,36 @@
 
 #include <stdint.h>
 #include <dfmTypes.h>
+#include <dfmCloudPortConfig.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
- * @defgroup dfm_cloud_port_dummy_apis DFM dummy Cloud port API
+ * @defgroup dfm_cloud_port_aws_apis DFM serial port Cloud port API
  * @ingroup dfm_apis
  * @{
  */
+
+/* This will allow DFM to attempt transfers in all situations, hardfaults included */
+#define DFM_CLOUD_PORT_ALWAYS_ATTEMPT_TRANSFER
+
+
+typedef struct{
+	uint32_t startmarker;
+	uint16_t keylen;
+	uint16_t datalen;
+} DfmSerialHeader_t;
 
 /**
  * @brief Cloud port system data
  */
 typedef struct DfmCloudPortData
 {
-	uint32_t dummy;
+	char buf[80];
+	char cKeyBuffer[DFM_CFG_CLOUD_PORT_MAX_TOPIC_SIZE];
+	DfmSerialHeader_t xDfmSerialHeader;
 } DfmCloudPortData_t;
 
 /**

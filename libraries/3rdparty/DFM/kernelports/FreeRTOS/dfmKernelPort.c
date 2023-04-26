@@ -8,7 +8,10 @@
  * FreeRTOS Kernel port
  */
 
-#include "dfm.h"
+#include <dfm.h>
+
+#include <FreeRTOS.h>
+#include <task.h>
 
 #if ((DFM_CFG_ENABLED) >= 1)
 
@@ -22,6 +25,27 @@ DfmResult_t xDfmKernelPortInitialize(DfmKernelPortData_t *pxBuffer)
 	}
 
 	pxKernelPortData = pxBuffer;
+
+	return DFM_SUCCESS;
+}
+
+DfmResult_t xDfmKernelPortGetCurrentTaskName(char** pszTaskName)
+{
+	TaskHandle_t xCurrentTaskHandle = 0;
+	
+	if (pszTaskName == (void*)0)
+	{
+		return DFM_FAIL;
+	}
+	
+	xCurrentTaskHandle = xTaskGetCurrentTaskHandle();
+	
+	if (xCurrentTaskHandle == 0)
+	{
+		return DFM_FAIL;
+	}
+
+	*pszTaskName = pcTaskGetName(xCurrentTaskHandle);
 
 	return DFM_SUCCESS;
 }

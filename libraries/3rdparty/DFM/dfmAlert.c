@@ -8,10 +8,6 @@
  * DFM Alert
  */
 
-
-#include <stdio.h>
-#include <string.h>
-
 #include <dfm.h>
 
 #if ((DFM_CFG_ENABLED) >= 1)
@@ -36,7 +32,10 @@ static DfmResult_t prvStoreAlert(DfmEntryHandle_t xEntryHandle)
 
 static DfmResult_t prvStorePayloadChunk(DfmEntryHandle_t xEntryHandle)
 {
-	return xDfmStorageStorePayloadChunk(xEntryHandle);
+	/* We don't care if payload stuff fails */
+	(void)xDfmStorageStorePayloadChunk(xEntryHandle);
+
+	return DFM_SUCCESS;
 }
 
 static DfmResult_t prvSendAlert(DfmEntryHandle_t xEntryHandle)
@@ -46,130 +45,11 @@ static DfmResult_t prvSendAlert(DfmEntryHandle_t xEntryHandle)
 
 static DfmResult_t prvSendPayloadChunk(DfmEntryHandle_t xEntryHandle)
 {
-	return xDfmCloudSendPayloadChunk(xEntryHandle);
-}
-
-#if (defined(DFM_CFG_SERIAL_UPLOAD_ONLY) && DFM_CFG_SERIAL_UPLOAD_ONLY == 1)
-
-char buf[80];
-
-uint32_t prvPrintDataAsHex(uint8_t* data, int size)
-{
-	uint32_t checksum = 0;
-	int i;
-
-	for (i = 0; i < size; i++)
-	{
-		uint8_t byte = data[i];
-		checksum += byte;
-		snprintf(buf, sizeof(buf), " %02X", (unsigned int)byte);
-
-		if (i % 20 == 0)
-		{
-			DFM_CFG_LOCK_SERIAL();
-			DFM_PRINT_ALERT_DATA(("[[ DATA:"));
-		}
-
-		DFM_PRINT_ALERT_DATA(buf);
-
-		if ( (i+1) % 20 == 0)
-		{
-			DFM_PRINT_ALERT_DATA((" ]]\n"));
-			DFM_CFG_UNLOCK_SERIAL();
-		}
-	}
-
-	if (i % 20 != 0)
-	{
-		DFM_PRINT_ALERT_DATA((" ]]\n"));
-		DFM_CFG_UNLOCK_SERIAL();
-	}
-
-	return checksum;
-}
-
-
-typedef struct{
-	uint32_t startmarker;
-	uint16_t keylen;
-	uint16_t datalen;
-} DfmSerialHeader_t;
-
-char cKeyBuffer[120]; // Key/MQTT topic
-
-DfmSerialHeader_t DfmSerialHeader = {0, 0, 0};
-
-static DfmResult_t prvSerialPortUploadAlert(DfmEntryHandle_t xEntryHandle)
-{
-	uint32_t checksum;
-	uint32_t datalen;
-	void* dataptr;
-
-	if (xEntryHandle == 0)
-	{
-		return DFM_FAIL;
-	}
-
-    if (xDfmEntryGetData(xEntryHandle, &dataptr) == DFM_FAIL)
-    {
-        return DFM_FAIL;
-    }
-
-    if (xDfmEntryGetDataSize(xEntryHandle, &datalen) == DFM_FAIL)
-    {
-        return DFM_FAIL;
-    }
-
-	if (datalen > 0xFFFF)
-	{
-		return DFM_FAIL;
-	}
-
-	// Magic value, also used to reveal data encoding (big/little endian)
-	DfmSerialHeader.startmarker = 0x9FF91AA1;
-
-	DfmSerialHeader.datalen = (uint16_t)datalen;
-
-	/* Clear topic buffer before writing to it. */
-	memset(cKeyBuffer, 0x00, sizeof(cKeyBuffer));
-	DfmSerialHeader.keylen = 0;
-
-	if (xDfmAlertGenerateAlertKey(cKeyBuffer, sizeof(cKeyBuffer), "", xEntryHandle) == DFM_SUCCESS)
-	{
-		DfmSerialHeader.keylen = strnlen(cKeyBuffer, sizeof(cKeyBuffer));
-	}
-    else
-    {
-    	DFM_PRINT_ERROR("DFM Error, could not create topic string!\n");
-    	return DFM_FAIL;
-	}
-
-	DFM_CFG_LOCK_SERIAL();
-	DFM_PRINT_ALERT_DATA("\n[[ DevAlert Data Begins ]]\n");
-	DFM_CFG_UNLOCK_SERIAL();
-
-	checksum = 0; // Make sure to clear this
-	checksum += prvPrintDataAsHex((uint8_t*)&DfmSerialHeader, sizeof(DfmSerialHeader_t));
-	checksum += prvPrintDataAsHex((uint8_t*)cKeyBuffer, DfmSerialHeader.keylen);
-	checksum += prvPrintDataAsHex((uint8_t*)dataptr, DfmSerialHeader.datalen);
-
-	/* Keep outside lock section */
-	snprintf(buf, sizeof(buf), "\n[[ DevAlert Data Ended. Checksum: %d ]]\n\n", (unsigned int)checksum);
-
-	DFM_CFG_LOCK_SERIAL();
-	DFM_PRINT_ALERT_DATA(buf);
-	DFM_CFG_UNLOCK_SERIAL();
+	/* We don't care if payload stuff fails */
+	(void)xDfmCloudSendPayloadChunk(xEntryHandle);
 
 	return DFM_SUCCESS;
 }
-
-
-static DfmResult_t prvSerialPortUploadPayloadChunk(DfmEntryHandle_t xEntryHandle)
-{
-	return prvSerialPortUploadAlert(xEntryHandle);
-}
-
-#endif
 
 DfmResult_t xDfmAlertInitialize(DfmAlertData_t *pxBuffer)
 {
@@ -634,19 +514,6 @@ DfmResult_t xDfmAlertEnd(DfmAlertHandle_t xAlertHandle)
 
 	pxAlert->ulChecksum = prvDfmAlertCalculateChecksum((uint8_t*)pxAlert, sizeof(DfmAlert_t) - sizeof(uint32_t));
 
-#if (defined(DFM_CFG_SERIAL_UPLOAD_ONLY) && DFM_CFG_SERIAL_UPLOAD_ONLY == 1)
-
-	/* Output alert data to serial port using DFM_PRINT_ALERT_DATA */
-	if (prvDfmProcessAlert(prvSerialPortUploadAlert, prvSerialPortUploadPayloadChunk) == DFM_SUCCESS)
-	{
-		prvDfmAlertReset(pxAlert);
-		return DFM_SUCCESS;
-	}
-	return DFM_FAIL;
-
-#endif
-
-
 	/* Try to send */
 	if (prvDfmProcessAlert(prvSendAlert, prvSendPayloadChunk) == DFM_SUCCESS)
 	{
@@ -694,18 +561,6 @@ DfmResult_t xDfmAlertEndOffline(DfmAlertHandle_t xAlertHandle)
 	}
 
 	pxAlert->ulChecksum = prvDfmAlertCalculateChecksum((uint8_t*)pxAlert, sizeof(DfmAlert_t) - sizeof(uint32_t));
-
-#if (defined(DFM_CFG_SERIAL_UPLOAD_ONLY) && DFM_CFG_SERIAL_UPLOAD_ONLY == 1)
-
-	/* Output alert data to serial port using configPRINT_STRING */
-	if (prvDfmProcessAlert(prvSerialPortUploadAlert, prvSerialPortUploadPayloadChunk) == DFM_SUCCESS)
-	{
-		prvDfmAlertReset(pxAlert);
-		return DFM_SUCCESS;
-	}
-	return DFM_FAIL;
-
-#endif
 
 	/* Try to store */
 	if (prvDfmProcessAlert(prvStoreAlert, prvStorePayloadChunk) == DFM_SUCCESS)
@@ -791,7 +646,6 @@ static DfmResult_t prvDfmGetAll(DfmAlertEntryCallback_t xAlertCallback, DfmAlert
 	uint32_t ulAlertId = 0;
 	void* pvBuffer = (void*)0;
 	uint32_t ulBufferSize = 0;
-	uint32_t alertCount = 0;
 
 	if (pxDfmAlertData == (void*)0)
 	{
@@ -863,14 +717,6 @@ static DfmResult_t prvDfmGetAll(DfmAlertEntryCallback_t xAlertCallback, DfmAlert
 				return DFM_FAIL;
 			}
 		}
-
-		alertCount++;
-	}
-
-	if (alertCount == 0)
-	{
-		/* StoragePort had no valid alerts. No obvious error.  */
-		return DFM_NO_ALERTS;
 	}
 
 	return DFM_SUCCESS;
@@ -974,98 +820,6 @@ static DfmResult_t prvDfmProcessAlert(DfmAlertEntryCallback_t xAlertCallback, Df
 
 			ulOffset += ulChunkSize;
 		}
-	}
-
-	return DFM_SUCCESS;
-}
-
-DfmResult_t xDfmAlertGenerateAlertKey(char* cTopicBuffer, uint32_t ulBufferSize, const char* szMQTTPrefix, DfmEntryHandle_t xEntryHandle)
-{
-	const char* szSessionId = (void*)0;
-	const char* szDeviceName = (void*)0;
-	uint32_t ulAlertId = (uint32_t)0;
-	uint16_t usEntryId = (uint16_t)0;
-	uint16_t usType = (uint16_t)0;
-	uint16_t usChunkIndex = (uint16_t)0;
-	uint16_t usChunkCount = (uint16_t)0;
-	int32_t lRetVal;
-
-	if (cTopicBuffer == (void*)0)
-	{
-		return DFM_FAIL;
-	}
-
-	if (ulBufferSize == (uint32_t)0)
-	{
-		return DFM_FAIL;
-	}
-
-	if (xEntryHandle == 0)
-	{
-		return DFM_FAIL;
-	}
-
-	if (xDfmEntryGetSessionId(xEntryHandle, &szSessionId) == DFM_FAIL)
-	{
-		return DFM_FAIL;
-	}
-
-	if (xDfmEntryGetDeviceName(xEntryHandle, &szDeviceName) == DFM_FAIL)
-	{
-		return DFM_FAIL;
-	}
-
-	if (xDfmEntryGetAlertId(xEntryHandle, &ulAlertId) == DFM_FAIL)
-	{
-		return DFM_FAIL;
-	}
-
-	if (xDfmEntryGetType(xEntryHandle, &usType) == DFM_FAIL)
-	{
-		return DFM_FAIL;
-	}
-
-	if (xDfmEntryGetEntryId(xEntryHandle, &usEntryId) == DFM_FAIL)
-	{
-		return DFM_FAIL;
-	}
-
-	if (xDfmEntryGetChunkIndex(xEntryHandle, &usChunkIndex) == DFM_FAIL)
-	{
-		return DFM_FAIL;
-	}
-
-	if (xDfmEntryGetChunkCount(xEntryHandle, &usChunkCount) == DFM_FAIL)
-	{
-		return DFM_FAIL;
-	}
-
-	if (szMQTTPrefix == (void*)0)
-	{
-		/* Set it to empty */
-		szMQTTPrefix = "";
-	}
-
-	/* "<PREFIX>DevAlert/<DEVICE_NAME>/<UNIQUE_SESSION_ID>/<TRACE_COUNTER>/<SLICE_ID>-<TOTAL_EXPECTED_SLICES>_<PAYLOAD_TYPE>" */
-	switch (usType)
-	{
-	case DFM_ENTRY_TYPE_ALERT:
-		lRetVal = snprintf(cTopicBuffer, ulBufferSize, "%sDevAlert/%s/%s/%ld/%d-%d_da_header", szMQTTPrefix, szDeviceName, szSessionId, ulAlertId, usChunkIndex, usChunkCount);
-		break;
-	case DFM_ENTRY_TYPE_PAYLOAD_HEADER:
-		lRetVal = snprintf(cTopicBuffer, ulBufferSize, "%sDevAlert/%s/%s/%ld/%d-%d_da_payload%d_header", szMQTTPrefix, szDeviceName, szSessionId, ulAlertId, usChunkIndex, usChunkCount, usEntryId);
-		break;
-	case DFM_ENTRY_TYPE_PAYLOAD:
-		lRetVal = snprintf(cTopicBuffer, ulBufferSize, "%sDevAlert/%s/%s/%ld/%d-%d_da_payload%d", szMQTTPrefix, szDeviceName, szSessionId, ulAlertId, usChunkIndex, usChunkCount, usEntryId);
-		break;
-	default:
-		return DFM_FAIL;
-		break;
-	}
-
-	if ((lRetVal < (int32_t)0) || (lRetVal >= (int32_t)ulBufferSize))
-	{
-		return DFM_FAIL;
 	}
 
 	return DFM_SUCCESS;

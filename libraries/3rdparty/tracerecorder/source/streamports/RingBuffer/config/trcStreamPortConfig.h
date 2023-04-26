@@ -30,8 +30,7 @@ extern "C" {
  * 
  * @brief Defines the size of the ring buffer use for storing trace events.
  */
-#include "dfmConfig.h"
-#define TRC_CFG_STREAM_PORT_BUFFER_SIZE DFM_CFG_TRACEBUFFER_SIZE
+#define TRC_CFG_STREAM_PORT_BUFFER_SIZE 1500
 
 /**
  * @def TRC_CFG_STREAM_PORT_BUFFER_MODE

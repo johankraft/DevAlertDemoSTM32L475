@@ -272,7 +272,7 @@ DfmResult_t xDfmCloudPortSend(DfmEntryHandle_t xEntryHandle)
 
     /* Clear topic buffer before writing to it. */
     memset(cTopicBuffer, 0x00, sizeof(cTopicBuffer));
-    if (xDfmAlertGenerateAlertKey(cTopicBuffer, sizeof(cTopicBuffer), DFM_CFG_MQTT_PREFIX, xEntryHandle) == DFM_FAIL)
+    if (xDfmCloudGenerateMQTTTopic(cTopicBuffer, sizeof(cTopicBuffer), DFM_CFG_MQTT_PREFIX, xEntryHandle) == DFM_FAIL)
     {
         return DFM_FAIL;
     }
@@ -304,7 +304,6 @@ DfmResult_t xDfmCloudPortSend(DfmEntryHandle_t xEntryHandle)
 
     if (xResult != MQTTSuccess)
     {
-    	DFM_PRINT_ERROR("MQTT_Publish FAILED\n");
         xStatus = DFM_FAIL;
     }
 

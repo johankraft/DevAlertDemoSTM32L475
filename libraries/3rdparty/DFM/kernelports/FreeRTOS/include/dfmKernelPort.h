@@ -47,6 +47,16 @@ typedef struct DfmKernelPortData
  */
 DfmResult_t xDfmKernelPortInitialize(DfmKernelPortData_t* pxBuffer);
 
+/**
+ * @brief Retrieves the current task
+ *
+ * @param[in] ppvTask Pointer where current task will be written.
+ *
+ * @retval DFM_FAIL Failure
+ * @retval DFM_SUCCESS Success
+ */
+DfmResult_t xDfmKernelPortGetCurrentTaskName(char** pszTaskName);
+
 /** @} */
 
 #ifdef __cplusplus

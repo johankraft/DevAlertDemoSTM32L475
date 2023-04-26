@@ -10,29 +10,29 @@
 
 #include <CrashCatcher.h>
 #include <string.h>
-#include "dfm.h"
-#include "dfmCrashCatcher.h"
-#include "CrashCatcherPriv.h"
+#include <dfm.h>
+#include <dfmCrashCatcher.h>
+#include <CrashCatcherPriv.h>
 
 #if ((DFM_CFG_ENABLED) >= 1)
 
-#if ((CRASH_ADD_TRACE) >= 1)
-#include "trcRecorder.h"
+#if ((DFM_CFG_CRASH_ADD_TRACE) >= 1)
+#include <trcRecorder.h>
 static void prvAddTracePayload();
 #endif
 
 /* See https://developer.arm.com/documentation/dui0552/a/cortex-m3-peripherals/system-control-block/configurable-fault-status-register*/
 #define ARM_CORTEX_M_CFSR_REGISTER *(uint32_t*)0xE000ED28
 
-DfmAlertHandle_t xAlertHandle;
-
-uint8_t dfmAlertStarted = 0;
+static DfmAlertHandle_t xAlertHandle = 0;
 
 dfmTrapInfo_t dfmTrapInfo = {-1, NULL, NULL, -1};
 
-TraceStringHandle_t TzUserEventChannel = NULL;
+#if ((DFM_CFG_CRASH_ADD_TRACE) >= 1)
+static TraceStringHandle_t TzUserEventChannel = NULL;
+#endif
 
-// TODO: Better to use a random number here, so it is harder to spoof?
+// TODO: Use a random number here instead? That would make it harder for stack smashing attack to spoof the value
 void *__stack_chk_guard = (void *)0xdeadbeef;
 
 static uint8_t* ucBufferPos;
@@ -43,31 +43,59 @@ static void dumpWords(const uint32_t* pMemory, size_t elementCount);
 
 uint32_t stackPointer = 0;
 
+/* Used for snprintf calls */
+char cDfmPrintBuffer[128];
+
+static char* prvGetFileNameFromPath(char* szPath)
+{
+	return strrchr(szPath, '/')+1; /* +1 to skip the last '/' character */
+}
+
+static uint32_t prvCalculateChecksum(char *ptr, size_t maxlen)
+{
+	uint32_t chksum = 0;
+	int i = 0;
+
+	if (ptr == NULL)
+	{
+		return 0;
+	}
+
+	while ((ptr[i] != (char)0) && (i < maxlen))
+	{
+		chksum += (uint32_t)ptr[i];
+		i++;
+	}
+
+	return chksum;
+}
+
 const CrashCatcherMemoryRegion* CrashCatcher_GetMemoryRegions(void)
 {
-    static CrashCatcherMemoryRegion regions[] = {
-    		{0xFFFFFFFF, 0xFFFFFFFF, CRASH_CATCHER_BYTE},
-    		{CRASH_MEM_REGION1_START, CRASH_MEM_REGION1_START + CRASH_MEM_REGION1_SIZE, CRASH_CATCHER_BYTE},
+	static CrashCatcherMemoryRegion regions[] = {
+			{0xFFFFFFFF, 0xFFFFFFFF, CRASH_CATCHER_BYTE},
+			{CRASH_MEM_REGION1_START, CRASH_MEM_REGION1_START + CRASH_MEM_REGION1_SIZE, CRASH_CATCHER_BYTE},
 			{CRASH_MEM_REGION2_START, CRASH_MEM_REGION2_START + CRASH_MEM_REGION2_SIZE, CRASH_CATCHER_BYTE},
 			{CRASH_MEM_REGION3_START, CRASH_MEM_REGION3_START + CRASH_MEM_REGION3_SIZE, CRASH_CATCHER_BYTE}
-    };
+	};
 
-    /* Region 0 is reserved, always relative to the current stack pointer */
+	/* Region 0 is reserved, always relative to the current stack pointer */
 	regions[0].startAddress = stackPointer;
-    regions[0].endAddress = stackPointer + CRASH_STACK_CAPTURE_SIZE;
+	regions[0].endAddress = stackPointer + CRASH_STACK_CAPTURE_SIZE;
 
-    return regions;
+	return regions;
 }
 
 void CrashCatcher_DumpStart(const CrashCatcherInfo* pInfo)
 {
 	int alerttype;
-	char* file_without_path = NULL;
+	char* szFileName = (void*)0;
+	char* szCurrentTaskName = (void*)0;
 
 	stackPointer = pInfo->sp;
 
-#if ((CRASH_ADD_TRACE) >= 1)
-	if (TzUserEventChannel == NULL)
+#if ((DFM_CFG_CRASH_ADD_TRACE) >= 1)
+	if (TzUserEventChannel == 0)
 	{
 		xTraceStringRegister("ALERT", &TzUserEventChannel);
 	}
@@ -75,10 +103,7 @@ void CrashCatcher_DumpStart(const CrashCatcherInfo* pInfo)
 
 	ucBufferPos = &ucDataBuffer[0];
 
-	/* Store the alert, send after restart */
-    xDfmSessionSetCloudStrategy(DFM_CLOUD_STRATEGY_OFFLINE);
-
-    DFM_DEBUG_PRINT("\nDFM Alert\n");
+	DFM_DEBUG_PRINT("\nDFM Alert\n");
 
 	if (dfmTrapInfo.alertType >= 0)
 	{
@@ -88,34 +113,35 @@ void CrashCatcher_DumpStart(const CrashCatcherInfo* pInfo)
 		 * dfmTrapInfo.file = __FILE__ (full path, extract the filename from this!)
 		 * dfmTrapInfo.line = __LINE__ (integer)
 		 * */
-		file_without_path = DFM_CFG_GET_FILENAME_FROM_PATH(dfmTrapInfo.file);
-		snprintf(dfmPrintBuffer, sizeof(dfmPrintBuffer), "%s at %s:%u", dfmTrapInfo.message, file_without_path, dfmTrapInfo.line);
+		szFileName = prvGetFileNameFromPath(dfmTrapInfo.file);
+		snprintf(cDfmPrintBuffer, sizeof(cDfmPrintBuffer), "%s at %s:%u", dfmTrapInfo.message, szFileName, dfmTrapInfo.line);
 
 		DFM_DEBUG_PRINT("  DFM_TRAP(): ");
-		DFM_DEBUG_PRINT(dfmPrintBuffer);
+		DFM_DEBUG_PRINT(cDfmPrintBuffer);
 		DFM_DEBUG_PRINT("\n");
 
 		alerttype = dfmTrapInfo.alertType;
-
 	}
 	else
 	{
 		DFM_DEBUG_PRINT("  DFM: Hard fault\n");
 
-		snprintf(dfmPrintBuffer, sizeof(dfmPrintBuffer), "Hard fault exception (CFSR reg: 0x%08X)", (unsigned int)ARM_CORTEX_M_CFSR_REGISTER);
+		snprintf(cDfmPrintBuffer, sizeof(cDfmPrintBuffer), "Hard fault exception (CFSR reg: 0x%08X)", (unsigned int)ARM_CORTEX_M_CFSR_REGISTER);
 
 		alerttype = DFM_TYPE_HARDFAULT;
 	}
 
-	if (xDfmAlertBegin(alerttype, dfmPrintBuffer, &xAlertHandle) == DFM_SUCCESS)
+	if (xDfmAlertBegin(alerttype, cDfmPrintBuffer, &xAlertHandle) == DFM_SUCCESS)
 	{
-		xDfmAlertAddSymptom(xAlertHandle, DFM_SYMPTOM_CURRENT_TASK, DFM_CFG_GET_TASKNAME_CHECKSUM);
+		(void)xDfmKernelPortGetCurrentTaskName(&szCurrentTaskName);
+
+		xDfmAlertAddSymptom(xAlertHandle, DFM_SYMPTOM_CURRENT_TASK, prvCalculateChecksum(szCurrentTaskName, 32));
 		xDfmAlertAddSymptom(xAlertHandle, DFM_SYMPTOM_STACKPTR, pInfo->sp);
 
 		if (dfmTrapInfo.alertType >= 0)
 		{
 			/* On DFM_TRAP */
-			xDfmAlertAddSymptom(xAlertHandle, DFM_SYMPTOM_FILE, DFM_CFG_GET_FILENAME_CHECKSUM(file_without_path));
+			xDfmAlertAddSymptom(xAlertHandle, DFM_SYMPTOM_FILE, prvCalculateChecksum(szFileName, 32));
 			xDfmAlertAddSymptom(xAlertHandle, DFM_SYMPTOM_LINE, dfmTrapInfo.line);
 		}
 		else
@@ -129,12 +155,10 @@ void CrashCatcher_DumpStart(const CrashCatcherInfo* pInfo)
 			 *****************************************************************/
 		}
 
-#if ((CRASH_ADD_TRACE) >= 1)
-		xTracePrint(TzUserEventChannel, dfmPrintBuffer);
+#if ((DFM_CFG_CRASH_ADD_TRACE) >= 1)
+		xTracePrint(TzUserEventChannel, cDfmPrintBuffer);
 		prvAddTracePayload();
 #endif
-
-		dfmAlertStarted = 1;
 		DFM_DEBUG_PRINT("  DFM: Storing the alert.\n");
 	}
 	else
@@ -145,30 +169,29 @@ void CrashCatcher_DumpStart(const CrashCatcherInfo* pInfo)
 
 	dfmTrapInfo.alertType = -1;
 	dfmTrapInfo.message = NULL;
-
 }
 
-#if ((CRASH_ADD_TRACE) >= 1)
+#if ((DFM_CFG_CRASH_ADD_TRACE) >= 1)
 static void prvAddTracePayload()
 {
-    char* szName;
-    void* pvBuffer = (void*)0;
-    uint32_t ulBufferSize = 0;
-    if (TRC_CFG_RECORDER_MODE == TRC_RECORDER_MODE_STREAMING)
-    {
-        szName = "dfm_trace.psfs";
-    }
-    else if (TRC_CFG_RECORDER_MODE == TRC_RECORDER_MODE_SNAPSHOT)
-    {
-        szName = "dfm_trace.trc";
-    }
+	char* szName;
+	void* pvBuffer = (void*)0;
+	uint32_t ulBufferSize = 0;
+	if (TRC_CFG_RECORDER_MODE == TRC_RECORDER_MODE_STREAMING)
+	{
+		szName = "dfm_trace.psfs";
+	}
+	else if (TRC_CFG_RECORDER_MODE == TRC_RECORDER_MODE_SNAPSHOT)
+	{
+		szName = "dfm_trace.trc";
+	}
 
-    if (xTraceIsRecorderEnabled() == 1)
-    {
-        xTraceDisable();
-    }
-    xTraceGetEventBuffer(&pvBuffer, &ulBufferSize);
-    xDfmAlertAddPayload(xAlertHandle, pvBuffer, ulBufferSize, szName);
+	if (xTraceIsRecorderEnabled() == 1)
+	{
+		xTraceDisable();
+	}
+	xTraceGetEventBuffer(&pvBuffer, &ulBufferSize);
+	xDfmAlertAddPayload(xAlertHandle, pvBuffer, ulBufferSize, szName);
 }
 #endif
 
@@ -180,7 +203,7 @@ void CrashCatcher_DumpMemory(const void* pvMemory, CrashCatcherElementSizes elem
 	if (g_crashCatcherStack[0] != CRASH_CATCHER_STACK_SENTINEL)
 	{
 		/* Always try to print this error. But it might actually not print since the memory has been corrupted. */
-		DFM_PRINT_ERROR("DFM: ERROR, stack overflow in CrashCatcher, see comment in dfmCrashCatcher.c\n");
+		DFM_ERROR_PRINT("DFM: ERROR, stack overflow in CrashCatcher, see comment in dfmCrashCatcher.c\n");
 
 		/**********************************************************************************************************
 
@@ -199,20 +222,18 @@ void CrashCatcher_DumpMemory(const void* pvMemory, CrashCatcherElementSizes elem
 	if (elementCount == 0)
 	{
 		/* May happen if CRASH_MEM_REGION<X>_SIZE is set to 0 by mistake (e.g. if using 0 instead of 0xFFFFFFFF for CRASH_MEM_REGION<X>_START on unused slots. */
-		DFM_PRINT_ERROR("DFM: Warning, memory region size is zero!\n");
+		DFM_ERROR_PRINT("DFM: Warning, memory region size is zero!\n");
 		return;
 	}
 
-	DFM_DEBUG_PRINTF("  Dumping %d bytes to ucDataBuffer. ", (elementCount* elementSize));
+	switch (elementSize)
+	{
 
-    switch (elementSize)
-    {
-
-    	case CRASH_CATCHER_BYTE:
+		case CRASH_CATCHER_BYTE:
 
 			if ( current_usage + elementCount >= CRASH_DUMP_BUFFER_SIZE)
 			{
-				DFM_PRINT_ERROR("\nDFM: Error, ucDataBuffer not large enough!\n\n");
+				DFM_ERROR_PRINT("\nDFM: Error, ucDataBuffer not large enough!\n\n");
 				return;
 			}
 
@@ -220,22 +241,22 @@ void CrashCatcher_DumpMemory(const void* pvMemory, CrashCatcherElementSizes elem
 			ucBufferPos += elementCount;
 			break;
 
-    	case CRASH_CATCHER_HALFWORD:
+		case CRASH_CATCHER_HALFWORD:
 
 			if ( current_usage + elementCount*2 >= CRASH_DUMP_BUFFER_SIZE)
 			{
-				DFM_PRINT_ERROR("\nDFM: Error, ucDataBuffer not large enough!\n\n");
+				DFM_ERROR_PRINT("\nDFM: Error, ucDataBuffer not large enough!\n\n");
 				return;
 			}
 			dumpHalfWords(pvMemory, elementCount);
 
 			break;
 
-    	case CRASH_CATCHER_WORD:
+		case CRASH_CATCHER_WORD:
 
 			if ( current_usage + elementCount*4 >= CRASH_DUMP_BUFFER_SIZE)
 			{
-				DFM_PRINT_ERROR("\nDFM: Error, ucDataBuffer not large enough!\n\n");
+				DFM_ERROR_PRINT("\nDFM: Error, ucDataBuffer not large enough!\n\n");
 				return;
 			}
 
@@ -243,70 +264,74 @@ void CrashCatcher_DumpMemory(const void* pvMemory, CrashCatcherElementSizes elem
 
 			break;
 
-    	default:
-    		DFM_PRINT_ERROR("\nDFM: Error, unhandled case!\n\n");
-    		break;
-    }
-
-    DFM_DEBUG_PRINTF(" OK. Usage now %u/%u bytes\n", ucBufferPos - ucDataBuffer, CRASH_DUMP_BUFFER_SIZE);
+		default:
+			DFM_ERROR_PRINT("\nDFM: Error, unhandled case!\n\n");
+			break;
+	}
 }
 
 static void dumpHalfWords(const uint16_t* pMemory, size_t elementCount)
 {
-    size_t i;
-    for (i = 0 ; i < elementCount ; i++)
-    {
-        uint16_t val = *pMemory++;
-        memcpy((void*)ucBufferPos, &val, sizeof(val));
-        ucBufferPos += sizeof(val);
-    }
+	size_t i;
+	for (i = 0 ; i < elementCount ; i++)
+	{
+		uint16_t val = *pMemory++;
+		memcpy((void*)ucBufferPos, &val, sizeof(val));
+		ucBufferPos += sizeof(val);
+	}
 }
 
 static void dumpWords(const uint32_t* pMemory, size_t elementCount)
 {
-    size_t i;
-    for (i = 0 ; i < elementCount ; i++)
-    {
-        uint32_t val = *pMemory++;
-        memcpy((void*)ucBufferPos, &val, sizeof(val));
-        ucBufferPos += sizeof(val);
-    }
+	size_t i;
+	for (i = 0 ; i < elementCount ; i++)
+	{
+		uint32_t val = *pMemory++;
+		memcpy((void*)ucBufferPos, &val, sizeof(val));
+		ucBufferPos += sizeof(val);
+	}
 }
 
 CrashCatcherReturnCodes CrashCatcher_DumpEnd(void)
 {
-    if (dfmAlertStarted)
-    {
-        uint32_t size = (uint32_t)ucBufferPos - (uint32_t)ucDataBuffer;
-        if (xDfmAlertAddPayload(xAlertHandle, ucDataBuffer, size, CRASH_DUMP_NAME) == DFM_SUCCESS)
-        {
-        	DFM_DEBUG_PRINT("  DFM: Crash dump stored.\n");
-        }
-        else
-        {
-        	DFM_PRINT_ERROR("  DFM: Failed storing crash dump.\n");
-        }
+	if (xAlertHandle != 0)
+	{
+		uint32_t size = (uint32_t)ucBufferPos - (uint32_t)ucDataBuffer;
+		if (xDfmAlertAddPayload(xAlertHandle, ucDataBuffer, size, CRASH_DUMP_NAME) == DFM_SUCCESS)
+		{
+			DFM_DEBUG_PRINT("  DFM: Crash dump stored.\n");
+		}
+		else
+		{
+			DFM_ERROR_PRINT("  DFM: Failed storing crash dump.\n");
+		}
 
-        if (xDfmAlertEndOffline(xAlertHandle) == DFM_SUCCESS)
-        {
-        	DFM_DEBUG_PRINT("  DFM: Alert stored OK.\n");
-        }
-        else
-        {
-        	DFM_PRINT_ERROR("  DFM: Failed storing alert.\n");
-        }
+#ifdef DFM_CLOUD_PORT_ALWAYS_ATTEMPT_TRANSFER
+		/* The cloud port has indicated it is always OK to attempt to transfer */
+		if (xDfmAlertEnd(xAlertHandle) == DFM_SUCCESS)
+#else
+		/* Cloud port transfer cannot be trusted, so we only attempt to store it */
+		if (xDfmAlertEndOffline(xAlertHandle) == DFM_SUCCESS)
+#endif
+		{
+			DFM_DEBUG_PRINT("  DFM: Alert stored OK.\n");
+		}
+		else
+		{
+			DFM_ERROR_PRINT("  DFM: Failed storing alert.\n");
+		}
 
-    }
+	}
 
-    CRASH_FINALIZE();
-    return CRASH_CATCHER_EXIT;
+	CRASH_FINALIZE();
+	return CRASH_CATCHER_EXIT;
 }
 
 
 /* Called by gcc stack-checking code when using the gcc option -fstack-protector-strong */
 void __stack_chk_fail(void)
 {
-    // If this happens, the stack has been corrupted by the previous function in the call stack.
+	// If this happens, the stack has been corrupted by the previous function in the call stack.
 	// Note that the exact location of the stack corruption is not known, since detected when exiting the function.
 	DFM_TRAP(DFM_TYPE_STACK_CHK_FAILED, "Stack corruption detected");
 }

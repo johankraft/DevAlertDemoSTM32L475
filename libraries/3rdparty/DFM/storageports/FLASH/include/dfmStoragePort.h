@@ -17,6 +17,7 @@
 
 #include <stdint.h>
 #include <dfmConfig.h>
+#include <dfmStoragePortConfig.h>
 #include <dfmTypes.h>
 
 #if (defined(DFM_CFG_ENABLED) && (DFM_CFG_ENABLED >= 1))

@@ -6,10 +6,20 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/**
+ * @file
+ *
+ * @brief DFM Codes
+ */
 
-#ifndef __DFM_CODES_H__
-#define __DFM_CODES_H__
+/**
+ * @defgroup dfm_codes DFM Codes
+ * @ingroup dfm_apis
+ * @{
+ */
 
+#ifndef DFM_CODES_H
+#define DFM_CODES_H
 /* Alert Types */
 /* The following Alert Types are published and will not change. */
 #define DFM_TYPE_STACK_CHK_FAILED (8) /* Stack corrupted */
@@ -32,5 +42,6 @@
 #define DFM_SYMPTOM_FILE (2) /* File */
 #define DFM_SYMPTOM_CURRENT_TASK (1) /* Current Task */
 
+/** @} */
 
-#endif /* __DFM_CODES_H__ */
+#endif

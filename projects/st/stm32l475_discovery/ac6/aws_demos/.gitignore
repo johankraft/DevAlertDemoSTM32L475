@@ -4,3 +4,4 @@ Debug
 /Debug (don't rebuild makefiles)/
 /Default/
 /Quick/
+/Debug-SerialOnly/

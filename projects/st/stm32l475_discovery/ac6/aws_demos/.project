@@ -571,11 +571,6 @@
 			<locationURI>PARENT-5-PROJECT_LOC/libraries/3rdparty/DFM/dfmCloud.c</locationURI>
 		</link>
 		<link>
-			<name>libraries/3rdparty/DFM/dfmCloudPort.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/libraries/3rdparty/DFM/kernelports/FreeRTOS/cloudports/AWS_MQTT/dfmCloudPort.c</locationURI>
-		</link>
-		<link>
 			<name>libraries/3rdparty/DFM/dfmCrashCatcher.c</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/libraries/3rdparty/DFM/dfmCrashCatcher.c</locationURI>
@@ -739,11 +734,6 @@
 			<name>freertos_kernel/portable/GCC/ARM_CM4F/portmacro.h</name>
 			<type>1</type>
 			<locationURI>AWS_IOT_MCU_ROOT/freertos_kernel/portable/GCC/ARM_CM4F/portmacro.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/3rdparty/DFM/config/dfmCloudPortConfig.h</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/libraries/3rdparty/DFM/kernelports/FreeRTOS/cloudports/AWS_MQTT/config/dfmCloudPortConfig.h</locationURI>
 		</link>
 		<link>
 			<name>libraries/3rdparty/DFM/config/dfmConfig.h</name>
@@ -1879,6 +1869,36 @@
 			<name>vendors/st/stm32l475_discovery/STM32L4xx_HAL_Driver/stm32l4xx_hal_uart_ex.c</name>
 			<type>1</type>
 			<locationURI>AWS_IOT_MCU_ROOT/vendors/st/stm32l475_discovery/STM32L4xx_HAL_Driver/stm32l4xx_hal_uart_ex.c</locationURI>
+		</link>
+		<link>
+			<name>libraries/3rdparty/DFM/cloudports/AWS/dfmCloudPort.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/libraries/3rdparty/DFM/kernelports/FreeRTOS/cloudports/AWS_MQTT/dfmCloudPort.c</locationURI>
+		</link>
+		<link>
+			<name>libraries/3rdparty/DFM/cloudports/AWS/dfmCloudPort.h</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/libraries/3rdparty/DFM/kernelports/FreeRTOS/cloudports/AWS_MQTT/include/dfmCloudPort.h</locationURI>
+		</link>
+		<link>
+			<name>libraries/3rdparty/DFM/cloudports/AWS/dfmCloudPortConfig.h</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/libraries/3rdparty/DFM/kernelports/FreeRTOS/cloudports/AWS_MQTT/config/dfmCloudPortConfig.h</locationURI>
+		</link>
+		<link>
+			<name>libraries/3rdparty/DFM/cloudports/Serial/dfmCloudPort.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/libraries/3rdparty/DFM/cloudports/Serial/dfmCloudPort.c</locationURI>
+		</link>
+		<link>
+			<name>libraries/3rdparty/DFM/cloudports/Serial/dfmCloudPort.h</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/libraries/3rdparty/DFM/cloudports/Serial/include/dfmCloudPort.h</locationURI>
+		</link>
+		<link>
+			<name>libraries/3rdparty/DFM/cloudports/Serial/dfmCloudPortConfig.h</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/libraries/3rdparty/DFM/cloudports/Serial/config/dfmCloudPortConfig.h</locationURI>
 		</link>
 		<link>
 			<name>libraries/3rdparty/mbedtls/include/mbedtls/aes.h</name>

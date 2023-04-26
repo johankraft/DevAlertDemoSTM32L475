@@ -426,27 +426,15 @@ void vApplicationDaemonTaskStartupHook( void )
                         &xBhjHandle );      /* Used to pass out the created task's handle. */
 
 
+            configPRINTF(("DFM: Attempting to send any stored alerts.\n\n"));
+
             /* Try sending any stored alerts from a prior crash */
-            dfmResult = xDfmAlertSendAll();
+            xDfmAlertSendAll();
 
-            if ((dfmResult == DFM_FAIL) || (dfmResult == DFM_NO_ALERTS))
-            {
-                configPRINTF(("DFM: No stored alerts.\n\n"));
-            }
-            else if (dfmResult == DFM_SUCCESS)
-            {
-            	configPRINTF(("DFM: Found and uploaded alerts.\n\n"));
+            /* Delete any stored events */
+            xDfmStoragePortReset();
 
-            	/* Erase stored alerts to avoid they are sent repeatedly */
-            	xDfmStoragePortReset();
-
-            }
-            else
-            {
-            	configPRINTF(("DFM: Unexpected return code (%d)!\n\n", dfmResult));
-            }
-
-            // IS THIS NEEDED?
+            // IS THIS NEEDED? TODO: TEST WITHOUT THIS
             xDfmSessionSetStorageStrategy(DFM_STORAGE_STRATEGY_OVERWRITE);
 
             BSP_LED_On( LED_GREEN );
@@ -777,57 +765,6 @@ void vSTM32L475getc( void * pv,
     } while (!done);
 }
 /*-----------------------------------------------------------*/
-
-#if (DFM_CFG_SERIAL_UPLOAD_ONLY == 1)
-#if (TEST_SERIAL_DECODING == 1)
-
-extern uint32_t prvPrintDataAsHex(uint8_t* data, int size);
-
-char data1[] = "ABCDEF";
-char data2[] = "0123456789ABCDE_JKJHGs";
-char data3[] = "0123456789ABCDE_0123456789ABCDE_0123456789ABCDE_0123456789ABCDE_0123456789ABCDE_0123456789ABCDE_0123456789ABCDE_0123456789ABCDE";
-
-/* Test of the basic decoding in devalertserial.py */
-void testSerialUpload(void)
-{
-	char buf[10];
-
-	while (1)
-	{
-		int checksum = 0;
-		int sel = 0;
-
-		DFM_PRINT_ALERT_DATA("\n[[ DevAlert Data Begins ]]\n");
-		checksum = 0; // Make sure to clear this
-
-		sel = getHardwareRand() % 3;
-
-		switch(sel)
-		{
-
-		case 0:	checksum += prvPrintDataAsHex((uint8_t*)&data1, strlen(data1));
-				break;
-
-		case 1: checksum += prvPrintDataAsHex((uint8_t*)&data2, strlen(data2));
-				break;
-
-		case 2: checksum += prvPrintDataAsHex((uint8_t*)&data3, strlen(data3));
-				break;
-		}
-
-		DFM_PRINT_ALERT_DATA("\n[[ DevAlert Data Ended. Checksum: ");
-		snprintf(buf, sizeof(buf), "%d", (unsigned int)checksum);
-		DFM_PRINT_ALERT_DATA(buf);
-		DFM_PRINT_ALERT_DATA(" ]]\n");
-
-		for (volatile int i=0; i < 1000000; i++);
-
-	}
-
-}
-
-#endif
-#endif
 
 /**
  * @brief Initializes the board.

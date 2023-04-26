@@ -27,11 +27,6 @@ extern "C" {
 /**
  * @brief The firmware version. This needs to be set to differentiate the alerts between versions.
  */
-
-// The revision/version name is provided to DevAlert Dispatcher when downloading an alert. This is used in the "fetch_elf_file.bat" script to fetch the right elf file from the "elf-files" folder.
-//#define DFM_CFG_FIRMWARE_VERSION "aws_demos-2023-04-21"
-
-// This revision name has a special meaning in the "fetch_elf_file.bat" script. When using this label, it loads the latest ELF file from eclipse instead of using an archived elf file.
 #define DFM_CFG_FIRMWARE_VERSION "v1.0-LatestDevBuild"
 
 /**
@@ -39,72 +34,16 @@ extern "C" {
  */
 #define DFM_CFG_PRODUCTID (12)
 
-#if DFM_CFG_PRODUCTID == 0
-#error "DFM_CFG_PRODUCTID needs to be set."
-#endif
+/* Enable diagnostic messages from DFM_DEBUG(...). Will use DFM_ERROR to output debug information. */
+#define DFM_CFG_ENABLE_DEBUG_PRINT 1
 
-
-/* How many bytes to dump from the stack (relative to current stack pointer)*/
-#define DFM_CFG_STACKDUMP_SIZE 350
-
-/* How long trace to keep for Tracealyzer */
-#define DFM_CFG_TRACEBUFFER_SIZE (1500)
-
-/* How much space is needed to store the alert to flash.
- * This should be a multiple of the flash page size (= 2048 on STM32L475). */
-#define DFM_CFG_FLASHSTORAGE_SIZE (3 * 2048)
-
-/* If 1, the alert is not sent to the storage or cloud, but instead written to the serial port using DFM_PRINT_ALERT_DATA.*/
-#define DFM_CFG_SERIAL_UPLOAD_ONLY 0
-
-/* If to print diagnostic messages in the console. Any errors are printed in either case. */
-#define DFM_CFG_USE_DEBUG_LOGGING 0
-
-/* Prototype for the print function */
 extern void vMainUARTPrintString( char * pcString );
 
-/* Update this to match your serial console print function */
-#define DFM_PRINT_ERROR(msg) vMainUARTPrintString(msg)
+/* Add your serial console print string function here (full printf not needed, only "print") */
+#define DFM_CFG_PRINT(msg) vMainUARTPrintString(msg)
 
-#include "FreeRTOS.h"
-
-/* Should not be needed as prints are from exception handler */
-#define DFM_CFG_LOCK_SERIAL()  /* vTaskSuspendAll() */
-#define DFM_CFG_UNLOCK_SERIAL()  /* xTaskResumeAll() */
-
-/* Update this to match your serial console print function - Make sure to avoid task-switches here! */
-#define DFM_PRINT_ALERT_DATA(msg) vMainUARTPrintString(msg)
-
-#if (DFM_CFG_USE_DEBUG_LOGGING == 1)
-	/* Update this to match your serial printf function */
-	#define DFM_DEBUG_PRINT(msg) vMainUARTPrintString(msg)
-#else
-	#define DFM_DEBUG_PRINT(msg)
-#endif
-
-extern uint32_t ucDfmUserChecksum(char *ptr, size_t maxlen);
-
-/* This function can be modified if another RTOS is used, see dfmUser.c */
-extern char* xcDfmUserGetTaskName(void);
-
-/**
- * Provides the filename (e.g "foo.c") from a full file name with path.
- * This is used for __FILE__ strings (__FILENAME__ isn't available on all compilers)
- * The "+1" is to exclude the last '/' character.
- */
-#define DFM_CFG_GET_FILENAME_FROM_PATH(str) strrchr(str, '/')+1
-
-/** 
- * @brief Calculates a checksum from __FILE__ strings, where the checksum calculation ends at zero termination. 
- * Max length 256 just in case. This is intended for the DFM symptoms (numerical). 
- * Using the task address as a symptom isn't recommended as it may change in between builds.
- */
-#define DFM_CFG_GET_FILENAME_CHECKSUM(filename) ucDfmUserChecksum(filename, 256)
-
-/**
- * @brief Calculates a checksum from the task name, since symptoms should be numerical (the TCB address may change in between builds). 
- */
-#define DFM_CFG_GET_TASKNAME_CHECKSUM ucDfmUserChecksum(xcDfmUserGetTaskName(), configMAX_TASK_NAME_LEN)
+/* This will be called for errors. Point this to a suitable print function. This will also be used for DFM_DEBUG_PRINT messages. */
+#define DFM_ERROR_PRINT(msg) DFM_CFG_PRINT(msg)
 
 /**
  * @brief The maximum size of a "chunk" that will be stored or sent.
@@ -174,7 +113,6 @@ extern char* xcDfmUserGetTaskName(void);
  *	DFM_DEVICE_NAME_STRATEGY_ONDEVICE	This device knows its' name, get it
  */
 #define DFM_CFG_DEVICENAME_STRATEGY DFM_DEVICE_NAME_STRATEGY_ONDEVICE
-
 
 #ifdef __cplusplus
 }

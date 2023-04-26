@@ -23,6 +23,11 @@
 #define DFM_STORAGE_PORT_ALERT_TYPE		0x34561842
 #define DFM_STORAGE_PORT_PAYLOAD_TYPE	0x82713124
 
+typedef struct{
+	uint8_t data[DFM_CFG_FLASHSTORAGE_SIZE];
+    uint32_t alert_storage_counter;
+} dfmFlashData_t;
+
 dfmFlashData_t dfmFlashData __attribute__( ( section( ".dfm_alert" ), aligned (8) ) ) = { {0}, 0 };
 
 uint32_t ulWrOffset = 0;
@@ -133,12 +138,9 @@ static DfmResult_t prvDfmStoragePortWrite(DfmEntryHandle_t xEntryHandle, uint32_
 	if ( ulWrOffset >= sizeof(dfmFlashData.data))
 	{
 		/* If this happens, you may increase DFM_DEMO_FLASHSTORAGE_SIZE */
-		DFM_PRINT_ERROR("\nDFM: Error - Not enough space in dfmFlashData.data.\n");
-		DFM_DEBUG_PRINTF("  Attempted to write: 0x%08X - 0x%08X (%d bytes)\n", (unsigned int)ulDst, (unsigned int)(ulDst + ulSize), (unsigned int)ulSize);
+		DFM_ERROR_PRINT("\nDFM: Error - Not enough space in dfmFlashData.data.\n");
 		return DFM_FAIL;
 	}
-
-	DFM_DEBUG_PRINTF("  Write: 0x%08X - 0x%08X, bytes written so far: %d\n", (unsigned int)ulDst, (unsigned int)(ulDst + ulSize), (unsigned int)ulWrOffset);
 
 	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
 
@@ -153,8 +155,6 @@ static DfmResult_t prvDfmStoragePortWrite(DfmEntryHandle_t xEntryHandle, uint32_
 DfmResult_t xDfmStoragePortReset(void)
 {
 	DFM_DEBUG_PRINT("xDfmStoragePortReset()\n");
-
-	DFM_DEBUG_PRINTF("  Erase: 0x%08X - 0x%08X (%d)\n", (unsigned int)&dfmFlashData, (unsigned int)((int)&dfmFlashData + sizeof(dfmFlashData)), sizeof(dfmFlashData));
 
 	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
 

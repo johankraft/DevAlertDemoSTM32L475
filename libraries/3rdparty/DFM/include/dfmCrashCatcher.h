@@ -15,12 +15,9 @@
 #ifndef DFM_CRASHCATCHER_H
 #define DFM_CRASHCATCHER_H
 
-#define CRASH_DUMP_NAME         "crash.dmp"
+#include <dfmCrashCatcherConfig.h>
 
-/**
- * @brief If this is set to 1 ít will attempt to also save a trace with the Alert. This requires the Percepio Trace Recorder to also be included in the project.
- */
-#define CRASH_ADD_TRACE	(1)
+#define CRASH_DUMP_NAME "crash.dmp"
 
 /**
  * @brief Should call a function that reboots device
@@ -46,7 +43,7 @@
  * frames are included. Since relative to the current stack pointer, you don't need to
  * specify a stack memory range manually.
  * */
-#include "dfmConfig.h" // For accessing the Demo settings
+#include <dfmConfig.h> // For accessing the Demo settings
 #define CRASH_STACK_CAPTURE_SIZE DFM_CFG_STACKDUMP_SIZE
 
 /* Additional memory ranges to include in the crash dump (e.g. heap memory) */

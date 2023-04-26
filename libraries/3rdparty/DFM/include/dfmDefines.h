@@ -27,7 +27,6 @@
 
 #define DFM_SUCCESS (0u)
 #define DFM_FAIL (1u)
-#define DFM_NO_ALERTS (2u)
 
 #define DFM_ENABLED (0x15152725UL)
 #define DFM_DISABLED (0x71289203UL)

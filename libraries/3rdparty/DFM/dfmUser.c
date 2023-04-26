@@ -12,10 +12,6 @@
 
 #if ((DFM_CFG_ENABLED) >= 1)
 
-
-#include <freertos.h>
-#include <task.h>
-
 #include <stdio.h>
 #include "stm32l4xx.h"
 
@@ -51,7 +47,6 @@ extern unsigned int getHardwareRand(void);
  * If using the current time as Session ID, seconds is sufficient resolution
  * unless a restart and re-initialization may occur faster than that.
  ********************************************************************************************/
-
 DfmResult_t xDfmUserGetUniqueSessionID(char cUniqueSessionIdBuffer[], uint32_t ulSize, uint32_t* pulBytesWritten)
 {
 	*pulBytesWritten = snprintf(cUniqueSessionIdBuffer, ulSize, "%u", getHardwareRand());
@@ -82,54 +77,5 @@ DfmResult_t xDfmUserGetDeviceName(char cDeviceNameBuffer[], uint32_t ulSize, uin
 
 	return DFM_SUCCESS;
 }
-
-
-/*******************************************************************************************
- * xcDfmUserGetTaskName
- *
- * Returns the current task name, used to provide the "current task" symptom.
- ******************************************************************************************/
-char* xcDfmUserGetTaskName(void)
-{
-	TaskHandle_t taskhandle;
-	char* taskname = NULL;
-
-	taskhandle = xTaskGetCurrentTaskHandle();
-
-	if (taskhandle != NULL)
-	{
-		taskname = pcTaskGetName(taskhandle);
-	}
-
-	return taskname;
-}
-
-
-/*******************************************************************************************
- * ucDfmUserChecksum
- *
- * Returns a checksum from the provided string. This is used to calculate "symptom" values
- * from strings such as the current file or task name (symptoms must be uint32_t by design).
- ******************************************************************************************/
-uint32_t ucDfmUserChecksum(char *ptr, size_t maxlen)
-{
-    uint32_t chksum = 0;
-    int i = 0;
-
-    /* Might happen if "get current task" return NULL, i.e. during startup. */
-    if (ptr == NULL)
-    {
-    	return 0;
-    }
-
-    while ((*ptr != '\0') && (i < maxlen))
-    {
-    	chksum += ptr[i];
-        i++;
-    }
-
-    return chksum;
-}
-
 
 #endif
