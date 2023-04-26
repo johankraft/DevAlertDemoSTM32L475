@@ -41,7 +41,7 @@ There are two build configurations:
 
 ## Demo operation
 
-Just start it and it should begin generating errors and alerts randomly. The system is configured to restart after each error/alert.
+Start a debug session in SW4STM32 using the right debug configuration (AWS or Serial) and it should begin generating errors and alerts randomly. The system is configured to restart after each error/alert.
 
 Log in to https://devalert.io and see the reported issues on the Dashboard page.
 
