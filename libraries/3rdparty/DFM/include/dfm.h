@@ -56,7 +56,7 @@ extern "C" {
 #error DFM_CFG_FIRMWARE_VERSION_MAX_LEN not set in dfmConfig.h!
 #endif
 
-#if DFM_CFG_PRODUCTID == 0
+#ifndef DFM_CFG_PRODUCTID
 #error DFM_CFG_PRODUCTID not set in dfmConfig.h!
 #endif
 

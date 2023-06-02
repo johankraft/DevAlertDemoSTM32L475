@@ -31,12 +31,31 @@ extern "C" {
 
 /**
  * @brief An identifier of the product type.
+ * Should be 0 by default, unless the DevAlert account have defined multiple products.
  */
-#define DFM_CFG_PRODUCTID (12)
+#define DFM_CFG_PRODUCTID (0)
+
+/**
+ * @brief Flag for selecting the demo mode. The modes are:
+ *
+ * 0: The demo application will connect to your AWS account (AWS IoT Core/MQTT) over Wifi to upload the Alerts that way.
+ * This requires a DevAlert deployment in your AWS account and a AWS-enabled DevAlert account. Contact support@percepio.com
+ * if you want to try this.
+ *
+ * 1: When enabled, this mode will transmit the Alert data to the host computer using the serial port of the integrated STLINK debugger.
+ * This is intended for initial evaluation of DevAlert, without requiring cloud connectivity in your device.
+ * Host-side tools are available for uploading the data to your DevAlert cloud storage, either an Amazon S3 bucket or a DevAlert evaluation account.
+ *
+ * In the SW4STM32 demo project, this flag is defined in the project settings for each build configuration.
+ */
+#ifndef DFM_CFG_SERIAL_UPLOAD_ONLY
+#define DFM_CFG_SERIAL_UPLOAD_ONLY 1
+#endif
 
 /* Enable diagnostic messages from DFM_DEBUG(...). Will use DFM_ERROR to output debug information. */
 #define DFM_CFG_ENABLE_DEBUG_PRINT 1
 
+/* Make sure the "print" function is defined everywhere it is used. */
 extern void vMainUARTPrintString( char * pcString );
 
 /* Add your serial console print string function here (full printf not needed, only "print") */

@@ -373,6 +373,12 @@ void vApplicationDaemonTaskStartupHook( void )
 
     configPRINTF(("Firmware revision: " DFM_CFG_FIRMWARE_VERSION "\n"));
 
+#if (DFM_CFG_SERIAL_UPLOAD_ONLY == 1)
+    configPRINTF(("Upload method: Serial (upload via host computer)\n"));
+#else
+    configPRINTF(("Upload method: AWS_MQTT (direct upload to cloud)\n"));
+#endif
+
 /* For testing the serial port upload, Wifi/AWS connectivity not needed */
 #if (DFM_CFG_SERIAL_UPLOAD_ONLY != 1)
 
@@ -1144,3 +1150,21 @@ void HAL_TIM_PeriodElapsedCallback( TIM_HandleTypeDef * htim )
     }
 }
 /*-----------------------------------------------------------*/
+
+void vApplicationStackOverflowHook( TaskHandle_t xTask,
+                                     char * pcTaskName )
+ {
+
+ 	// TODO: Add Alert here
+ 	configPRINT_STRING( ( "ERROR: stack overflow\r\n" ) );
+     portDISABLE_INTERRUPTS();
+
+     /* Unused Parameters */
+     ( void ) xTask;
+     ( void ) pcTaskName;
+
+     /* Loop forever */
+     for( ; ; )
+     {
+     }
+ }
