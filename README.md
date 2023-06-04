@@ -34,13 +34,11 @@ The development tool used for this demo project is SW4STM32, available at https:
 To open and build the project in SW4STM32, follow the following steps:
 - Import the files into a new project using "Import...", "Projects from Folder or Archive".
 
-UPDATE THIS - WHAT IS ACTUALLY NEEDED?
+UPDATE THIS - WHAT IS ACTUALLY NEEDED? CAN YOU OMIT THE TOP PROJECT?
 - Select the root folder of this repository and make sure to include all projects found.
 - Right-click on the "aws_demos" project and select "Build project". 
 
 CREATE A DEBUG CONFIGURATION?
-
-and , but it seems the others are needed to the build to work.
 
 To connect to Wifi and AWS IoT Core, you need to update aws_clientcredential.h and aws_clientcredential_keys.h (see \demos\include) as described on https://docs.aws.amazon.com/freertos/latest/userguide/freertos-prereqs.html.
 
