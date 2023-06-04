@@ -33,7 +33,7 @@ extern "C" {
  * @brief An identifier of the product type.
  * Should be 0 by default, unless the DevAlert account have defined multiple products.
  */
-#define DFM_CFG_PRODUCTID (0)
+#define DFM_CFG_PRODUCTID (1)
 
 /**
  * @brief Flag for selecting the demo mode. The modes are:
@@ -66,18 +66,17 @@ extern void vMainUARTPrintString( char * pcString );
 
 /**
  * @brief The maximum size of a "chunk" that will be stored or sent.
+ * If a DFM payload (core dump, trace, etc) is larger than the chunk size, it will be divided into multiple
+ * chunks that are uploaded one by one, and later recombined by the Dispatcher tool.
+ * This setting affects the internal RAM buffer size for alerts and payloads.
+ * Using a smaller chunk size reduces the RAM usage of the DFM library, but also means more uploads.
  */
-#define DFM_CFG_MAX_PAYLOAD_CHUNK_SIZE (1000)
+#define DFM_CFG_MAX_PAYLOAD_CHUNK_SIZE (2000)
 
 /**
  * @brief The maximum length of the device name.
  */
 #define DFM_CFG_DEVICE_NAME_MAX_LEN (32)
-
-/**
- * @brief The size of the buffer to store all entry data.
- */
-#define DFM_CFG_ENTRY_BUFFER_SIZE (1200)
 
 /**
  * @brief The maximum number of payloads that can be attached to an alert.

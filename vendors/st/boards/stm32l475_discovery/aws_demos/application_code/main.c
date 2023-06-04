@@ -399,7 +399,6 @@ void vApplicationDaemonTaskStartupHook( void )
          * microcontroller flash using PKCS#11 interface. This should be replaced
          * by production ready key provisioning mechanism. */
 
-        // Not needed, right? (slow!) Possibly if using a new board, or changing the wifi or certificate?
         vDevModeKeyProvisioning();
 
         if( SYSTEM_Init() == pdPASS )
