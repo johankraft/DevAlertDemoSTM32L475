@@ -225,16 +225,18 @@ For example:
 - Executable: C:\DevAlertDispatcher\crash_debug.bat  // or .sh for Linux
 - Startup folder: C:\DevAlertDispatcher
 - Parameters: /path/to/firmware-${revision}.elf ${file} --gdb
- 
-If you have added the "fetch_elf_file" script to copy the latest files to a hardcoded path (as described in "Providing the ELF File") you can use this hardcoded path in the Parameters field instead.
- 
-This file mapping will start a gdb client with the core dump loaded. You may enter gdb commands to inspect the details.
 
+![DevAlert Dispatcher](https://percepio.com/github_images/DevAlert-Dispatcher.png)
+
+This will start a gdb client with the core dump loaded, like shown below.
+In the screenshot we use a hardcoded path make it easier to load the core dump into an IDE, as described in the next section. 
+ 
 ![gdb view](https://percepio.com/github_images/DevAlert-gdb.png)
 
-You may also load the core dump into your IDE debugger. See "Viewing Core Dumps in an IDE" below.
-	
+
 ### Viewing Core Dumps in an IDE
+
+You may also load the core dump into your IDE debugger. 
 
 ![Eclipse debugger view](https://percepio.com/github_images/DevAlert-Eclipse.png)
 
