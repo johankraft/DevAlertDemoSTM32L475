@@ -154,7 +154,7 @@ The first time, you need to start Dispatcher manually. You should see the follow
 
 ![DevAlert Dispatcher Configuration](https://percepio.com/github_images/DevAlert-Dispatcher-Main.png)
 
-Select the "Provide Settings Button" and configure it as described at https://devalert.io/dispatcher/setup.
+Select the "Provider Settings Button" and configure it as described at https://devalert.io/dispatcher/setup.
 Dispatcher will register itself as a protocol handler in your standard web browser so it is started by the DevAlert download links.
 
 When using a DevAlert evaluation account, enter the following information:
