@@ -5,28 +5,6 @@ This includes the DevAlert target library (DFM) with core dump support and as we
 
 Learn more about the STM32L4 IoT Discovery kit at https://www.st.com/en/evaluation-tools/b-l475e-iot01a.html. 
 
-Important folders and files:
-- /libraries/3rdparty/DFM  -- in particular /config/dfmConfig.h
-- /libraries/3rdparty/tracerecorder  -- in particular /config/trcConfig.h
-- /vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c
-- /vendors/st/boards/stm32l475_discovery/aws_demos/config_files/FreeRTOSConfig.h
-- /demos/include/aws_clientcredential.h
-- /demos/include/aws_clientcredential_keys.h
-
-Examples of how to use the DFM library and TraceRecorder is found in main.c and in FreeRTOSConfig.h.
-
-In main.c, the important parts are:
- - DevAlert test cases, /vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c#L223
- - Tracing a state machine, /vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c#L287
- - Initializing DFM, /vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c#L406
- - Initializing TraceRecorder, /vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c#L789
-
-In FreeRTOSConfig.h, the important parts are:
-
-- #define configASSERT( x ) ... definition and the related #includes (just above)
-- #define configUSE_TRACE_FACILITY 1 -- Needed for recording kernel events
-- #include "trcRecorder.h" -- Needed for recording kernel events
-
 ## Loading the demo project
 
 This demo project is for the SW4STM32 development tools. If you don't already have it installed, get it from https://www.openstm32.org/System%2BWorkbench%2Bfor%2BSTM32.
@@ -84,7 +62,9 @@ Next, we start a debug session. This will also build the project.
 The demo has four intentional errors that are captured and reported using DevAlert.
 These are selected randomly and the device will restart after each reported error.
 
-### Generating Alerts
+To see these alerts in DevAlert and download the diagnostic payload, like core dumps and traces, you need to configure the data upload.
+
+### The Demo Application Code
 
 The demo project generate alerts via DevAlert in two ways. On fault exceptions and by calling the DFM_TRAP() macro explicitly in the code, for example like:
 
@@ -99,7 +79,25 @@ and you find usage examples on several locations in the demo source code, for ex
 
 - /libraries/3rdparty/DFM/dfmCrashCatcher.c#L336
 
-To see these alerts in DevAlert and download the diagnostic payload, like core dumps and traces, you need to configure the data upload.
+To learn how to set up DevAlert for your own project, see the following code examples:
+
+Initialization
+- /vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c
+- /vendors/st/boards/stm32l475_discovery/aws_demos/config_files/FreeRTOSConfig.h
+- /demos/include/aws_clientcredential.h
+- /demos/include/aws_clientcredential_keys.h
+
+DevAlert configuration
+- /libraries/3rdparty/DFM  -- in particular /config/dfmConfig.h
+
+TraceRecorder configuration
+- /libraries/3rdparty/tracerecorder/config  -- in particular /config/trcConfig.h
+
+In FreeRTOSConfig.h, the important parts are:
+
+- #define configASSERT( x ) ... definition and the related #includes (just above)
+- #define configUSE_TRACE_FACILITY 1 -- Needed for recording kernel events
+- #include "trcRecorder.h" -- Needed for recording kernel events
 
 ## Uploading via STLINK VCOM ("Debug-SerialOnly")
 
