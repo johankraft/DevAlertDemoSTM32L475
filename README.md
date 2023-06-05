@@ -144,24 +144,24 @@ The alerts include diagnostic payloads such as traces and core dumps, that expla
 They are downloaded via the DevAlert Dispatcher tool, that needs to be installed locally. This is available at https://devalert.io/dispatcher. 
 Once this is installed and configured, you only need to click on the "payload" links in the DevAlert dashboard. 
 
+![DevAlert Dashboard and Dispatcher](https://percepio.com/github_images/DevAlert-Dashboard-Dispatcher.png)
+
 The Dispatcher tool has two jobs. First, it download the selected payload from the storage you have configured.
 If the payload has been divided into multiple pieced by the DFM library, the Dispatcher tool also recombined the pieces into a single file.
 Finally it launches the right tool, typically with the payload file and ELF file as argument.
 
-Note that the storage is separate from the DevAlert service and can be e.g. your own Amazon S3 bucket.
+The first time, you need to start Dispatcher manually. 
+Dispatcher will register itself as a protocol handler in your standard web browser so it is started by the DevAlert download links.
 
-Dispatcher will register itself as a protocol handler in your standard web browser to handle all "percepio://" links.
-But the first time, you need to start it manually and configure it, as decribed at https://devalert.io/dispatcher/setup.
+Select the "Provide Settings Button" and configure it as decribed at https://devalert.io/dispatcher/setup.
 
-When using a DevAlert evaluation account (and the devalerthttps tool) enter the following information:
+When using a DevAlert evaluation account, enter the following information:
 
 1. Your DevAlert account credentials (username and password) for the DevAlert service. Check the "Remember password" option to avoid having to repeat the password every time.
 
 2. Select "DevAlert Evaluation" as Backend Provider. This selects the Percepio-hosted evaluation account storage. 
 
 3. Enter your DevAlert account credentials (username and password) again for the Backend (storage). This is technically separate from the DevAlert account.
-
-You can inspect the tool mapping and parameters by selecting "Change Dispatcher Settings..." -> File Mappings.
 
 ### Providing the ELF file
 
@@ -226,7 +226,7 @@ For example:
 - Startup folder: (Dispatcher directory)
 - Parameters: /path/to/firmware-${revision}.elf ${file} --gdb
 
-<img src="https://percepio.com/github_images/DevAlert-Dispatcher.png" alt="DevAlert Dispatcher">
+![DevAlert Dispatcher](https://percepio.com/github_images/DevAlert-Dispatcher.png)
 
 This will start a gdb client with the core dump loaded, like shown below.
 In the screenshot we use a hardcoded path make it easier to load the core dump into an IDE, as described in the next section. 
