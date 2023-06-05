@@ -64,41 +64,6 @@ These are selected randomly and the device will restart after each reported erro
 
 To see these alerts in DevAlert and download the diagnostic payload, like core dumps and traces, you need to configure the data upload.
 
-### The Demo Application Code
-
-The demo project generate alerts via DevAlert in two ways. On fault exceptions and by calling the DFM_TRAP() macro explicitly in the code, for example like:
-
-	DFM_TRAP( DFM_TYPE_STACK_CHK_FAILED, "Stack corruption detected");
-
-DFM_TRAP() is documented at /libraries/3rdparty/DFM/include/dfmCrashCatcher.h#L98
-and you find usage examples on several locations in the demo source code, for example at:
-
-- /vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c#L1014
-
-- /vendors/st/boards/stm32l475_discovery/aws_demos/config_files/FreeRTOSConfig.h#L139
-
-- /libraries/3rdparty/DFM/dfmCrashCatcher.c#L336
-
-To learn how to set up DevAlert for your own project, see the following code examples:
-
-Initialization
-- /vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c
-- /vendors/st/boards/stm32l475_discovery/aws_demos/config_files/FreeRTOSConfig.h
-- /demos/include/aws_clientcredential.h
-- /demos/include/aws_clientcredential_keys.h
-
-DevAlert configuration
-- /libraries/3rdparty/DFM  -- in particular /config/dfmConfig.h
-
-TraceRecorder configuration
-- /libraries/3rdparty/tracerecorder/config  -- in particular /config/trcConfig.h
-
-In FreeRTOSConfig.h, the important parts are:
-
-- #define configASSERT( x ) ... definition and the related #includes (just above)
-- #define configUSE_TRACE_FACILITY 1 -- Needed for recording kernel events
-- #include "trcRecorder.h" -- Needed for recording kernel events
-
 ## Uploading via STLINK VCOM ("Debug-SerialOnly")
 
 This method is easiest to get started with and doesn't require any AWS account or cloud-side configuration. 
@@ -303,6 +268,41 @@ For this demo, with SW4STM32, this can be configured in the following way:
 Note that this assumes that the elf and dmp files can be found by loadcrashdump.cfg. 
 This example uses a hardcoded folder for this (latestcrashdump), where the files from Dispatcher are copied by the "fetch_elf_file" script.
  
+## The Demo Application Code
+
+The demo project generate alerts via DevAlert in two ways. On fault exceptions and by calling the DFM_TRAP() macro explicitly in the code, for example like:
+
+	DFM_TRAP( DFM_TYPE_STACK_CHK_FAILED, "Stack corruption detected");
+
+DFM_TRAP() is documented at /libraries/3rdparty/DFM/include/dfmCrashCatcher.h#L98
+and you find usage examples on several locations in the demo source code, for example at:
+
+- /vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c#L1014
+
+- /vendors/st/boards/stm32l475_discovery/aws_demos/config_files/FreeRTOSConfig.h#L139
+
+- /libraries/3rdparty/DFM/dfmCrashCatcher.c#L336
+
+To learn how to set up DevAlert for your own project, see the following code examples:
+
+Initialization
+- /vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c
+- /vendors/st/boards/stm32l475_discovery/aws_demos/config_files/FreeRTOSConfig.h
+- /demos/include/aws_clientcredential.h
+- /demos/include/aws_clientcredential_keys.h
+
+DevAlert configuration
+- /libraries/3rdparty/DFM  -- in particular /config/dfmConfig.h
+
+TraceRecorder configuration
+- /libraries/3rdparty/tracerecorder/config  -- in particular /config/trcConfig.h
+
+In FreeRTOSConfig.h, the important parts are:
+
+- #define configASSERT( x ) ... definition and the related #includes (just above)
+- #define configUSE_TRACE_FACILITY 1 -- Needed for recording kernel events
+- #include "trcRecorder.h" -- Needed for recording kernel events 
+ 
 ## Porting / Integration
 
 To port this to another target, you may need to update the following files:
@@ -311,9 +311,9 @@ To port this to another target, you may need to update the following files:
 - dfmCloudPort.c - How to upload Alerts to the device backend (e.g. an AWS account). See \libraries\3rdparty\DFM\kernelports\FreeRTOS\cloudports\AWS_MQTT\dfmCloudPort.c
 - trcConfig.h - If porting to a different processor architecture, you need to select the right hardware port setting. Currently set to "Arm Cortex-M" matching STM32L4.
 
-## Target support
+## Target Support
 
-The DFM library (the DevAlert client) is not hardware dependent and can be used on any processor. 
+The DFM library (the DevAlert device client) is not hardware dependent and can be used on any processor. 
 But the core dump support relies on crashcatcher and crashdebug which is only available for Arm Cortex-M devices. 
 Officially it only supports ARMv6-M and ARMv7-M processors, but it seems to work fine also on ARMv8-M cores like Cortex-M33, at least with Arm TrustZone disabled. 
 As of April 2023, it has not yet been tested with ARM TrustZone. 
