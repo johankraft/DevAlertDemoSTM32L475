@@ -150,10 +150,12 @@ The Dispatcher tool has two jobs. First, it download the selected payload from t
 If the payload has been divided into multiple pieced by the DFM library, the Dispatcher tool also recombined the pieces into a single file.
 Finally it launches the right tool, typically with the payload file and ELF file as argument.
 
-The first time, you need to start Dispatcher manually. 
-Dispatcher will register itself as a protocol handler in your standard web browser so it is started by the DevAlert download links.
+The first time, you need to start Dispatcher manually. You should see the following window.
 
-Select the "Provide Settings Button" and configure it as decribed at https://devalert.io/dispatcher/setup.
+![DevAlert Dispatcher Configuration](https://percepio.com/github_images/DevAlert-Dispatcher-Main.png)
+
+Select the "Provide Settings Button" and configure it as described at https://devalert.io/dispatcher/setup.
+Dispatcher will register itself as a protocol handler in your standard web browser so it is started by the DevAlert download links.
 
 When using a DevAlert evaluation account, enter the following information:
 
