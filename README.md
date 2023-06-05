@@ -108,9 +108,9 @@ For the terminal program we mostly use Teraterm, but any terminal program with a
 
 On the host computer, the cloud upload is done using one of the following tools:
   
-	- devalerthttps - uploads to your DevAlert evaluation account (hosted by Percepio)
+- devalerthttps - uploads to your DevAlert evaluation account (hosted by Percepio)
   
-	- devalerts3 - uploads to your Amazon S3 bucket (hosted by the device builder)
+- devalerts3 - uploads to your Amazon S3 bucket (hosted by the device builder)
 	
 In this demo, we use the devalerthttps tool for the upload. This is not intended for direct upload from devices, but is easier to get started with.
 To use it, follow the following steps:
@@ -218,8 +218,10 @@ If you don't already have Tracealyzer installed, you can download it for evaluat
 
 The default Dispatcher configuration will start Tracealyzer automatically for payloads ending with .psf, .psfs, .bin and .trc.
 
-You need a license to run Tracealyzer, but this is provided by your DevAlert evaluation account.
-When asked to active Tracealyzer, start the license wizard and select "Percepio License Service". Then enter your DevAlert email and password.
+You need a license to run Tracealyzer, which is provided by your DevAlert evaluation account.
+When starting Tracealyzer for the first time, you will see a Welcome screen with three big buttons.
+Select "Activate License", select "Percepio License Service" and enter your DevAlert credentials. 
+Select "Rememer password" if you don't want to log in each time you start the tool.
 
 ### Viewing crash dumps with GDB/CrashDebug
 
