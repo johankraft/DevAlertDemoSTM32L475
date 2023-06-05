@@ -29,53 +29,91 @@ In FreeRTOSConfig.h, the important parts are:
 
 ## Loading the demo project
 
-The development tool used for this demo project is SW4STM32, available at https://www.openstm32.org/System%2BWorkbench%2Bfor%2BSTM32
+This demo project is for the SW4STM32 development tools. If you don't already have it installed, get it from https://www.openstm32.org/System%2BWorkbench%2Bfor%2BSTM32.
 
-To open and build the project in SW4STM32, follow the following steps:
-- Import the files into a new project using "Import...", "Projects from Folder or Archive".
+Import the project files using the following steps:
 
-UPDATE THIS - WHAT IS ACTUALLY NEEDED? CAN YOU OMIT THE TOP PROJECT?
-- Select the root folder of this repository and make sure to include all projects found.
-- Right-click on the "aws_demos" project and select "Build project". 
+- Clone or copy this repository from Gihub to a suitable location on your computer.
 
-CREATE A DEBUG CONFIGURATION?
+- In SW4STM32, select "File" -> "Import..." -> "General" -> "Projects from Folder or Archive".
 
-To connect to Wifi and AWS IoT Core, you need to update aws_clientcredential.h and aws_clientcredential_keys.h (see \demos\include) as described on https://docs.aws.amazon.com/freertos/latest/userguide/freertos-prereqs.html.
+- In the Import window, click on "Directory..." and select the project in the following folder:
 
+	/projects/st/stm32l475_discovery/ac6/aws_demos
+	
+- Select "Finish" and the project will be loaded.
 
-## Uploading DevAlert data
+## Build Configurations
 
-This demo contains two "build configurations" showing two different methods for uploading the data:
+This demo contains two "build configurations" demonstrating two different methods for uploading the DevAlert data:
+The build configuration is selected under "Project" -> "Build Configurations" -> "Set Active". 
+You should see the following options:
 
-- "Debug" uploads directly to AWS IoT Core using a Wi-Fi network.
-- "Debug-SerialOnly" uploads via the host computer using the Virtual COM port on the onboard STLINK debugger.
+- "Debug-SerialOnly" uploads to your DevAlert evaluation account via the host computer, using the Virtual COM port on the onboard STLINK debugger.
+  This is easy to get started with for evaluation and a similar setup can also be used for test monitoring.
 
-The build configuration is selected under "Project" -> "Build Configurations" -> "Set Active". The following sections explain how to use them.
+- "Debug" uploads directly to AWS IoT Core using a Wi-Fi network. This is more representative for deployed operation. 
+  But it requires a bit more configuration, including an AWS account configured for DevAlert and a full DevAlert account with AWS support. 
+  This is provided on request by contacting support@percepio.com.
+  
+You probably want to start with "Debug-SerialOnly" to begin with.
 
-### Uploading via the STLINK COM port ("Debug-SerialOnly")
+## Building and Running the Demo
+
+First, make sure you have selected what build configuration to use under "Project" -> "Build Configurations" -> "Set Active".
+
+Next, we start a debug session. This will also build the project.
+
+- Right-click on the "aws_demos" project and selecting "Debug as" -> "Ac6 STM32 C/C++ Application".
+  This will start the debug session, with the execution halted in main. 
+
+- Select "Resume (F8)" to start execution (the green triangle button)
+
+- Open a terminal program on the right COM port to view the output. You should see something like:
+
+	------ Starting up DevAlert demo ------
+
+	1 9 [Tmr Svc] Firmware revision: v1.0-LatestDevBuild
+
+	2 14 [Tmr Svc] Upload method: Serial (upload via host computer)
+
+	3 22 [DemoTask1] Provoking random errors...
+	
+	4 2027 [DemoTask1] Test case: Buffer overrun
+	
+The demo has four intentional errors that are captured and reported using DevAlert.
+These are selected randomly and the device will restart after each reported error.
+
+For the data to be visible in DevAlert, you also need to configure the data upload.
+
+## Uploading via STLINK VCOM ("Debug-SerialOnly")
 
 This method is easiest to get started with and doesn't require any AWS account or cloud-side configuration. 
-The only things needed is a DevAlert evaluation account (https://devalert.io/auth/signup), a terminal program like Teraterm, and Python installed.
+The only things needed are:
+
+- Your DevAlert evaluation account. If you don't have this already, sign up at https://devalert.io/auth/signup and you get the account immidiatly.
+- A terminal program like Teraterm
+- Python installed
+
 The rest is provided in this repository.
 
-In this configuration, the DFM library outputs the data as hex strings to the serial VCOM interface. This way, it can be received using a plain terminal program. 
-The terminal program is configured to log the data to a text file, which is processed by the DevAlert tools and then uploaded to the cloud.
+In this configuration, the DFM library outputs the data as hex strings to the serial VCOM interface.
+The data is received using a terminal program (together with other output) and logged to a text file.
+The text file is then processed by the DevAlert tools and the data is uploaded to the cloud.
 This can run continously and upload multiple alerts from the device over a long time period, if needed.
 
-(Demo application) ---> (STLINK VCOM/USB) ---> (DevAlert desktop tools) ---> (DevAlert cloud account)
+(STM32L4 Board: Demo application) ---> STLINK VCOM/USB ---> (Host computer: DevAlert desktop tools) ---> (DevAlert cloud account)
 
 For the terminal program we mostly use Teraterm, but any terminal program with a logging capability should work. 
 
-The processing by the DevAlert desktop tools consists of two steps:
-- devalertserial.py - Extracts the data from the terminal log file and converts to binary.
-- Upload to cloud, using one of the upload tools:
-  - devalerthttps - uploads to your DevAlert evaluation account (hosted by Percepio)
-  - devalerts3 - uploads to your Amazon S3 bucket ("bring-your-own-storage")
-
-In this demo, we use the devalerthttps tool for the upload, which uploads to Percepio-hosted storage in your DevAlert evaluation account.
-This is not intended for direct upload from devices or production data, but is very easy to get started with.
-
-#### Setup
+On the host computer, the cloud upload is done using one of the following tools:
+  
+	- devalerthttps - uploads to your DevAlert evaluation account (hosted by Percepio)
+  
+	- devalerts3 - uploads to your Amazon S3 bucket (hosted by the device builder)
+	
+In this demo, we use the devalerthttps tool for the upload. This is not intended for direct upload from devices, but is easier to get started with.
+To use it, follow the following steps:
 
 1. Install Python if you don't already have it.
 
@@ -86,29 +124,34 @@ This is not intended for direct upload from devices or production data, but is v
 	devalerthttps set-password
 	Password: 
 
-Note that the username/password authentication is only used for evaluation accounts. For production use, we recommend
-using our privacy-friendly "bring-your-own-storage" solution where you integrate own storage, e.g. an Amazon S3 bucket.
+Note that this username/password authentication is only used for DevAlert evaluation accounts, to simplify evaluation.
+Production accounts use mutual TLS authentication for receiving alert data and only "metadata" is uploaded in such configurations.
+The diagnostic payloads like core dumps and traces then remain on the customer side, in your own storage.
 
-3. If using Windows and have Teraterm installed, run DA-tools/devalertserial-sandbox.bat with the COM port provided as argument. Like this:
+3.	Close any terminal programs that are already connected to the same COM port.
 
-	devalertserial-sandbox.bat 9	
-
-	This will start Teraterm on COM9 and set up logging to the file tterm.log, and then run the following:
-
-		python devalertserial.py --file tterm.log --upload sandbox | devalerthttps.exe store-trace
+	If using Windows and have Teraterm installed:
 	
-	You can easily create a script for this, that also starts the terminal program.
-	This assumes that Teraterm is installed, but that part can easily be changed if needed.
-
-If using Linux or prefer another terminal program, follow these steps (manually or in a custom script)
-
-	- Start a terminal program on the right COM port, with logging to file MYFILE.
+		- Open the DA-tools directory and locate devalertserial-sandbox.bat and devalertserial.py.
 	
-	- Run "python devalertserial.py --file MYFILE --upload sandbox | devalerthttps.exe store-trace"
+		- Copy the scripts to a suitable location.
+	
+		- Make sure your terminal program is in your PATH (e.g. ttermpro.exe) so it can be called from the command line.
+	
+		- Run the .bat file with the COM port provided as argument. This will start Teraterm on COM9 and upload the data using the devalerthttps tool.
+	
+			devalertserial-sandbox.bat 9	
+	
+	If using Linux or prefer another terminal program, make a custom script similar to devalertserial-sandbox.bat, with the following steps:
 
-Just make sure no other terminal program instances are connected to the same COM port.
+		- Start a terminal program on the right COM port, logging the output to a text file ("MYFILE" below).
+	
+		- Run the following piped command
+		
+			python devalertserial.py --file MYFILE --upload sandbox | devalerthttps.exe store-trace
 
-### Uploading via AWS IoT Core ("Debug")
+	
+## Uploading via AWS IoT Core ("Debug")
 
 This method requires a Wi-Fi network, an AWS account that has been set up for DevAlert, and a full DevAlert account with AWS support (provided on request).
 Contact support@percepio.com if you need help to set this up.
@@ -117,28 +160,66 @@ Befure building the demo project, make sure to select the build configuration "D
 
 To connect to your Wi-Fi network and to AWS IoT Core in your AWS account, you need to update aws_clientcredential.h and aws_clientcredential_keys.h (see \demos\include) as described on https://docs.aws.amazon.com/freertos/latest/userguide/freertos-prereqs.html.
 
+## Analyzing Alerts from the DevAlert Dashboard
 
+The alerts include diagnostic payloads such as traces and core dumps, that explain what happened. 
+They are downloaded via the DevAlert Dispatcher tool, that needs to be installed locally. This is available at https://devalert.io/dispatcher. 
+Once this is installed and configured, you only need to click on the "payload" links in the DevAlert dashboard. 
 
+The Dispatcher tool has two jobs. First, it download the selected payload from the storage you have configured.
+If the payload has been divided into multiple pieced by the DFM library, the Dispatcher tool also recombined the pieces into a single file.
+Finally it launches the right tool, typically with the payload file and ELF file as argument.
 
+Note that the storage is separate from the DevAlert service and can be e.g. your own Amazon S3 bucket.
 
+Dispatcher will register itself as a protocol handler in your standard web browser to handle all "percepio://" links.
+But the first time, you need to start it manually and configure it, as decribed at https://devalert.io/dispatcher/setup.
 
+When using a DevAlert evaluation account (and the devalerthttps tool) enter the following information:
 
+1. Your DevAlert account credentials (username and password) for the DevAlert service. Check the "Remember password" option to avoid having to repeat the password every time.
 
-## Demo operation
+2. Select "DevAlert Evaluation" as Backend Provider. This selects the Percepio-hosted evaluation account storage. 
 
-Start a debug session in SW4STM32 using the right debug configuration (AWS or Serial) and it should begin generating errors and alerts randomly. 
-The system is configured to restart after each error/alert.
+3. Enter your DevAlert account credentials (username and password) again for the Backend (storage). This is technically separate from the DevAlert account.
 
-Log in to https://devalert.io and see the reported issues on the Dashboard page.
+You can inspect the tool mapping and parameters by selecting "Change Dispatcher Settings..." -> File Mappings.
 
-## Downloading and viewing diagnostic data
+### Providing the ELF file
 
-The provided alerts include diagnostic payloads such as traces and crash dumps. They are stored outside the DevAlert service for privacy reasons (e.g. in your own Amazon S3 bucket). When clicking on the dashboard links, the selected data is downloaded to your local computer so it can be inspected using the appropriate desktop tool, for example GDB or Tracealyzer. This workflow is automated using the DevAlert Dispatcher tool, available at https://devalert.io/dispatcher. 
-The first time you need to start it manually and configure it, as decribed at https://devalert.io/dispatcher/setup.
+DevAlert relies on desktop tools like GDB and Tracealyzer.
+This lets you view the provided payloads on your local computer, instead of processing these rather sensitive files in the cloud.
+However, the tools often need the corresponding image (ELF) file. 
+
+For security reasons, DevAlert doesn't process or store your ELF files. They remain in your private storage at all times, e.g. on a local network drive.
+
+Instead, when you click on DevAlert dashboard links, the Dispatcher tool is started on your local computer and 
+receives information including the revision (version) of the device software. 
+This allows Dispatcher to fetch the right ELF file by calling a user-specific script with the revision as argument.
+The script reconstructs the path to the right image file, for example
+
+	/files/releases/fw-image/<revision>/image.elf
+
+The script "fetch_elf_file.bat" provides an example of such a script for Windows, that you can modify to suit your needs. 
+This also shows how to combine development builds (without official version number) with official release versions.
+By using a special revision value the ELF file from your local build directory is used. 
+
+You can add this script to the Dispatcher configuration to run every time you download a payload. 
+This will copy the right elf-file to a hardcoded path that can be referenced from GDB scripts and other tools.
+To learn more, open the .bat file in a text editor and read the extensive documentation there.
+
+You also find templates for both Windows and Linux in the "template" directory in the Dispatcher install directory.
 
 ### Viewing event traces in Tracealyzer
 
-The demo includes the TraceRecorder library that produces event traces for Tracealyzer. This shows a timeline of the FreeRTOS scheduling and API calls, and also allows for custom logging from the application code. If you don't already have Tracealyzer installed, you can download it for evaluation at https://percepio.com.
+The demo includes the TraceRecorder library that produces event traces for Tracealyzer. 
+This shows a timeline of the FreeRTOS scheduling and API calls, and also allows for custom logging from the application code.
+If you don't already have Tracealyzer installed, you can download it for evaluation at https://percepio.com/tracealyzer/update/.
+
+The default Dispatcher configuration will start Tracealyzer automatically for payloads ending with .psf, .psfs, .bin and .trc.
+
+You need a license to run Tracealyzer, but this is provided by your DevAlert evaluation account.
+When asked to active Tracealyzer, start the license wizard and select "Percepio License Service". Then enter your DevAlert email and password.
 
 ### Viewing crash dumps with GDB/CrashDebug
 
