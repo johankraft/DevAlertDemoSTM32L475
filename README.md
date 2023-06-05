@@ -1,7 +1,7 @@
 # DevAlert Demo on STM32L4 IoT Discovery Kit
 
 This project demonstrates Percepio DevAlert (https://percepio.com/devalert) on the STM32L4 IoT Discovery kit with FreeRTOS.
-This includes the DevAlert target library (DFM) with crash dump support and as well as the TraceRecorder library for providing traces to Tracealyzer.
+This includes the DevAlert target library (DFM) with core dump support and as well as the TraceRecorder library for providing traces to Tracealyzer.
 
 Learn more about the STM32L4 IoT Discovery kit at https://www.st.com/en/evaluation-tools/b-l475e-iot01a.html. 
 
@@ -16,16 +16,16 @@ Important folders and files:
 Examples of how to use the DFM library and TraceRecorder is found in main.c and in FreeRTOSConfig.h.
 
 In main.c, the important parts are:
- - DevAlert test cases, https://github.com/johankraft/DevAlertDemoSTM32L475/blob/main/vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c#L223
- - Tracing a state machine, https://github.com/johankraft/DevAlertDemoSTM32L475/blob/main/vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c#L287
- - Initializing DFM, https://github.com/johankraft/DevAlertDemoSTM32L475/blob/main/vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c#L406
- - Initializing TraceRecorder, https://github.com/johankraft/DevAlertDemoSTM32L475/blob/main/vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c#L789
+ - DevAlert test cases, /vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c#L223
+ - Tracing a state machine, /vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c#L287
+ - Initializing DFM, /vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c#L406
+ - Initializing TraceRecorder, /vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c#L789
 
 In FreeRTOSConfig.h, the important parts are:
 
 - #define configASSERT( x ) ... definition and the related #includes (just above)
-- #define configUSE_TRACE_FACILITY 1 -- Critical for recording kernel events
-- #include "trcRecorder.h" -- Critical for recording kernel events
+- #define configUSE_TRACE_FACILITY 1 -- Needed for recording kernel events
+- #include "trcRecorder.h" -- Needed for recording kernel events
 
 ## Loading the demo project
 
@@ -84,7 +84,22 @@ Next, we start a debug session. This will also build the project.
 The demo has four intentional errors that are captured and reported using DevAlert.
 These are selected randomly and the device will restart after each reported error.
 
-For the data to be visible in DevAlert, you also need to configure the data upload.
+### Generating Alerts
+
+The demo project generate alerts via DevAlert in two ways. On fault exceptions and by calling the DFM_TRAP() macro explicitly in the code, for example like:
+
+	DFM_TRAP( DFM_TYPE_STACK_CHK_FAILED, "Stack corruption detected");
+
+DFM_TRAP() is documented at /libraries/3rdparty/DFM/include/dfmCrashCatcher.h#L98
+and you find usage examples on several locations in the demo source code, for example at:
+
+- /vendors/st/boards/stm32l475_discovery/aws_demos/application_code/main.c#L1014
+
+- /vendors/st/boards/stm32l475_discovery/aws_demos/config_files/FreeRTOSConfig.h#L139
+
+- /libraries/3rdparty/DFM/dfmCrashCatcher.c#L336
+
+To see these alerts in DevAlert and download the diagnostic payload, like core dumps and traces, you need to configure the data upload.
 
 ## Uploading via STLINK VCOM ("Debug-SerialOnly")
 
@@ -210,7 +225,7 @@ To learn more, open the .bat file in a text editor and read the extensive docume
 
 You also find templates for both Windows and Linux in the "template" directory in the Dispatcher install directory.
 
-### Viewing event traces in Tracealyzer
+### Viewing Traces in Tracealyzer
 
 The demo includes the TraceRecorder library that produces event traces for Tracealyzer. 
 This shows a timeline of the FreeRTOS scheduling and API calls, and also allows for custom logging from the application code.
@@ -223,41 +238,72 @@ When starting Tracealyzer for the first time, you will see a Welcome screen with
 Select "Activate License", select "Percepio License Service" and enter your DevAlert credentials. 
 Select "Rememer password" if you don't want to log in each time you start the tool.
 
-### Viewing crash dumps with GDB/CrashDebug
+### Viewing Core Dumps from Arm Cortex-M devices
 
-Copy the crash_debug.bat or crash_debug.sh script from the <dispatcher>/template directory and update the "File Mapping" entry for "dmp" so that it is called with the right arguments. For example:
+Assuming the DevAlert client library has been properly integrated, core dumps are provided both on fault exceptions and when calling DFM_TRAP().
+
+Core dumps include processor state like registers, stack and other memory contents. They are loaded into gdb using the CrashDebug tool.
+CrashDebug is included in the DA-tools directory but is also available at https://github.com/adamgreen/CrashDebug/tree/master/bins.
+Note that CrashDebug is only available for Arm Cortex-M devices, but similar DevAlert integrations are possible for other processors.
+
+You also need the right version of gdb for Arm Cortex-M devices, typically arm-none-eabi-gdb. 
+If using a tool-chain based on the gcc or clang compilers, you should already have arm-none-eabi-gdb on your computer.
+But we also include it in the DA-tools directory for convinience. 
+
+The steps needed to configure Dispatcher for viewing Core Dumps are:
+
+1. Copy arm-none-eabi-gdb to the same directory as Dispatcher.
+
+2. Copy the crash_debug.bat or crash_debug.sh script from the <dispatcher>/template directory to the Dispatcher directory.
+
+3. Verify the "File Mapping" entry for the "dmp" payload type, so the script is called with the right arguments. 
+For example:
 - Extension: dmp
-- Executable: C:\DevAlertDispatcher\crash_debug.bat
+- Executable: C:\DevAlertDispatcher\crash_debug.bat  // or .sh for Linux
 - Startup folder: C:\DevAlertDispatcher
 - Parameters: /path/to/firmware-${revision}.elf ${file} --gdb
  
-In general, CrashDebug is called via the GDB client, in the following way:
+This will start a gdb window and load the core dump. 
+If you prefer to view the core dumps in your IDE debugger instead, see "Viewing Core Dumps in an IDE".
 
-    arm-none-eabi-gdb main.elf -ex "set target-charset ASCII" -ex "target remote | CrashDebug --elf main.elf
+Note: If you have added the "fetch_elf_file" script to copy the latest files to a hardcoded path (as described in "Providing the ELF File")
+you can use this hardcoded path in the Parameters field instead, like this:
 
-But Dispatcher include scripts that take care of this for you, crash_debug.bat (for Windows) and crash_debug.sh (for Linux). 
+	./latestcrashdump/aws_demos.elf ./latestcrashdump/latest.dmp --gdb	
+	
+### Viewing Core Dumps in an IDE
 
-Note that CrashDebug is only available for Arm Cortex-M devices, but similar integrations are possible for other processors.
+To view a core dump, you can configure your IDE debugger to start a gdb session that calls the provided gdb command file, "loadcrashdebug.cfg".
+This only contains the following commands:
 
-Note that the ELF file is not provided via DevAlert. But the firmware version/revision is provided and this can be used as a parameter in a custom script called by Dispatcher (under the Scripts tab) in order to generate the path to the right ELF file and perhaps copy it to a local folder.
+	cd C:/DevAlertDispatcher
+	file ./latestcrashdump/aws_demos.elf
+	target remote | ./CrashDebug.exe --elf ./latestcrashdump/aws_demos.elf --dump ./latestcrashdump/latest.dmp
 
-### Viewing crash dumps in Eclipse
+The "file" command sets the right ELF file.
+The "target remote" command loads the core dump using the CrashDebug tool.
+Note that the "latestcrashdump" directory is the output of the "fetch_elf_file" script. 
 
-You can create a separate "debug configuration" in Eclipse-based IDEs to load crashdumps from DevAlert.
+If using an Eclipse-based IDE, this can be implemented as a separate "debug configuration".
+For this demo, with SW4STM32, this can be configured in the following way:
 
-See the example in "CrashDebug - Load Crashdumps in Eclipse". The main file is loadcrashdebug.cfg, which is a GDB command file.
-This is used in an Eclipse debug configuration of the type "GDB Hardware Debugging". In the Debug Configuration editor, enter the following:
+1. Create a new debug configuration of the type "GDB Hardware Debugging". Name it e.g. "DevAlert Core Dump".
+2. In the Debug Configuration editor, enter the following:
 - Main / C/C++ Application: the ELF file in the build directory (not used but must be provided)
 - Main / Disable auto build: Checked
-- Debugger / GDB command: Full path to the right GDB client (e.g. arm-none-eabi-gdb.exe)
+- Debugger / GDB command: The full path to arm-none-eabi-gdb
 - Debugger / Use remote target: Unchecked
 - Startup / Initialization commands: "source /path/to/loadcrashdump.cfg"
-- Startup / Other things: All unchecked (don't "load image" or "load symbols", this is done by loadcrashdump.cfg)
+- Startup / Other things: All unchecked (don't "load image" or "load symbols", since all is handled by loadcrashdump.cfg)
 
-Note that this assumes that the elf and dmp files can be found by loadcrashdump.cfg. This example uses a hardcoded folder for this, where the trace and dmp files from Dispatcher are copied by slightly a modified version of the crashdebug script. For example by adding:
+3. Make sure that the "fetch_elf_file" is triggered by Dispatcher and is updating the output directory, e.g. "latestcrashdump".
 
-    cp %1 ./latestcrashdump/latest.elf
-    cp %2 ./latestcrashdump/latest.dmp
+4. Download a core dump from DevAlert
+
+5. Start the new "DevAlert Core Dump" debug configuration and the core dump should load quickly.
+
+Note that this assumes that the elf and dmp files can be found by loadcrashdump.cfg. 
+This example uses a hardcoded folder for this (latestcrashdump), where the files from Dispatcher are copied by the "fetch_elf_file" script.
  
 ## Porting / Integration
 
@@ -269,7 +315,10 @@ To port this to another target, you may need to update the following files:
 
 ## Target support
 
-The DFM library (the DevAlert client) is not hardware dependent and can be used on any processor. But the crash dump support relies on crashcatcher and crashdebug which is only available for Arm Cortex-M devices. Officially it only supports ARMv6-M and ARMv7-M processors, but it seems to work fine also on ARMv8-M cores like Cortex-M33, at least with Arm TrustZone disabled. As of April 2023, it has not yet been tested with ARM TrustZone. 
+The DFM library (the DevAlert client) is not hardware dependent and can be used on any processor. 
+But the core dump support relies on crashcatcher and crashdebug which is only available for Arm Cortex-M devices. 
+Officially it only supports ARMv6-M and ARMv7-M processors, but it seems to work fine also on ARMv8-M cores like Cortex-M33, at least with Arm TrustZone disabled. 
+As of April 2023, it has not yet been tested with ARM TrustZone. 
 
 ## License and Copyright
 
