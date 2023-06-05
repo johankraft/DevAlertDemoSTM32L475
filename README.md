@@ -226,15 +226,17 @@ For example:
 - Startup folder: C:\DevAlertDispatcher
 - Parameters: /path/to/firmware-${revision}.elf ${file} --gdb
  
-This will start a gdb window and load the core dump. 
-If you prefer to view the core dumps in your IDE debugger instead, see "Viewing Core Dumps in an IDE".
+If you have added the "fetch_elf_file" script to copy the latest files to a hardcoded path (as described in "Providing the ELF File") you can use this hardcoded path in the Parameters field instead.
+ 
+This file mapping will start a gdb client with the core dump loaded. You may enter gdb commands to inspect the details.
 
-Note: If you have added the "fetch_elf_file" script to copy the latest files to a hardcoded path (as described in "Providing the ELF File")
-you can use this hardcoded path in the Parameters field instead, like this:
+![gdb view](https://percepio.com/github_images/DevAlert-gdb.png)
 
-	./latestcrashdump/aws_demos.elf ./latestcrashdump/latest.dmp --gdb	
+You may also load the core dump into your IDE debugger. See "Viewing Core Dumps in an IDE" below.
 	
 ### Viewing Core Dumps in an IDE
+
+![Eclipse debugger view](https://percepio.com/github_images/DevAlert-Eclipse.png)
 
 To view a core dump, you can configure your IDE debugger to start a gdb session that calls the provided gdb command file, "loadcrashdebug.cfg".
 This only contains the following commands:
