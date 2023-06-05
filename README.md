@@ -154,16 +154,17 @@ The first time, you need to start Dispatcher manually. You should see the follow
 
 ![DevAlert Dispatcher Configuration](https://percepio.com/github_images/DevAlert-Dispatcher-Main.png)
 
-Select the "Provider Settings Button" and configure it as described at https://devalert.io/dispatcher/setup.
-Dispatcher will register itself as a protocol handler in your standard web browser so it is started by the DevAlert download links.
-
-When using a DevAlert evaluation account, enter the following information:
+Click on "Provider Settings Wizard..." and configure it as described at https://devalert.io/dispatcher/setup.
+When using a DevAlert evaluation account, you only need to enter the following information:
 
 1. Your DevAlert account credentials (username and password) for the DevAlert service. Check the "Remember password" option to avoid having to repeat the password every time.
 
 2. Select "DevAlert Evaluation" as Backend Provider. This selects the Percepio-hosted evaluation account storage. 
 
 3. Enter your DevAlert account credentials (username and password) again for the Backend (storage). This is technically separate from the DevAlert account.
+
+Note that Dispatcher will register itself as a protocol handler in your standard web browser to handle "percepio://" links. 
+This starts it when clicking the DevAlert download links.
 
 ### Providing the ELF file
 
