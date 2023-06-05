@@ -222,11 +222,11 @@ The steps needed to configure Dispatcher for viewing Core Dumps are:
 3. Verify the "File Mapping" entry for the "dmp" payload type, so the script is called with the right arguments. 
 For example:
 - Extension: dmp
-- Executable: C:\DevAlertDispatcher\crash_debug.bat  // or .sh for Linux
-- Startup folder: C:\DevAlertDispatcher
+- Executable: (Dispatcher directory)/crash_debug.bat  // or .sh for Linux
+- Startup folder: (Dispatcher directory)
 - Parameters: /path/to/firmware-${revision}.elf ${file} --gdb
 
-![DevAlert Dispatcher](https://percepio.com/github_images/DevAlert-Dispatcher.png)
+<img src="https://percepio.com/github_images/DevAlert-Dispatcher.png" alt="DevAlert Dispatcher">
 
 This will start a gdb client with the core dump loaded, like shown below.
 In the screenshot we use a hardcoded path make it easier to load the core dump into an IDE, as described in the next section. 
