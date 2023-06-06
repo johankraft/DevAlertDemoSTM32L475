@@ -12,9 +12,9 @@ By using DevAlert during software development and testing, debugging data is cap
 
 Using DevAlert in this way only requires a local connection (e.g. a serial port) to a computer with internet connection. This is demonstrated by using the Virtual COM port on the onboard STLINK debugger.
 
-Once your software is ready for release, you can keep DevAlert enabled in deployment. This allows for detecting cybersecurity-related anomalies, such as stack corruption from buffer overruns. In such case, the memory contents can be inspected using the core dumps to learn if the anomaly was a cyberattack or only an accidental error. Havin DevAlert enabled in the field also allows for remote debugging of any remaining software issues, without the need for a physical debug port or even a debugging UART in the deployed device. Such interfaces should not be enabled in the field for security reasons.
+Once your software is ready for release, you can keep DevAlert enabled in deployment. This allows for detecting cybersecurity-related anomalies, such as stack corruption from buffer overruns. The provided core dumps can tell you if the anomaly was a cyberattack or an accidental error. Having DevAlert enabled in the field also lets you detect and debug any remaning issues in the production code, within minutes after the very first occurence. This without needing a physical debug port in the shipped devices or having to ask the users for additional information.
 
-Using DevAlert in deployment works best if you have some kind of connectivity in the device. This way, you can get a notification within seconds. This demonstrated here by connecting to AWS IoT Core via Wi-Fi.
+Using DevAlert in deployment works best if you have some kind of connectivity in the device. This way, you can get instant notification. This demonstrated here by connecting to AWS IoT Core via Wi-Fi.
 
 Alerts can also be stored on the device for later retrieval, e,g, by connecting to the device via bluetooth using an app with integrated DevAlert reporting.
 
