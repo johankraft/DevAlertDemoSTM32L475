@@ -12,7 +12,7 @@ By using DevAlert during software development and testing, debugging data is cap
 This way, you always have detailed information available, and easily accessible in the web browser for all stakeholders. 
 This can speed up debugging significantly and avoids costly project delays. 
 
-Using DevAlert in this way only requires a local connection (e.g. a serial port) to a computer with internet connection. This is demonstrated by using the Virtual COM port on the onboard STLINK debugger.
+Using DevAlert in this way only requires a local connection (e.g. a UART/USB serial connection) to a computer with internet connection. This is demonstrated by using the Virtual COM port on the onboard STLINK debugger.
 
 Once your software is ready for release, you can keep DevAlert enabled in deployment. This allows for detecting cybersecurity-related anomalies, such as stack corruption from buffer overruns. The provided core dumps can tell you if the anomaly was a cyberattack or an accidental error. Having DevAlert enabled in the field also lets you detect and debug any remaning issues in the production code, within minutes after the very first occurence. This without needing a physical debug port in the shipped devices or having to ask the users for additional information.
 
