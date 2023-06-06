@@ -30,7 +30,7 @@ This demo project is for the SW4STM32 development tools. If you don't already ha
 
 Import the project files using the following steps:
 
-- Clone or copy this repository from Gihub to a suitable location on your computer.
+- Clone or copy this repository from Github to a suitable location on your computer.
 
 - In SW4STM32, select "File" -> "Import..." -> "General" -> "Projects from Folder or Archive".
 
