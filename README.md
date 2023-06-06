@@ -1,8 +1,10 @@
 # DevAlert Demo on STM32L4 IoT Discovery Kit
 
 This project demonstrates Percepio DevAlert on the STM32L4 IoT Discovery kit.
-DevAlert is an observability solution for IoT/Edge devices providing insight on software anomalies and runtime errors, both in the test lab and in deployment. 
-The DevAlert Dashboard lets you overview all reported issues from a large fleet of devices and access diagnostic data such as core dumps, system traces and logs.
+
+DevAlert is an observability solution for IoT/Edge devices providing insight on software anomalies and runtime errors in remote devices, both in the test lab and in deployment. 
+
+The DevAlert Dashboard lets you overview all reported issues from a large fleet of devices and access diagnostic data such as core dumps, system traces and application logs. This allows for remote post-mortem debugging, without having to access a physical debug port in the field.
 
 ![gdb view](https://percepio.com/github_images/DevAlert-Overview.png)
 
