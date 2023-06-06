@@ -12,7 +12,7 @@ By using DevAlert during software development and testing, debugging data is cap
 
 Using DevAlert in this way only requires a local connection (e.g. a serial port) to a computer with internet connection. This is demonstrated by using the Virtual COM port on the onboard STLINK debugger.
 
-Once your software is ready for release, you can keep DevAlert enabled in deployment. This allows for remote debugging of any remaining software issues, without the need for a physical debug port or even a debugging UART in the deployed device. Such interfaces should be avoided, since often exploited for reverse engineering to extract the code and find vulnerabilities. This also allows for detecting cybersecurity-related anomalies, such as stack corruption from buffer overruns. In such case, the memory contents can be inspected using the core dumps to learn if the anomaly was a cyberattack or only an accidental error. 
+Once your software is ready for release, you can keep DevAlert enabled in deployment. This allows for detecting cybersecurity-related anomalies, such as stack corruption from buffer overruns. In such case, the memory contents can be inspected using the core dumps to learn if the anomaly was a cyberattack or only an accidental error. Havin DevAlert enabled in the field also allows for remote debugging of any remaining software issues, without the need for a physical debug port or even a debugging UART in the deployed device. Such interfaces should not be enabled in the field for security reasons.
 
 Using DevAlert in deployment works best if you have some kind of connectivity in the device. This way, you can get a notification within seconds. This demonstrated here by connecting to AWS IoT Core via Wi-Fi.
 
