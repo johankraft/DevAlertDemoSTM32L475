@@ -1,16 +1,19 @@
-# DevAlert Demo on STM32L4 IoT Discovery Kit
+# Percepio DevAlert Demonstration on the STM32L4 IoT Discovery Kit
 
 This project demonstrates Percepio DevAlert on the STM32L4 IoT Discovery kit.
 
-DevAlert is an observability solution for IoT/Edge devices providing insight on software anomalies and runtime errors in remote devices, both in the test lab and in deployment. 
-
-The DevAlert Dashboard lets you overview all reported issues from a large fleet of devices and access diagnostic data such as core dumps, system traces and application logs. This allows for remote post-mortem debugging, without having to access a physical debug port in the field.
+DevAlert is an observability solution providing insight on software issues and security anomalies in remote devices. By adding a few "alerts" in your code, like demonstrated in this project, you can capture many issues and anomalies, such as hardware fault exceptions, failed ASSERT checks and stack corruption from buffer overruns. DevAlert also lets you create your own alert types, control when they reported and select what information to include. For example, you can get core dumps for your debugger, system traces for Tracealyzer and include any other device data of interest. The DevAlert Dashboard lets you overview all reported issues and access the diagnostic data. 
 
 ![gdb view](https://percepio.com/github_images/DevAlert-Overview.png)
 
-Read more at https://percepio.com/devalert. 
+By using this during software development and testing, you can capture detailed information on unexpected issues, such as random crashes and intermittent errors. This way you always have detailed debugging data available, and easily accessible in the web browser for all stakeholders. This only requires a local connection (e.g. a serial port) to a computer with internet connection. This use-case is demonstrated by using the Virtual COM port on the onboard STLINK debugger.
 
-This demo project shows how the DevAlert device library (DFM) is integrated on am STM32L4 with FreeRTOS, including
+Once your software is ready for release, you can keep DevAlert enabled in deployment. This allows for remote debugging of any remaining software issues, without the need for a physical debug port or even a debugging UART in the deployed device. Such interfaces should be avoided, since often exploited for reverse engineering to extract the code and find vulnerabilities. This also allows for detecting cybersecurity-related anomalies, such as stack corruption from buffer overruns. In such case, the memory contents can be inspected using the core dumps to learn if the anomaly was a cyberattack or only an accidental error. 
+Using DevAlert in deployment works best if you have some kind of connectivity in the device. This way, you can get a notification within seconds. This demonstrated here by connecting to AWS IoT Core via Wi-Fi.
+
+Alerts can also be stored on the device for later retrieval, e,g, by connecting to the device via bluetooth using an app with integrated DevAlert reporting.
+
+Read more at https://percepio.com/devalert. 
 
 Learn more about the STM32L4 IoT Discovery kit at https://www.st.com/en/evaluation-tools/b-l475e-iot01a.html. 
 
