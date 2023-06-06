@@ -1,7 +1,14 @@
 # DevAlert Demo on STM32L4 IoT Discovery Kit
 
-This project demonstrates Percepio DevAlert (https://percepio.com/devalert) on the STM32L4 IoT Discovery kit with FreeRTOS.
-This includes the DevAlert target library (DFM) with core dump support and as well as the TraceRecorder library for providing traces to Tracealyzer.
+This project demonstrates Percepio DevAlert on the STM32L4 IoT Discovery kit.
+DevAlert is an observability solution for IoT/Edge devices providing insight on software anomalies and runtime errors, both in the test lab and in deployment. 
+The DevAlert Dashboard lets you overview all reported issues from a large fleet of devices and access diagnostic data such as core dumps, system traces and logs.
+
+![gdb view](https://percepio.com/github_images/DevAlert-Overview.png)
+
+Read more at https://percepio.com/devalert. 
+
+This demo project shows how the DevAlert device library (DFM) is integrated on am STM32L4 with FreeRTOS, including
 
 Learn more about the STM32L4 IoT Discovery kit at https://www.st.com/en/evaluation-tools/b-l475e-iot01a.html. 
 
