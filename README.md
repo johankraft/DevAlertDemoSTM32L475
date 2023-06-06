@@ -18,7 +18,7 @@ Once your software is ready for release, you can keep DevAlert enabled in deploy
 
 Using DevAlert in deployment works best if you have some kind of connectivity in the device. This way, you can get instant notification. This demonstrated here by connecting to AWS IoT Core via Wi-Fi.
 
-Alerts can also be stored on the device for later retrieval, e,g, by connecting to the device via bluetooth using an app with integrated DevAlert reporting. That use-case is not demonstrated in this demo, but is certainly doable.
+Alerts can also be stored on the device for later retrieval, e,g, by connecting to the device via bluetooth using an app with DevAlert integration. That use-case is not demonstrated in this demo, but is certainly doable.
 
 Read more at https://percepio.com/devalert. 
 
