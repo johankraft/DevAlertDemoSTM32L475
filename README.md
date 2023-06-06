@@ -2,13 +2,15 @@
 
 This project demonstrates Percepio DevAlert on the STM32L4 IoT Discovery kit.
 
-DevAlert is an observability solution for software anomalies in remote IoT/Edge devices. By adding a small set of "alerts" at strategic locations in your code, like demonstrated in this project, you can capture many issues and anomalies. For example hardware fault exceptions, failed ASSERT checks and stack corruptions from buffer overruns. You can create your own alert types, control when they reported and select what information that is included, such as core dumps for your debugger and system traces for Tracealyzer.
+DevAlert is an observability solution for software anomalies in remote IoT/Edge devices. By adding a small set of "alerts" at strategic locations in your code, like demonstrated in this project, many types of issues and anomalies can be captured automatically. For example: hardware fault exceptions, failed ASSERT checks and stack corruptions from buffer overruns. You can create your own alert types, control when they reported and select what information that is included, such as core dumps for your debugger and system traces for Tracealyzer.
 
 You can overview all reported issues and access the diagnostic data in the DevAlert Dashboard. Create an evaluation account at https://devalert.io/auth/signup. 
 
 ![gdb view](https://percepio.com/github_images/DevAlert-Overview.png)
 
-By using DevAlert during software development and testing, debugging data is captured automatically on unexpected issues like crashes and intermittent errors. This way, you always have detailed information available, and easily accessible in the web browser for all stakeholders. This can speed up debugging by 10x or more and avoids costly project delays. 
+By using DevAlert during software development and testing, debugging data is captured automatically on unexpected issues like crashes and intermittent errors. 
+This way, you always have detailed information available, and easily accessible in the web browser for all stakeholders. 
+This can speed up debugging significantly and avoids costly project delays. 
 
 Using DevAlert in this way only requires a local connection (e.g. a serial port) to a computer with internet connection. This is demonstrated by using the Virtual COM port on the onboard STLINK debugger.
 
