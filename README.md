@@ -2,9 +2,11 @@
 
 This project demonstrates Percepio DevAlert on the STM32L4 IoT Discovery kit.
 
-DevAlert is an observability solution for software anomalies in remote IoT/Edge devices. By adding a small set of "alerts" at strategic locations in your code, like demonstrated in this project, many types of issues and anomalies can be captured automatically. For example: hardware fault exceptions, failed ASSERT checks and stack corruptions from buffer overruns. You can create your own alert types, control when they reported and select what information that is included, such as core dumps for your debugger and system traces for Tracealyzer.
+DevAlert is an observability solution for software anomalies in remote IoT/Edge devices. By adding a small set of "alerts" at strategic locations in your code, like demonstrated in this project, many types of issues and anomalies can be captured automatically. For example: hardware fault exceptions, failed ASSERT checks and stack corruptions from buffer overruns. 
 
-You can overview all reported issues and access the diagnostic data in the DevAlert Dashboard. Create an evaluation account at https://devalert.io/auth/signup. 
+You can create your own alert types and include any diagnostic data. The default configuration provides Arm Cortex-M core dumps for your gdb debugger as well as system traces for Tracealyzer. You may also integrate additional diagnostic payloads and analysis tools as needed.
+
+All reported issues can be overviewed in the DevAlert Dashboard and from here you can also access the diagnostic data. Note that the payloads are not stored inside the DevAlert service but in a separate storage backend that can be managed by the user. 
 
 ![gdb view](https://percepio.com/github_images/DevAlert-Overview.png)
 
