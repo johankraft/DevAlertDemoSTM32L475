@@ -50,7 +50,7 @@ However, to configure the desktop tools for the first time you need to understan
 
 2. The DevAlert backend storage, where the uploaded alerts and payloads are stored. The evaluation accounts include Percepio-hosted storage to make it easier to get started. Just sign up at https://devalert.io/auth/signup and use the same credentials for the desktop tools.
 
-4. The download of diagnostic payloads from the backend storage to your local computer is provided by the DevAlert Dispatcher tool, as explained in [Analyzing Alerts from the DevAlert Dashboard](#Analyzing-Alerts-from-the-DevAlert-Dashboard). Dispatcher can also invoke custom scripts and an example script is provided to fetch the right ELF file ("fetch_elf_file.bat").
+3. The download of diagnostic payloads from the backend storage to your local computer is provided by the DevAlert Dispatcher tool, as explained in [Analyzing Alerts from the DevAlert Dashboard](#Analyzing-Alerts-from-the-DevAlert-Dashboard). Dispatcher can also invoke custom scripts and an example script is provided to fetch the right ELF file ("fetch_elf_file.bat").
 
 4. Alerts can be uploaded to the backend storage in different ways, depending on what backend that is used. This demo project demonstrates two methods:
 4.1. [Direct upload using AWS IoT Core/MQTT](#Uploading-via-AWS-IoT-Core) and
@@ -129,15 +129,11 @@ This method is easiest to get started with and doesn't require any AWS account o
 The only things needed are:
 
 - Your DevAlert evaluation account. If you don't have this already, sign up at https://devalert.io/auth/signup and you get the account immidiatly.
+- The DevAlert tools (link below)
 - A terminal program like Teraterm
 - Python installed
 
-The rest is provided in this repository.
-
-In this configuration, the DFM library outputs the data as hex strings to the serial VCOM interface.
-The data is received using a terminal program (together with other output) and logged to a text file.
-The text file is then processed by the DevAlert tools and the data is uploaded to the cloud.
-This can run continously and upload multiple alerts from the device over a long time period, if needed.
+In this configuration, the DFM library outputs the data as hex strings to the serial VCOM interface. The data is received using a terminal program (together with other output) and logged to a text file. The text file is then processed by the DevAlert tools and the data is uploaded to the cloud. This can run continously and upload multiple alerts from the device over a long time period, if needed.
 
 For the terminal program we mostly use Teraterm, but any terminal program with a logging capability should work. 
 
@@ -148,30 +144,30 @@ On the host computer, the cloud upload is done using one of the following tools:
 - devalerts3 - uploads to your Amazon S3 bucket (hosted by the device builder)
 	
 In this demo, we use the devalerthttps tool for the upload. This is not intended for direct upload from devices, but is easier to get started with.
+
 To use it, follow the following steps:
 
 1. Install Python if you don't already have it.
 
-2. Run devalerthttps to enter your DevAlert credentials. These are saved for future sessions.
+2. Download the DevAlert desktop tools and extract the .zip file to a suitable location. You find the Windows version at https://percepio.com/downloads/da-tools-windows.zip.
+
+3. Run devalerthttps to enter your DevAlert credentials. These are saved for future sessions.
 
 	devalerthttps set-username --username email@domain.com
 	
 	devalerthttps set-password
 	Password: 
 
-Note that this username/password authentication is only used for DevAlert evaluation accounts, to simplify evaluation.
-Production accounts use mutual TLS authentication for receiving alert data and only "metadata" is uploaded in such configurations.
+Note that this username/password authentication is only used for DevAlert evaluation accounts, to simplify evaluation. Production accounts use mutual TLS authentication for receiving alert data and only "metadata" is uploaded in such configurations.
 The diagnostic payloads like core dumps and traces then remain on the customer side, in your own storage.
 
-3.	Close any terminal programs that are already connected to the same COM port.
+4.	Close any terminal programs that are already connected to the same COM port.
 
 	If using Windows and have Teraterm installed:
-	
-		- Copy the DA-tools directory to a suitable location.
-	
+		
 		- Make sure your terminal program is in your PATH (e.g. ttermpro.exe) so it can be called from the command line.
 	
-		- Run the da-serial-eval script (.bat) with the COM port provided as argument. This will start Teraterm on COM9 and upload the data using the devalerthttps tool.
+		- Run the da-serial-eval script (.bat) with the COM port provided as argument. The below example will start Teraterm on COM9 and upload the data using the devalerthttps tool.
 	
 			devalertserial-sandbox.bat 9	
 	
@@ -183,7 +179,6 @@ The diagnostic payloads like core dumps and traces then remain on the customer s
 		
 			python devalertserial.py --file MYFILE --upload sandbox | devalerthttps.exe store-trace
 
-	
 ## Uploading via AWS IoT Core
 
 This method requires a Wi-Fi network, an AWS account that has been set up for DevAlert, and a full DevAlert account with AWS support (provided on request).
