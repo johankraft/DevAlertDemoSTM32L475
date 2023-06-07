@@ -8,9 +8,7 @@ All reported issues can be overviewed in the DevAlert Dashboard and from here yo
 
 ![gdb view](https://percepio.com/github_images/DevAlert-Overview.png)
 
-Out-of-the-box this provides core dumps for your Arm Cortex-M gdb debugger and system traces for Percepio Tracealyzer. You may also integrate additional diagnostic payloads and analysis tools as needed.
-
-The payloads are not stored inside the DevAlert service but in a separate storage backend that can be managed by the user. 
+This is provided without having to upload all device data and ELF files to the DevAlert service. The diagnostic payloads are stored in a separate backend that can be provided and managed by the user for full control and privacy. All analysis happens on your local computer, just like if debugging a development board on your desk. This using common, familiar desktop tools such as gdb and Tracealyzer, or any other tools you add to the solution.
 
 ## Using DevAlert in Development and Testing
 
