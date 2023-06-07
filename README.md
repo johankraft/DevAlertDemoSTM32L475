@@ -336,9 +336,15 @@ In FreeRTOSConfig.h, the important parts are:
 DevAlert provides desktop integrations both for downloading alert data for analysis in desktop tools and for uploading alert data received from a locally connected device, e.g. via a serial connection.
 The latter is useful both to simplify evaluation and in system testing.
 
-The following illustration shows an overview of the DevAlert solution and the provided desktop tools.
+The following illustration shows an overview of the DevAlert solution and the provided desktop tools when using the DevAlert evaluation account.
 
-![DevAlert overview and desktop tools](https://percepio.com/github_images/DA-tools-overview.png)
+![DevAlert overview and desktop tools for evaluation account](https://percepio.com/github_images/DA-tools-overview.png)
+
+When integrating DevAlert with an AWS account, the data is instead stored in an S3 bucket that you control. Uploads are possible both directly from the device via AWS IoT Core and MQTT, and via the devalerts3 desktop client.
+
+![DevAlert overview and desktop tools for aws](https://percepio.com/github_images/DA-tools-overview-aws.png)
+
+
  
 ## Porting / Integration
 
