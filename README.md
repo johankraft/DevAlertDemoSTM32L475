@@ -28,9 +28,7 @@ With this level of observability, you can detect cybersecurity-related anomalies
 
 Having DevAlert enabled in the field also lets you detect and debug any remaning issues in the production code, within minutes after the very first occurence. This without needing a physical debug port in the shipped devices or having to ask the users for additional information.
 
-Using DevAlert in deployment works best if you have some kind of connectivity in the device. This way, you can get instant notification. This demonstrated here by connecting to AWS IoT Core via Wi-Fi.
-
-Alerts can also be stored on the device for later retrieval, e,g, by connecting to the device via bluetooth using a smartphone app with DevAlert integration. That use-case is not demonstrated in this demo, but is certainly doable.
+Using DevAlert in deployment works best if you have some kind of connectivity in the device. This way, you can get instant notification. This demonstrated here by connecting to AWS IoT Core via Wi-Fi. But alerts can also be stored on the device for later retrieval, e.g. via bluetooth or USB. Such use cases are however not demonstrated in this demo.
 
 Read more at https://percepio.com/devalert. 
 
