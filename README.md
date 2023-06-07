@@ -40,17 +40,23 @@ The following illustration shows an overview of the DevAlert solution when using
 
 ![DevAlert overview and desktop tools for evaluation account](https://percepio.com/github_images/DA-tools-overview.png)
 
-This may appear complicated, but it is very automated and easy to use. You simply log in to the dashboard at https://devalert.io, click on a payload (core dump or trace) and the data is displayed in a local tool within a few seconds. 
+This picture may appear complicated, but the solution is very automated and easy to use. To view debugging data from an alert, you simply log in to the dashboard and click on a link to one of the payloads (core dump or trace). The data is then displayed in the selected tool within a few seconds.
 
-However, to configure the desktop tools you need to understand a bit about how it works. This involves four parts:
+To upload alert data to your evaluation account, you only need to configure some paths in the provided scripts and run "da-serial-eval.bat", this assuming you have Teraterm installed with a COM port connected to the device.
+
+However, to configure the desktop tools for the first time you need to understand a bit about how it works. This involves four parts:
 
 1. The device library (DFM) that emit "alerts" when called from the application code. An alert provides diagnostic payloads such as core dumps and traces. This is demonstrated in this project as explained in [The Demo Code](#The-Demo-Code) with links to important parts of the code.
 
-2. The DevAlert backend storage, where the uploaded alerts are stored. The evaluation accounts include Percepio-hosted storage to make it easier to get started. Production accounts can be configured to use your own AWS account as backend for maximum privacy and data control. 
+2. The DevAlert backend storage, where the uploaded alerts and payloads are stored. The evaluation accounts include Percepio-hosted storage to make it easier to get started. Just sign up at https://devalert.io/auth/signup and use the same credentials for the desktop tools.
 
-3. The download from the backend storage to your local computer is provided by the DevAlert Dispatcher tool, as explained in [Analyzing Alerts from the DevAlert Dashboard](#Analyzing-Alerts-from-the-DevAlert-Dashboard). This allows for using your own backend, seperated from the DevAlert service. Dispatcher can also invoke custom scripts when activated. An example script is provided ("fetch_elf_file.bat") to fetch the right ELF file based on the software revision of the alert.
+4. The download of diagnostic payloads from the backend storage to your local computer is provided by the DevAlert Dispatcher tool, as explained in [Analyzing Alerts from the DevAlert Dashboard](#Analyzing-Alerts-from-the-DevAlert-Dashboard). Dispatcher can also invoke custom scripts and an example script is provided to fetch the right ELF file ("fetch_elf_file.bat").
 
-4. Alerts can be uploaded to the backend storage in different ways. This demo project demonstrates two methods, [direct upload using AWS IoT Core/MQTT](#Uploading-via-AWS-IoT-Core) and indirect upload using a serial connection together with the [DevAlert upload tools](#Uploading-via-a-Serial-Connection). The latter allows for using DevAlert also on device lacking cloud connectivity. This is also the easiest way to get started with DevAlert for evaluation.
+4. Alerts can be uploaded to the backend storage in different ways, depending on what backend that is used. This demo project demonstrates two methods:
+4.1. [Direct upload using AWS IoT Core/MQTT](#Uploading-via-AWS-IoT-Core) and
+4.2. [Indirect upload using the DevAlert upload tools](#Uploading-via-a-Serial-Connection). 
+
+The latter allows for using DevAlert also on device lacking cloud connectivity. This is also the easiest way to get started with DevAlert for evaluation.
 
 ### DevAlert with AWS IoT Core
 
