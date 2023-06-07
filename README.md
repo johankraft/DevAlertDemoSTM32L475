@@ -10,7 +10,9 @@ All reported issues can be overviewed in the DevAlert Dashboard and from here yo
 
 This is provided __without__ having to upload all device data and binaries to the DevAlert service. The diagnostic payloads are stored in a separate backend that can be provided by the customer for full data control and privacy. All analysis happens on your local computer, just like if debugging a development board on your desk, but using data from remote devices. This using familiar desktop tools such as gdb and Tracealyzer, and you can even add your own analysis tools if needed.
 
-## Using DevAlert in Development and Testing
+## Use Cases
+
+### Using DevAlert in Development and Testing
 
 By using DevAlert during software development and testing, debugging data is captured automatically on unexpected issues like crashes and intermittent errors. 
 This way, you always have detailed information available, and easily accessible in the web browser for all stakeholders. 
@@ -18,7 +20,7 @@ This can speed up debugging significantly and avoids costly project delays.
 
 Using DevAlert in this way only requires a local connection (e.g. a UART/USB serial connection) to a computer with internet connection. This is demonstrated by using the Virtual COM port on the onboard STLINK debugger.
 
-## Using DevAlert in Deployment
+### Using DevAlert in Deployment
 
 Once your software is ready for release, you can keep DevAlert enabled in deployment. This way you can detect cybersecurity-related anomalies such as stack corruption from buffer overruns. The provided core dumps lets you determine if the anomaly was a cyberattack or an accidental buffer overflow. The latter case means there is a vulnerability just waiting to be exploited. 
 
