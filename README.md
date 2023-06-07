@@ -332,6 +332,14 @@ In FreeRTOSConfig.h, the important parts are:
 - #define configUSE_TRACE_FACILITY 1 -- Needed for recording kernel events
 - #include "trcRecorder.h" -- Needed for recording kernel events 
  
+## DevAlert Tools
+DevAlert provides desktop integrations both for downloading alert data for analysis in desktop tools and for uploading alert data received from a locally connected device, e.g. via a serial connection.
+The latter is useful both to simplify evaluation and in system testing.
+
+The following illustration shows an overview of the DevAlert solution and the provided desktop tools.
+
+![DevAlert overview and desktop tools](https://percepio.com/github_images/DA-tools-overview.png)
+ 
 ## Porting / Integration
 
 To port this to another target, you may need to update the following files:
