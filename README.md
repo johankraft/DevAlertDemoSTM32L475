@@ -64,6 +64,18 @@ The latter allows for using DevAlert also on device lacking cloud connectivity. 
 
 When integrating DevAlert with an AWS account, the alerts are stored in your own Amazon S3 bucket. They are uploaded either directly from the device via AWS IoT Core (MQTT) or using the desktop client devalerts3. 
 
+## Downloads
+
+Apart from this repository, you also need the following software:
+
+- Development tool SW4STM32: https://www.openstm32.org/System%2BWorkbench%2Bfor%2BSTM32
+
+- DevAlert Desktop Tools: https://percepio.com/downloads/da-tools-windows.zip (windows version, Linux coming)
+
+- Percepio Tracealyzer: https://percepio.com/tracealyzer/update/
+
+- A terminal program such as Teraterm: https://osdn.net/projects/ttssh2/releases/
+
 ## Loading the demo project
 
 This demo project is for the SW4STM32 development tools. If you don't already have it installed, get it from https://www.openstm32.org/System%2BWorkbench%2Bfor%2BSTM32.
