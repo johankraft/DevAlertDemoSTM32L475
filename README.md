@@ -24,6 +24,27 @@ Read more at https://percepio.com/devalert.
 
 Learn more about the STM32L4 IoT Discovery kit at https://www.st.com/en/evaluation-tools/b-l475e-iot01a.html. 
 
+# DevAlert Solution Overview
+
+The following illustration shows an overview of the DevAlert solution when using the DevAlert evaluation account. The file names reflect the Windows versions, but the desktop tools are also available for Linux.
+
+![DevAlert overview and desktop tools for evaluation account](https://percepio.com/github_images/DA-tools-overview.png)
+
+This involves four parts:
+1. The device library (DFM) that emit "alerts" when called from the application code. An alert provides diagnostic payloads such as core dumps and traces. This is demonstrated in this project as explained in [The Demo Code](#The-Demo-Code) with links to important parts of the code.
+
+2. The DevAlert service, hosted by Percepio. This provides a dashboard in your web browser with links to the diagnostic payloads. This is found at https://devalert.io and you can sign up for a free evaluation at https://devalert.io/auth/signup.
+
+3. The DevAlert backend, where the uploaded data is stored. Evaluation accounts come with Percepio-hosted storage to make it easier to get started. Production accounts can be configured to use your own AWS account as backend for maximum privacy and data control. 
+
+4. Desktop tools for downloading and also uploading alert data. The download is explained in [Analyzing Alerts from the DevAlert Dashboard](#Analyzing-Alerts-from-the-DevAlert-Dashboard). Alerts can be uploaded to the DevAlert backend in several ways. This demo project demonstrates [direct upload using AWS IoT Core/MQTT](#Uploading-via-AWS-IoT-Core) and indirect upload using a serial connection together with the [DevAlert upload tools](#Uploading-via-a-Serial-Connection). The latter allows for using DevAlert also on device lacking direct cloud connectivity. This is an easy way to get started with DevAlert as you only need a UART/serial port to transfer the data to an internet-connected computer running the DevAlert upload tool.
+
+### DevAlert with AWS IoT Core
+
+![DevAlert overview and desktop tools for aws](https://percepio.com/github_images/DA-tools-overview-aws.png)
+
+When integrating DevAlert with an AWS account, the alerts are stored in your own Amazon S3 bucket. They are uploaded either directly from the device via AWS IoT Core (MQTT) or using the desktop client devalerts3. 
+
 ## Loading the demo project
 
 This demo project is for the SW4STM32 development tools. If you don't already have it installed, get it from https://www.openstm32.org/System%2BWorkbench%2Bfor%2BSTM32.
@@ -83,7 +104,7 @@ These are selected randomly and the device will restart after each reported erro
 
 To see these alerts in DevAlert and download the diagnostic payload, like core dumps and traces, you need to configure the data upload.
 
-## Uploading via STLINK VCOM ("Debug-SerialOnly")
+## Uploading via a Serial Connection
 
 This method is easiest to get started with and doesn't require any AWS account or cloud-side configuration. 
 The only things needed are:
@@ -98,8 +119,6 @@ In this configuration, the DFM library outputs the data as hex strings to the se
 The data is received using a terminal program (together with other output) and logged to a text file.
 The text file is then processed by the DevAlert tools and the data is uploaded to the cloud.
 This can run continously and upload multiple alerts from the device over a long time period, if needed.
-
-(STM32L4 Board: Demo application) ---> STLINK VCOM/USB ---> (Host computer: DevAlert desktop tools) ---> (DevAlert cloud account)
 
 For the terminal program we mostly use Teraterm, but any terminal program with a logging capability should work. 
 
@@ -129,26 +148,24 @@ The diagnostic payloads like core dumps and traces then remain on the customer s
 
 	If using Windows and have Teraterm installed:
 	
-		- Open the DA-tools directory and locate devalertserial-sandbox.bat and devalertserial.py.
-	
-		- Copy the scripts to a suitable location.
+		- Copy the DA-tools directory to a suitable location.
 	
 		- Make sure your terminal program is in your PATH (e.g. ttermpro.exe) so it can be called from the command line.
 	
-		- Run the .bat file with the COM port provided as argument. This will start Teraterm on COM9 and upload the data using the devalerthttps tool.
+		- Run the da-serial-eval script (.bat) with the COM port provided as argument. This will start Teraterm on COM9 and upload the data using the devalerthttps tool.
 	
 			devalertserial-sandbox.bat 9	
 	
-	If using Linux or prefer another terminal program, make a custom script similar to devalertserial-sandbox.bat, with the following steps:
+	If using Linux or prefer another terminal program, make a custom script similar to da-serial-eval.bat with the following steps:
 
 		- Start a terminal program on the right COM port, logging the output to a text file ("MYFILE" below).
 	
-		- Run the following piped command
+		- Run the following:
 		
 			python devalertserial.py --file MYFILE --upload sandbox | devalerthttps.exe store-trace
 
 	
-## Uploading via AWS IoT Core ("Debug")
+## Uploading via AWS IoT Core
 
 This method requires a Wi-Fi network, an AWS account that has been set up for DevAlert, and a full DevAlert account with AWS support (provided on request).
 Contact support@percepio.com if you need help to set this up.
@@ -297,7 +314,7 @@ For this demo, with SW4STM32, this can be configured in the following way:
 Note that this assumes that the elf and dmp files can be found by loadcrashdump.cfg. 
 This example uses a hardcoded folder for this (latestcrashdump), where the files from Dispatcher are copied by the "fetch_elf_file" script.
  
-## The Demo Application Code
+## The Demo Code
 
 The demo project generate alerts via DevAlert in two ways. On fault exceptions and by calling the DFM_TRAP() macro explicitly in the code, for example like:
 
@@ -332,24 +349,6 @@ In FreeRTOSConfig.h, the important parts are:
 - #define configUSE_TRACE_FACILITY 1 -- Needed for recording kernel events
 - #include "trcRecorder.h" -- Needed for recording kernel events 
  
-## DevAlert Tools and Solution Overview
-This section explains a bit more about how it works.
-	
-DevAlert provides desktop integrations both for downloading alert data for analysis in desktop tools and for uploading alert data received from a locally connected device, e.g. via a serial connection. The latter is useful both to simplify evaluation and in system testing.
-
-The following illustration shows an overview of the DevAlert solution when using the DevAlert evaluation account. The file names reflect the Windows versions, but the desktop tools are also available for Linux.
-
-![DevAlert overview and desktop tools for evaluation account](https://percepio.com/github_images/DA-tools-overview.png)
-
-The upload is provided by calling the da-serial-eval script, that reads a log file from your terminal program. Teraterm is used in the example script but this can easily be replaced. 	
-	
-When integrating DevAlert with an AWS account, the data is instead stored in an S3 bucket that you control.
-	
-Uploads are possible directly from the device via AWS IoT Core (MQTT) or by the desktop client devalerts3. The latter allows for using DevAlert on devices without cloud connectivity. You only need a UART/serial port and this can still be used for traditional debug logging if you want both.
-
-![DevAlert overview and desktop tools for aws](https://percepio.com/github_images/DA-tools-overview-aws.png)
-
-
 ## Porting / Integration
 
 To port this to another target, you may need to update the following files:
