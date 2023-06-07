@@ -262,21 +262,24 @@ You may also load the core dump into your IDE debugger.
 
 ![Eclipse debugger view](https://percepio.com/github_images/DevAlert-Eclipse.png)
 
-To view a core dump, you can configure your IDE debugger to start a gdb session that calls the provided gdb command file, "loadcrashdebug.cfg".
-This only contains the following commands:
+To view a core dump, you can configure your IDE debugger to start a gdb session that calls the provided gdb command file.
+An example is provided in "loadcoredump.cfg". This only contains the following commands:
 
 	cd C:/DevAlertDispatcher
 	file ./latestcrashdump/aws_demos.elf
 	target remote | ./CrashDebug.exe --elf ./latestcrashdump/aws_demos.elf --dump ./latestcrashdump/latest.dmp
 
 The "file" command sets the right ELF file.
+
 The "target remote" command loads the core dump using the CrashDebug tool.
-Note that the "latestcrashdump" directory is the output of the "fetch_elf_file" script. 
+
+The "latestcrashdump" directory is the output of the "fetch_elf_file" script, that fetches the right version of the ELF image file. 
 
 If using an Eclipse-based IDE, this can be implemented as a separate "debug configuration".
 For this demo, with SW4STM32, this can be configured in the following way:
 
 1. Create a new debug configuration of the type "GDB Hardware Debugging". Name it e.g. "DevAlert Core Dump".
+	
 2. In the Debug Configuration editor, enter the following:
 - Main / C/C++ Application: the ELF file in the build directory (not used but must be provided)
 - Main / Disable auto build: Checked
