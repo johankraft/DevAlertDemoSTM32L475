@@ -26,7 +26,7 @@ Learn more about the STM32L4 IoT Discovery kit at https://www.st.com/en/evaluati
 
 # DevAlert Solution Overview
 
-The following illustration shows an overview of the DevAlert solution when using the DevAlert evaluation account. The file names reflect the Windows versions, but the desktop tools are also available for Linux.
+The following illustration shows an overview of the DevAlert solution when using the DevAlert evaluation account togther with a serial connection to a local device. The file names reflect the Windows versions, but the desktop tools are also available for Linux.
 
 ![DevAlert overview and desktop tools for evaluation account](https://percepio.com/github_images/DA-tools-overview.png)
 
