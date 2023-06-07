@@ -35,7 +35,7 @@ This involves four parts:
 
 2. The DevAlert service, hosted by Percepio. This provides a dashboard in your web browser with links to the diagnostic payloads. This is found at https://devalert.io and you can sign up for a free evaluation at https://devalert.io/auth/signup.
 
-3. The DevAlert backend, where the uploaded data is stored. Evaluation accounts come with Percepio-hosted storage to make it easier to get started. Production accounts can be configured to use your own AWS account as backend for maximum privacy and data control. 
+3. The DevAlert backend storage, where the uploaded alerts are stored. The evaluation accounts include Percepio-hosted storage to make it easier to get started. Production accounts can be configured to use your own AWS account as backend for maximum privacy and data control. 
 
 4. Desktop tools for downloading and also uploading alert data. The download is explained in [Analyzing Alerts from the DevAlert Dashboard](#Analyzing-Alerts-from-the-DevAlert-Dashboard). Alerts can be uploaded to the DevAlert backend in several ways. This demo project demonstrates [direct upload using AWS IoT Core/MQTT](#Uploading-via-AWS-IoT-Core) and indirect upload using a serial connection together with the [DevAlert upload tools](#Uploading-via-a-Serial-Connection). The latter allows for using DevAlert also on device lacking direct cloud connectivity. This is an easy way to get started with DevAlert as you only need a UART/serial port to transfer the data to an internet-connected computer running the DevAlert upload tool.
 
