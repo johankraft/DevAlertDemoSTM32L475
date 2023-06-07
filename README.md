@@ -44,7 +44,7 @@ This involves five parts:
 
 3. The DevAlert backend storage, where the uploaded alerts are stored. The evaluation accounts include Percepio-hosted storage to make it easier to get started. Production accounts can be configured to use your own AWS account as backend for maximum privacy and data control. 
 
-4. The download from the backend storage to your local computer is provided by the DevAlert Dispatcher tool, as explained in [Analyzing Alerts from the DevAlert Dashboard](#Analyzing-Alerts-from-the-DevAlert-Dashboard). This allows for using your own backend, seperated from the DevAlert service.
+4. The download from the backend storage to your local computer is provided by the DevAlert Dispatcher tool, as explained in [Analyzing Alerts from the DevAlert Dashboard](#Analyzing-Alerts-from-the-DevAlert-Dashboard). This allows for using your own backend, seperated from the DevAlert service. Dispatcher can also invoke custom scripts when activated. An example script is provided ("fetch_elf_file.bat") to fetch the right ELF file based on the software revision of the alert.
 
 5. Alerts can be uploaded to the backend storage in different ways. This demo project demonstrates two methods, [direct upload using AWS IoT Core/MQTT](#Uploading-via-AWS-IoT-Core) and indirect upload using a serial connection together with the [DevAlert upload tools](#Uploading-via-a-Serial-Connection). The latter allows for using DevAlert also on device lacking cloud connectivity. This is also the easiest way to get started with DevAlert for evaluation.
 
