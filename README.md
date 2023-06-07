@@ -332,20 +332,24 @@ In FreeRTOSConfig.h, the important parts are:
 - #define configUSE_TRACE_FACILITY 1 -- Needed for recording kernel events
 - #include "trcRecorder.h" -- Needed for recording kernel events 
  
-## DevAlert Tools
-DevAlert provides desktop integrations both for downloading alert data for analysis in desktop tools and for uploading alert data received from a locally connected device, e.g. via a serial connection.
-The latter is useful both to simplify evaluation and in system testing.
+## DevAlert Tools and Solution Overview
+This section explains a bit more about how it works.
+	
+DevAlert provides desktop integrations both for downloading alert data for analysis in desktop tools and for uploading alert data received from a locally connected device, e.g. via a serial connection. The latter is useful both to simplify evaluation and in system testing.
 
-The following illustration shows an overview of the DevAlert solution and the provided desktop tools when using the DevAlert evaluation account.
+The following illustration shows an overview of the DevAlert solution when using the DevAlert evaluation account. The file names reflect the Windows versions, but the desktop tools are also available for Linux.
 
 ![DevAlert overview and desktop tools for evaluation account](https://percepio.com/github_images/DA-tools-overview.png)
 
-When integrating DevAlert with an AWS account, the data is instead stored in an S3 bucket that you control. Uploads are possible both directly from the device via AWS IoT Core and MQTT, and via the devalerts3 desktop client.
+The upload is provided by calling the da-serial-eval script, that reads a log file from your terminal program. Teraterm is used in the example script but this can easily be replaced. 	
+	
+When integrating DevAlert with an AWS account, the data is instead stored in an S3 bucket that you control.
+	
+Uploads are possible directly from the device via AWS IoT Core (MQTT) or by the desktop client devalerts3. The latter allows for using DevAlert on devices without cloud connectivity. You only need a UART/serial port and this can still be used for traditional debug logging if you want both.
 
 ![DevAlert overview and desktop tools for aws](https://percepio.com/github_images/DA-tools-overview-aws.png)
 
 
- 
 ## Porting / Integration
 
 To port this to another target, you may need to update the following files:
