@@ -165,19 +165,19 @@ The diagnostic payloads like core dumps and traces then remain on the customer s
 
 	If using Windows and have Teraterm installed:
 		
-		- Make sure your terminal program is in your PATH (e.g. ttermpro.exe) so it can be called from the command line.
+	- Make sure your terminal program is in your PATH (e.g. ttermpro.exe) so it can be called from the command line.
 	
-		- Run the da-serial-eval script (.bat) with the COM port provided as argument. The below example will start Teraterm on COM9 and upload the data using the devalerthttps tool.
+	- Run the da-serial-eval script (.bat) with the COM port provided as argument. The below example will start Teraterm on COM9 and upload the data using the devalerthttps tool.
 	
-			devalertserial-sandbox.bat 9	
+		devalertserial-sandbox.bat 9	
 	
 	If using Linux or prefer another terminal program, make a custom script similar to da-serial-eval.bat with the following steps:
 
-		- Start a terminal program on the right COM port, logging the output to a text file ("MYFILE" below).
+	- Start a terminal program on the right COM port, logging the output to a text file ("MYFILE" below).
 	
-		- Run the following:
+	- Run the following:
 		
-			python devalertserial.py --file MYFILE --upload sandbox | devalerthttps.exe store-trace
+		python devalertserial.py --file MYFILE --upload sandbox | devalerthttps.exe store-trace
 
 ## Uploading via AWS IoT Core
 
@@ -204,8 +204,7 @@ The first time, you need to start Dispatcher manually. You should see the follow
 
 ![DevAlert Dispatcher Configuration](https://percepio.com/github_images/DevAlert-Dispatcher-Main.png)
 
-Click on "Provider Settings Wizard..." and configure it as described at https://devalert.io/dispatcher/setup.
-When using a DevAlert evaluation account, you only need to enter the following information:
+Click on "Provider Settings Wizard..." and configure it as described at https://devalert.io/dispatcher/setup. When using a DevAlert evaluation account, you only need to enter the following information:
 
 1. Your DevAlert account credentials (username and password) for the DevAlert service. Check the "Remember password" option to avoid having to repeat the password every time.
 
@@ -243,16 +242,13 @@ You also find templates for both Windows and Linux in the "template" directory i
 
 ### Viewing Traces in Tracealyzer
 
-The demo includes the TraceRecorder library that produces event traces for Tracealyzer. 
-This shows a timeline of the FreeRTOS scheduling and API calls, and also allows for custom logging from the application code.
+The demo includes the TraceRecorder library that produces event traces for Tracealyzer. This shows a timeline of the FreeRTOS scheduling and API calls, and also allows for custom logging from the application code.
+
 If you don't already have Tracealyzer installed, you can download it for evaluation at https://percepio.com/tracealyzer/update/.
 
 The default Dispatcher configuration will start Tracealyzer automatically for payloads ending with .psf, .psfs, .bin and .trc.
 
-You need a license to run Tracealyzer, which is provided by your DevAlert evaluation account.
-When starting Tracealyzer for the first time, you will see a Welcome screen with three big buttons.
-Select "Activate License", select "Percepio License Service" and enter your DevAlert credentials. 
-Select "Rememer password" if you don't want to log in each time you start the tool.
+You need a license to run Tracealyzer, which is provided by your DevAlert evaluation account. When starting Tracealyzer for the first time, you will see a Welcome screen with three big buttons. Select "Activate License", select "Percepio License Service" and enter your DevAlert credentials. 
 
 ### Viewing Core Dumps from Arm Cortex-M devices
 
@@ -285,7 +281,6 @@ This will start a gdb client with the core dump loaded, like shown below.
 In the screenshot we use a hardcoded path make it easier to load the core dump into an IDE, as described in the next section. 
  
 ![gdb view](https://percepio.com/github_images/DevAlert-gdb.png)
-
 
 ### Viewing Core Dumps in an IDE
 
