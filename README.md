@@ -8,9 +8,7 @@ All reported issues can be overviewed in the DevAlert Dashboard and from here yo
 
 ![gdb view](https://percepio.com/github_images/DevAlert-Overview.png)
 
-This is provided __without__ having to upload all device data and binaries to the DevAlert service. 
-
-The diagnostic payloads are stored in a separate backend that can be provided by the customer for full data control and privacy. All analysis happens on your local computer, just like if debugging a development board on your desk, but using data from remote devices. This using familiar desktop tools such as gdb and Tracealyzer, and you can even add your own analysis tools if needed.
+DevAlert has been developed with data privacy in mind and avoids the need to upload all device data and binaries to a cloud service. The DevAlert service only consumes metadata. The diagnostic payloads are stored in a separate backend that can be provided by the customer for full data control and privacy. All analysis happens on your local computer, just like if debugging a development board on your desk, but using data from remote devices. This using familiar desktop tools such as gdb and Tracealyzer, and you can even add your own analysis tools if needed.
 
 ## DevAlert Use Cases
 
