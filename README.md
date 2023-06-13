@@ -1,6 +1,6 @@
-# Percepio DevAlert Demonstration on the STM32L4 IoT Discovery Kit
+# Percepio DevAlert v2.0 on the STM32L4 IoT Discovery Kit
 
-This project demonstrates Percepio DevAlert on the STM32L4 IoT Discovery kit.
+This project demonstrates [Percepio DevAlert v2.0](https://percepio.com/devalert) on the STM32L4 IoT Discovery kit.
 
 DevAlert is an observability solution for crashes, errors and anomalies in IoT/Edge device software. By adding a small set of "alerts" at strategic locations in your code, like demonstrated in this project, you get automatic alerts with detailed information such as core dumps and system traces. You can create your own alert types and include any diagnostic data of interest.
 
