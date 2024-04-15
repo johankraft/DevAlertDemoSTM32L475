@@ -25,7 +25,8 @@
  */
 #define DFM_CFG_CLOUD_PORT_MAX_TOPIC_SIZE (256U)
 
-/* @brief Intended to ensure exclusive access to the serial port before
+/**
+ * @brief Intended to ensure exclusive access to the serial port before
  * outputting the alert data, to avoid that other output (random printf
  * calls) occur in between the "[[" and "]]" markers.
  * This can be implemented by disabling the kernel scheduler.
@@ -35,10 +36,11 @@
  */
 #define DFM_CFG_LOCK_SERIAL()
 
-/* @brief Intended to release the serial port after having written a
+/**
+ * @brief Intended to release the serial port after having written a
  * block of alert data. If the kernel scheduler was disabled by the above
  * macro, it should be resumed here.
  */
 #define DFM_CFG_UNLOCK_SERIAL()
 
-#endif //UNITTEST_DFMCLOUDPORTCONFIG_H
+#endif

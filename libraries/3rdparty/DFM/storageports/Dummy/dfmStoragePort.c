@@ -11,7 +11,7 @@
 #include <dfm.h>
 #include <dfmStoragePort.h>
 
-#if (defined(DFM_CFG_ENABLED) && ((DFM_CFG_ENABLED) >= 1))
+#if ((DFM_CFG_ENABLED) >= 1)
 
 DfmResult_t xDfmStoragePortInitialize(DfmStoragePortData_t *pxBuffer)
 {

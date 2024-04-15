@@ -596,11 +596,6 @@
 			<locationURI>PARENT-5-PROJECT_LOC/libraries/3rdparty/DFM/storageports/FLASH/dfmStoragePort.c</locationURI>
 		</link>
 		<link>
-			<name>libraries/3rdparty/DFM/dfmUser.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/libraries/3rdparty/DFM/dfmUser.c</locationURI>
-		</link>
-		<link>
 			<name>libraries/3rdparty/DFM/include</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>

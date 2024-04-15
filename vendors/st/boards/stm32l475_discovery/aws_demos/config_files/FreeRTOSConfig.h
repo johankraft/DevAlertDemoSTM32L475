@@ -58,7 +58,9 @@
 #define configMINIMAL_STACK_SIZE                     ( ( uint16_t ) 90 )
 #define configTOTAL_HEAP_SIZE                        (23 * 1024)
 #define configMAX_TASK_NAME_LEN                      ( 16 )
+
 #define configUSE_TRACE_FACILITY                     1
+
 #define configUSE_16_BIT_TICKS                       0
 #define configIDLE_SHOULD_YIELD                      1
 #define configUSE_MUTEXES                            1
@@ -215,8 +217,6 @@ extern int iMainRand32( void );
 #define configPLATFORM_NAME           "STM32L475"
 
 /* Integrates the Tracealyzer recorder with FreeRTOS */
-#if ( configUSE_TRACE_FACILITY == 1 )
-	#include "trcRecorder.h"
-#endif
+#include "trcRecorder.h"
 
 #endif /* FREERTOS_CONFIG_H */

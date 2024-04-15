@@ -70,8 +70,6 @@ static DfmResult_t prvSerialPortUploadEntry(DfmEntryHandle_t xEntryHandle)
 	uint32_t checksum;
 	uint32_t datalen;
 
-	int counter = 0;
-
 	if (pxCloudPortData == (void*)0)
 	{
 		return DFM_FAIL;

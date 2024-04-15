@@ -9,9 +9,6 @@
  */
 
 #include "dfmStoragePort.h"
-//#include "dfmSession.h"
-#include <drivers/flash.h>
-#include <device.h>
 #include <string.h>
 
 /**
@@ -26,9 +23,9 @@
 #if (defined(DFM_CFG_ENABLED) && ((DFM_CFG_ENABLED) >= 1))
 
 #include <dfm.h>
-#include <drivers/flash.h>
-#include <fs/fcb.h>
-#include <storage/flash_map.h>
+#include <zephyr/drivers/flash.h>
+#include <zephyr/fs/fcb.h>
+#include <zephyr/storage/flash_map.h>
 
  /**
   * @internal DFM Flash entry structure
@@ -39,7 +36,7 @@ typedef struct DfmStorageMetadata {
 	uint16_t usEntryCount;
 	uint32_t ulType;
 	uint32_t ulDataSize;
-} DfmStorageMetadata_t;
+} __attribute__((aligned(8))) DfmStorageMetadata_t;
 
  /**
   * @def DFM_STORAGE_PORT_FCB_AREA_NAME
@@ -50,14 +47,14 @@ typedef struct DfmStorageMetadata {
   * KConfig and device tree configurations. This seems like the most suitable
   * solution for now.
   */
-#define DFM_STORAGE_PORT_FCB_AREA_NAME dfm_storage
+#define DFM_STORAGE_PORT_FCB_AREA_NAME dfm_partition
 
 /* Ensure that the sector count and size is compatible with the given partition */
-#if (FLASH_AREA_SIZE(DFM_STORAGE_PORT_FCB_AREA_NAME) < \
-	(CONFIG_PERCEPIO_DFM_CFG_STORAGE_PORT_FCB_SECTOR_COUNT * \
-	CONFIG_PERCEPIO_DFM_CFG_STORAGE_PORT_FCB_SECTOR_SIZE))
+#if (FIXED_PARTITION_SIZE(dfm_partition) < (CONFIG_PERCEPIO_DFM_CFG_STORAGE_PORT_FCB_SECTOR_COUNT * CONFIG_PERCEPIO_DFM_CFG_STORAGE_PORT_FCB_SECTOR_SIZE))
 #error "DevAlert: You have specified a sector count and size combination which is larger than your dfm_storage partition!"
 #endif
+
+#define DFM_STORAGE_PORT_FCB_SECTOR_SIZE_ALIGNED (((CONFIG_PERCEPIO_DFM_CFG_STORAGE_PORT_FCB_SECTOR_SIZE) / 8U) * 8U)
 
 #define DFM_STORAGE_PORT_ALERT_TYPE		0x34561842
 #define DFM_STORAGE_PORT_PAYLOAD_TYPE	0x82713124
@@ -78,9 +75,7 @@ struct flash_sector xFlashCircularBufferSector[CONFIG_PERCEPIO_DFM_CFG_STORAGE_P
 
 typedef struct DfmWalkData
 {
-	void* pvBuffer;
-	uint32_t ulBufferSize;
-	uint32_t ulType;
+	uint32_t ulCurrentType;
 	uint32_t ulOffset;
 	uint16_t usExpectedEntryId;
 	uint16_t usExpectedEntryCount;
@@ -88,87 +83,158 @@ typedef struct DfmWalkData
 
 static DfmStoragePortData_t* pxStoragePortData;
 
-static int prvWalkCallback(struct fcb_entry_ctx *loc_ctx, void* arg)
+typedef struct DfmTraversionState {
+	struct fcb_entry_ctx xEntryCtx;
+	uint8_t ucIsDirty;
+} DfmTraversionState_t;
+
+static DfmTraversionState_t xTraversionState = {
+	.xEntryCtx = {}
+};
+
+/**
+ * Verify the metadata header, making sure that the data being held in the current entry matches what was expected
+ * @param pxFlashMetadata The static DfmStorageMetaData_t struct at the top of this file, contains the metadata just
+ * 					 read from flash.
+ * @param pxWalkData The entry request specification, essentially. What are we expecting
+ * @return
+ */
+static int prvVerifyMetadata(DfmStorageMetadata_t* pxFlashMetadata, DfmWalkData_t* pxWalkData, uint32_t ulBufferSize)
 {
-	DfmWalkData_t* pxWalkData = (DfmWalkData_t*)arg;
-	DfmStorageMetadata_t* pxMetadata = (DfmStorageMetadata_t*)0;
-
-	/* Start by reading the metadata */
-	if (flash_area_read(loc_ctx->fap, FCB_ENTRY_FA_DATA_OFF(loc_ctx->loc), &xDfmFlashMetadata, sizeof(DfmStorageMetadata_t)) != 0)
-	{
-		/* Read failed, not much we can do about that */
-		return 0;
-	}
-
 	/* Verify content */
-	if (xDfmFlashMetadata.ucStartMarker[0] != 0x44 ||
-		xDfmFlashMetadata.ucStartMarker[1] != 0x46 ||
-		xDfmFlashMetadata.ucStartMarker[2] != 0x6C ||
-		xDfmFlashMetadata.ucStartMarker[3] != 0x61)
+	if (pxFlashMetadata->ucStartMarker[0] != 0x44 ||
+		pxFlashMetadata->ucStartMarker[1] != 0x46 ||
+		pxFlashMetadata->ucStartMarker[2] != 0x6C ||
+		pxFlashMetadata->ucStartMarker[3] != 0x61)
 	{
 		/* Incorrect entry, not much we can do about that */
-		return 0;
+		return -1;
 	}
 
-	if (xDfmFlashMetadata.ulType != pxWalkData->ulType)
+	if (pxFlashMetadata->ulType != pxWalkData->ulCurrentType)
 	{
-		if (pxWalkData->ulType == DFM_STORAGE_PORT_ALERT_TYPE)
-		{
-			/* We're looking for an alert, so we keep looking */
-			return 0;
-		}
-		if (pxWalkData->ulType == DFM_STORAGE_PORT_PAYLOAD_TYPE)
-		{
-			/* We're looking for a payload but found something else, abort */
-			return -1;
-		}
+		return -1;
 	}
 
-	if (xDfmFlashMetadata.usEntryId != pxWalkData->usExpectedEntryId)
+	if (pxFlashMetadata->usEntryId != pxWalkData->usExpectedEntryId)
 	{
-		if (pxWalkData->usExpectedEntryId == 0)
-		{
-			/* We're looking for a new payload, so we just walk past this */
-			return 0;
-		}
-		else
-		{
-			/* We're in the middle of reading the payload so we must fail, abort */
-			return -1;
-		}
+		return -1;
 	}
 
-	if (xDfmFlashMetadata.ulDataSize > (pxWalkData->ulBufferSize - pxWalkData->ulOffset))
+	if (xDfmFlashMetadata.ulDataSize > (ulBufferSize - pxWalkData->ulOffset))
 	{
 		/* Too big, not much we can do about that, abort */
 		return -1;
 	}
 
-	if (pxWalkData->usExpectedEntryCount == 0)
+	return 0;
+}
+
+/**
+ * Get the next payload chunk/alert from the fcb. This can mean reading multiple fcb entries.
+ * @param pxFcb Pointer to the struct which describes the FCB
+ * @param pxTraversionState A container object for keeping the fcb context, needed between the traversions
+ * @param pvBuffer The buffer containing the current alert/payload chunk which is supposed to be retrieved
+ * @param ulBufferSize Size of the aforementioned buffer
+ * @return 0 => success, !0 => fail
+ */
+static int prvDfmGetNext(struct fcb *pxFcb, DfmTraversionState_t* pxTraversionState, void* pvBuffer, uint32_t ulBufferSize)
+{
+	DfmWalkData_t xWalkData = { 0 };
+	void* pvStartSector = NULL;
+	int lWalkResult = 0;
+	int lReadResult = 0;
+
+	if (pxTraversionState->xEntryCtx.loc.fe_sector == NULL)
+		pvStartSector = (void*)pxFcb->f_oldest;
+	else
+		pvStartSector = (void*)pxTraversionState->xEntryCtx.loc.fe_sector;
+
+	while (1)
 	{
-		/* This is the first entry found */
-		pxWalkData->usExpectedEntryCount = xDfmFlashMetadata.usEntryCount;
+		lWalkResult = fcb_getnext(pxFcb, &pxTraversionState->xEntryCtx.loc);
+		pxTraversionState->xEntryCtx.fap = pxFcb->fap;
+
+		if (lWalkResult == -ENOTSUP)
+		{
+			if (pxTraversionState->ucIsDirty)
+			{
+				fcb_rotate(pxFcb);
+			}
+
+			/* Reset the traversion context, we've traversed the FCB */
+			memset(&xTraversionState, 0, sizeof(DfmTraversionState_t));
+
+			return -1;
+		}
+
+		pxTraversionState->ucIsDirty = 1;
+
+		if (pvStartSector != pxTraversionState->xEntryCtx.loc.fe_sector)
+		{
+			/* We've entered a new sector, increase the counter */
+			/* Since we've traversed the previous block, we can now rotate it */
+			fcb_rotate(pxFcb);
+		}
+
+		/* Start by reading the metadata */
+		lReadResult = flash_area_read(
+			pxTraversionState->xEntryCtx.fap,
+			FCB_ENTRY_FA_DATA_OFF(pxTraversionState->xEntryCtx.loc),
+			&xDfmFlashMetadata,
+			sizeof(DfmStorageMetadata_t)
+		);
+
+		if (lReadResult != 0)
+		{
+			/* Read failed, reset the buffer and continue */
+			memset(pvBuffer, 0, ulBufferSize);
+			memset(&xWalkData, 0, sizeof(DfmWalkData_t));
+			continue;
+		}
+
+		if (prvVerifyMetadata(&xDfmFlashMetadata, &xWalkData, ulBufferSize) != 0)
+		{
+			/* Start over, this will always happen at the first read, only on failure for subsequent reads */
+			if (xDfmFlashMetadata.usEntryId == 0) {
+				xWalkData.ulCurrentType = xDfmFlashMetadata.ulType;
+				xWalkData.usExpectedEntryId = 0;
+				xWalkData.usExpectedEntryCount = xDfmFlashMetadata.usEntryCount;
+				xWalkData.ulOffset = 0;
+			}
+			else
+			{
+				memset(&xWalkData, 0, sizeof(DfmWalkData_t));
+				continue;
+			}
+		}
+
+		/* Read the actual data */
+		/* TODO: 64bit compatiblity */
+		lReadResult = flash_area_read(
+			pxTraversionState->xEntryCtx.fap,
+			FCB_ENTRY_FA_DATA_OFF(pxTraversionState->xEntryCtx.loc) + sizeof(DfmStorageMetadata_t),
+			(void*)((uint32_t)pvBuffer + xWalkData.ulOffset),
+			xDfmFlashMetadata.ulDataSize
+		);
+
+		if (lReadResult != 0)
+		{
+			/* Read failed, reset the buffer and continue */
+			memset(pvBuffer, 0, ulBufferSize);
+			memset(&xWalkData, 0, sizeof(DfmWalkData_t));
+			continue;
+		}
+
+		xWalkData.usExpectedEntryId++;
+		xWalkData.ulOffset += xDfmFlashMetadata.ulDataSize;
+
+		if (xWalkData.usExpectedEntryId == xWalkData.usExpectedEntryCount)
+		{
+			/* Found the entire alert/payload chunk */
+			return 0;
+		}
 	}
-
-	/* We found the requested type */
-	/* TODO: 64-bit support */
-	if (flash_area_read(loc_ctx->fap, FCB_ENTRY_FA_DATA_OFF(loc_ctx->loc) + sizeof(DfmStorageMetadata_t), (void*)((uint32_t)pxWalkData->pvBuffer + pxWalkData->ulOffset), xDfmFlashMetadata.ulDataSize) != 0)
-	{
-		/* Read failed, not much we can do about that, abort */
-		return -1;
-	}
-
-	pxWalkData->usExpectedEntryId++;
-	pxWalkData->ulOffset += xDfmFlashMetadata.ulDataSize;
-
-	if (pxWalkData->usExpectedEntryId != pxWalkData->usExpectedEntryCount)
-	{
-		/* We haven't found the entire payload */
-		return 0;
-	}
-
-	/* We're done */
-	return 1;
 }
 
 /* This function is used to avoid "unreachable code" warnings */
@@ -201,7 +267,7 @@ DfmResult_t xDfmStoragePortInitialize(DfmStoragePortData_t *pxBuffer)
 	xFlashCircularBuffer.f_sectors = xFlashCircularBufferSector;
 
 	/* Initialize FCB */
-	if (fcb_init(FLASH_AREA_ID(DFM_STORAGE_PORT_FCB_AREA_NAME), &xFlashCircularBuffer) != 0)
+	if (fcb_init(FIXED_PARTITION_ID(DFM_STORAGE_PORT_FCB_AREA_NAME), &xFlashCircularBuffer) != 0)
 	{
 		return DFM_FAIL;
 	}
@@ -263,8 +329,7 @@ DfmResult_t xDfmStoragePortStoreAlert(DfmEntryHandle_t xEntryHandle, uint32_t ul
 
 DfmResult_t xDfmStoragePortGetAlert(void* pvBuffer, uint32_t ulBufferSize)
 {
-	DfmWalkData_t xWalkData = { 0 };
-	int retVal = 0;
+	DfmEntryHandle_t xEntryHandle = 0;
 
 	if (pxStoragePortData == (void*)0)
 	{
@@ -286,20 +351,15 @@ DfmResult_t xDfmStoragePortGetAlert(void* pvBuffer, uint32_t ulBufferSize)
 		return DFM_FAIL;
 	}
 
-	xWalkData.ulType = DFM_STORAGE_PORT_ALERT_TYPE;
-	xWalkData.pvBuffer = pvBuffer;
-	xWalkData.ulBufferSize = ulBufferSize;
-	xWalkData.usExpectedEntryId = 0;
-	xWalkData.usExpectedEntryCount = 0;
-	xWalkData.ulOffset = 0;
-
-	/* Walk until it returns something else than 0. Greater than 0 is success, less than 0 is fail */
-	do
+	while (xDfmEntryCreateAlertFromBuffer(&xEntryHandle) == DFM_FAIL)
 	{
-		retVal = fcb_walk(&xFlashCircularBuffer, xFlashCircularBuffer.f_oldest, prvWalkCallback, &xWalkData);
-	} while (retVal == 0);
+		if (prvDfmGetNext(&xFlashCircularBuffer, &xTraversionState, pvBuffer, ulBufferSize) != 0)
+		{
+			return DFM_FAIL;
+		}
+	}
 
-	return retVal > 0 ? DFM_SUCCESS : DFM_FAIL;
+	return DFM_SUCCESS;
 }
 
 DfmResult_t xDfmStoragePortStorePayloadChunk(DfmEntryHandle_t xEntryHandle, uint32_t ulOverwrite)
@@ -309,12 +369,10 @@ DfmResult_t xDfmStoragePortStorePayloadChunk(DfmEntryHandle_t xEntryHandle, uint
 
 DfmResult_t xDfmStoragePortGetPayloadChunk(char* szSessionId, uint32_t ulAlertId, void* pvBuffer, uint32_t ulBufferSize)
 {
-	DfmWalkData_t xWalkData = { 0 };
-	int retVal = 0;
-
 	/* We don't need these to find a payload */
 	(void)szSessionId;
 	(void)ulAlertId;
+	DfmEntryHandle_t xEntryHandle = 0;
 
 	if (pxStoragePortData == (void*)0)
 	{
@@ -336,20 +394,17 @@ DfmResult_t xDfmStoragePortGetPayloadChunk(char* szSessionId, uint32_t ulAlertId
 		return DFM_FAIL;
 	}
 
-	xWalkData.ulType = DFM_STORAGE_PORT_PAYLOAD_TYPE;
-	xWalkData.pvBuffer = pvBuffer;
-	xWalkData.ulBufferSize = ulBufferSize;
-	xWalkData.usExpectedEntryId = 0;
-	xWalkData.usExpectedEntryCount = 0;
-	xWalkData.ulOffset = 0;
-
-	/* Walk until it returns something else than 0. Greater than 0 is success, less than 0 is fail */
-	do
+	if (prvDfmGetNext(&xFlashCircularBuffer, &xTraversionState, pvBuffer, ulBufferSize) != 0)
 	{
-		retVal = fcb_walk(&xFlashCircularBuffer, xFlashCircularBuffer.f_oldest, prvWalkCallback, &xWalkData);
-	} while (retVal == 0);
+		return DFM_FAIL;
+	}
 
-	return retVal > 0 ? DFM_SUCCESS : DFM_FAIL;
+	if (xDfmEntryCreatePayloadChunkFromBuffer(szSessionId, ulAlertId, &xEntryHandle) == DFM_FAIL)
+	{
+		return DFM_FAIL;
+	}
+
+	return DFM_SUCCESS;
 }
 
 DfmResult_t prvDfmStoragePortWrite(DfmEntryHandle_t xEntryHandle, uint32_t ulType, uint32_t ulOverwrite)
@@ -358,7 +413,7 @@ DfmResult_t prvDfmStoragePortWrite(DfmEntryHandle_t xEntryHandle, uint32_t ulTyp
 	uint32_t ulBytesToWrite;
 	void* pvData = (void*)xEntryHandle;
 	uint32_t ulRemainingBytes = 0;
-	const uint32_t ulMaxUsableSectorSize = (CONFIG_PERCEPIO_DFM_CFG_STORAGE_PORT_FCB_SECTOR_SIZE) - sizeof(xDfmFlashMetadata) - sizeof(struct fcb_entry);
+	const uint32_t ulMaxUsableSectorSize = (DFM_STORAGE_PORT_FCB_SECTOR_SIZE_ALIGNED) - sizeof(xDfmFlashMetadata) - sizeof(struct fcb_entry);
 
 	if (pxStoragePortData == (void*)0)
 	{
@@ -415,6 +470,12 @@ DfmResult_t prvDfmStoragePortWrite(DfmEntryHandle_t xEntryHandle, uint32_t ulTyp
 		{
 			ulBytesToWrite = ulMaxUsableSectorSize;
 		}
+		else
+		{
+			/* Align the number of bytes to be written to 8 due to that the flash wants 8-byte aligned writes */
+			ulBytesToWrite = (((ulBytesToWrite + 7U) / 8U) * 8U);
+			ulRemainingBytes = ulBytesToWrite - sizeof(xDfmFlashMetadata);
+		}
 
 		/* Reset entry data */
 		memset(&xFcbEntry, 0, sizeof(xFcbEntry));
@@ -451,7 +512,8 @@ DfmResult_t prvDfmStoragePortWrite(DfmEntryHandle_t xEntryHandle, uint32_t ulTyp
 
 		/* Write entry data */
 		/* TODO: 64-bit compatible */
-		if (flash_area_write(xFlashCircularBuffer.fap, FCB_ENTRY_FA_DATA_OFF(xFcbEntry) + sizeof(DfmStorageMetadata_t), (void*)((uint32_t)pvData + ulBytesWritten), xDfmFlashMetadata.ulDataSize) != 0)
+		volatile int return_write_value = flash_area_write(xFlashCircularBuffer.fap, FCB_ENTRY_FA_DATA_OFF(xFcbEntry) + sizeof(DfmStorageMetadata_t), (void*)((uint32_t)pvData + ulBytesWritten), xDfmFlashMetadata.ulDataSize);
+		if (return_write_value != 0)
 		{
 			return DFM_FAIL;
 		}

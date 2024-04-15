@@ -50,6 +50,7 @@
 #include "aws_dev_mode_key_provisioning.h"
 #include "iot_uart.h"
 
+#include "trcRecorder.h"
 #include "dfm.h"
 #include "dfmCrashCatcher.h"
 #include "dfmStoragePort.h"
@@ -117,9 +118,11 @@ static void prvMiscInitialization( void );
  */
 static void prvInitializeHeap( void );
 
-
-
 unsigned int getHardwareRand(void);
+
+DfmResult_t myGetUniqueSessionID(char cBuffer[], uint32_t ulSize, uint32_t* pulBytesWritten);
+
+DfmResult_t myGetDeviceName(char cBuffer[], uint32_t ulSize, uint32_t* pulBytesWritten);
 
 #ifdef USE_OFFLOAD_SSL
 
@@ -136,10 +139,9 @@ unsigned int getHardwareRand(void);
 #endif /* USE_OFFLOAD_SSL */
 /*-----------------------------------------------------------*/
 
-/**
- * BHJ:
- */
 void ButtonTask(void* argument);
+
+char* stackoverflowpadding = NULL;
 
 typedef struct task_arg {
     uint32_t type;
@@ -212,14 +214,29 @@ TaskHandle_t xBhjHandle = NULL;
 
 char* ptr = NULL;
 
-void ButtonTask(void* argument)
+void _ButtonTask(void* argument)
 {
-	configPRINTF( ( "Provoking random errors...\n\n" ) );
-
-	vTaskDelay(2000);
-
+	//configPRINTF( ( "Waiting for button press to cause random error...\n\n" ) );
+	configPRINT_STRING( "Waiting for button press to cause random error...\n\n" );
     for(;;)
     {
+    	ulTaskNotifyTake( pdTRUE, portMAX_DELAY );  /* Block indefinitely. */
+
+    	//test_delay = test_delay / 2;
+
+    	vTaskDelay(500);
+    }
+}
+
+
+void ButtonTask(void* argument)
+{
+	//configPRINTF( ( "Waiting for button press to cause random error...\n\n" ) );
+	configPRINT_STRING( "Waiting for button press to cause random error...\n\n" );
+    for(;;)
+    {
+    	ulTaskNotifyTake( pdTRUE, portMAX_DELAY );  /* Block indefinitely. */
+
     	switch(getHardwareRand() % 4)
         {
         		case 0:
@@ -260,6 +277,20 @@ void ButtonTask(void* argument)
 
         			testBufferOverrun();
         			break;
+/*
+        		case 4:
+
+        			configPRINTF(( "Test case: Stack overflow\n"));
+
+        	        vTaskDelay(1000);
+
+        	        {
+        	        	char data[4000];
+        	        	memset(data, 0, 4000);
+        	        }
+
+        	        break; */
+
         }
     }
 }
@@ -325,20 +356,48 @@ void prvRXTask(void* argument)
 
 }
 
+
 /**
  * @brief Application runtime entry point.
  */
 int main( void )
 {
+	char tmp[32];
+	uint32_t bytesWritten = 0;
+
 	/* Perform any hardware initialization that does not require the RTOS to be
      * running.  */
     prvMiscInitialization();
+
+    if (myGetDeviceName(tmp, sizeof(tmp), &bytesWritten) == DFM_SUCCESS)
+    {
+    	configPRINT_STRING(("DeviceName: "));
+    	configPRINT_STRING((tmp));
+    	configPRINT_STRING(("\n"));
+    }
+    else
+    {
+    	configPRINT_STRING(("DeviceName: FAIL\n"));
+    }
+
+    if (myGetUniqueSessionID(tmp, sizeof(tmp), &bytesWritten) == DFM_SUCCESS)
+    {
+    	configPRINT_STRING(("SessionID: "));
+    	configPRINT_STRING((tmp));
+    	configPRINT_STRING(("\n"));
+
+    }
+    else
+    {
+    	configPRINT_STRING(("SessionID: FAIL\n"));
+    }
+
 
     BSP_LED_Off( LED_GREEN );
 
     if( xTaskCreate( prvRXTask, "RX", 1000, NULL, 6, NULL ) != pdPASS )
     {
-    	configPRINTF(("Failed creating task."));
+    	configPRINT_STRING(("Failed creating task."));
     }
 
     /* Create tasks that are not dependent on the WiFi being initialized. */
@@ -365,9 +424,6 @@ unsigned int getHardwareRand(void)
 
 void vApplicationDaemonTaskStartupHook( void )
 {
-#if (DFM_CFG_SERIAL_UPLOAD_ONLY != 1)
-	int dfmResult = DFM_SUCCESS;
-#endif
 
     configPRINTF( ( "\n\n\n\n------ Starting up DevAlert demo ------\n" ) );
 
@@ -408,7 +464,7 @@ void vApplicationDaemonTaskStartupHook( void )
 
             srand(getHardwareRand());
 
-            if (xDfmInitialize() == DFM_FAIL)
+            if (xDfmInitialize(myGetUniqueSessionID, myGetDeviceName) == DFM_FAIL)
             {
                 configPRINTF(("Failed to initialize DFM\r\n"));
             }
@@ -456,8 +512,23 @@ void vApplicationDaemonTaskStartupHook( void )
 
 #else
 
-    /* Basic demo initialization for serial port upload */
+#if (0)
 
+    {
+    	static DfmAlertHandle_t xAlertHandle = 0;
+    	char* payloadString = "Example Payload from DFM";
+
+		if (xDfmAlertBegin(DFM_TYPE_ASSERT_FAILED, "Demo alert", &xAlertHandle) == DFM_SUCCESS)
+    	{
+    		xDfmAlertAddSymptom(xAlertHandle, DFM_SYMPTOM_LINE, __LINE__);
+    		xDfmAlertAddPayload(xAlertHandle, payloadString, strlen(payloadString), "demo_payload.txt");
+    		xDfmAlertEnd(xAlertHandle);
+    	}
+
+		for(;;);
+    }
+#else
+    /* Basic demo initialization for serial port upload */
 	xTaskCreate(ButtonTask,       /* Function that implements the task. */
 			   "DemoTask1",          /* Text name for the task. */
 			   1024,           /* Stack size in words, not bytes. */
@@ -465,30 +536,42 @@ void vApplicationDaemonTaskStartupHook( void )
 			   tskIDLE_PRIORITY,/* Priority at which the task is created. */
 			   &xBhjHandle );      /* Used to pass out the created task's handle. */
 
+	/* Test - Getting a crashes in FreeRTOS functions when testing the Stack Overflow issue, but this didn't help.
+	 * The crashes occur BEFORE the stack overflow test, but the behavior changes if I modify the "data" stack allocation in the switch statement above.
+	 * This is weird. Might be that I'm getting stack overflows at an earlier point?
+	 * Needs further digging. NOTE: RECORDER DISABLED (that wasn't the problem)*/
+	stackoverflowpadding = pvPortMalloc(4096);
+
+	#endif
 
 #if (0)
 	/* Try sending any stored alerts from a prior crash */
-	dfmResult = xDfmAlertSendAll();
-
-	if ((dfmResult == DFM_FAIL) || (dfmResult == DFM_NO_ALERTS))
+	/* Not needed when using serial output, as no data is stored on the device */
 	{
-	   configPRINTF(("DFM: No stored alerts.\n\n"));
-	}
-	else if (dfmResult == DFM_SUCCESS)
-	{
-	configPRINTF(("DFM: Found and uploaded alerts.\n\n"));
+    	int dfmResult = DFM_SUCCESS;
 
-	/* Erase stored alerts to avoid they are sent repeatedly */
-	xDfmStoragePortReset();
+		dfmResult = xDfmAlertSendAll();
 
-	}
-	else
-	{
-	configPRINTF(("DFM: Unexpected return code (%d)!\n\n", dfmResult));
-	}
+		if ((dfmResult == DFM_FAIL) || (dfmResult == DFM_NO_ALERTS))
+		{
+		   configPRINTF(("DFM: No stored alerts.\n\n"));
+		}
+		else if (dfmResult == DFM_SUCCESS)
+		{
+			configPRINTF(("DFM: Found and uploaded alerts.\n\n"));
 
-	// IS THIS NEEDED?
-	xDfmSessionSetStorageStrategy(DFM_STORAGE_STRATEGY_OVERWRITE);
+			/* Erase stored alerts to avoid they are sent repeatedly */
+			xDfmStoragePortReset();
+
+		}
+		else
+		{
+			configPRINTF(("DFM: Unexpected return code (%d)!\n\n", dfmResult));
+		}
+
+		// Needed?
+		xDfmSessionSetStorageStrategy(DFM_STORAGE_STRATEGY_OVERWRITE);
+	}
 #endif
 
 	BSP_LED_On( LED_GREEN );
@@ -771,6 +854,7 @@ void vSTM32L475getc( void * pv,
 }
 /*-----------------------------------------------------------*/
 
+
 /**
  * @brief Initializes the board.
  */
@@ -816,7 +900,7 @@ static void prvMiscInitialization( void )
 
 #if (DFM_CFG_SERIAL_UPLOAD_ONLY == 1)
 
-    if (xDfmInitialize() == DFM_FAIL)
+    if (xDfmInitialize(myGetUniqueSessionID, myGetDeviceName) == DFM_FAIL)
     {
     	configPRINTF(("Failed to initialize DFM\r\n"));
     }
@@ -824,6 +908,42 @@ static void prvMiscInitialization( void )
 #endif
 
 }
+
+
+DfmResult_t myGetUniqueSessionID(char cBuffer[], uint32_t ulSize, uint32_t* pulBytesWritten)
+{
+	uint32_t nBytes;
+	nBytes = snprintf(cBuffer, ulSize, "S-%X-%X-%X", getHardwareRand(), getHardwareRand(), getHardwareRand());
+	if (nBytes > 0)
+	{
+		*pulBytesWritten = nBytes;
+		return DFM_SUCCESS;
+	}
+
+	return DFM_FAIL;
+}
+
+
+/*** Serial number addresses for STM32Lx ***/
+#define DEVICE_ID1 (unsigned int*)(0x1FFF7590)
+#define DEVICE_ID2 (unsigned int*)(0x1FFF7594)
+#define DEVICE_ID3 (unsigned int*)(0x1FFF7598)
+
+DfmResult_t myGetDeviceName(char cBuffer[], uint32_t ulSize, uint32_t* pulBytesWritten)
+{
+	uint32_t nBytes;
+	nBytes = snprintf(cBuffer, ulSize, "D-%08X-%08X-%08X", *DEVICE_ID1, *DEVICE_ID2, *DEVICE_ID3);
+
+	if (nBytes > 0)
+	{
+		*pulBytesWritten = nBytes;
+		return DFM_SUCCESS;
+	}
+
+	return DFM_FAIL;
+}
+
+
 /*-----------------------------------------------------------*/
 
 /**
@@ -1157,6 +1277,8 @@ void vApplicationStackOverflowHook( TaskHandle_t xTask,
  	// TODO: Add Alert here
  	configPRINT_STRING( ( "ERROR: stack overflow\r\n" ) );
      portDISABLE_INTERRUPTS();
+
+     DFM_TRAP(DFM_TYPE_STACK_OVERFLOW, "Stack overflow");
 
      /* Unused Parameters */
      ( void ) xTask;

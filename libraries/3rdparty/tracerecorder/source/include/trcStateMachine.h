@@ -1,5 +1,5 @@
 /*
-* Percepio Trace Recorder for Tracealyzer v4.7.0
+* Percepio Trace Recorder for Tracealyzer v4.8.2
 * Copyright 2023 Percepio AB
 * www.percepio.com
 *
@@ -17,9 +17,7 @@
 
 #include <trcTypes.h>
 
-#if (TRC_USE_TRACEALYZER_RECORDER == 1)
-
-#if (TRC_CFG_RECORDER_MODE == TRC_RECORDER_MODE_STREAMING)
+#if (TRC_USE_TRACEALYZER_RECORDER == 1) && (TRC_CFG_RECORDER_MODE == TRC_RECORDER_MODE_STREAMING)
 
 #ifdef __cplusplus
 extern "C" {
@@ -87,8 +85,6 @@ traceResult xTraceStateMachineSetState(TraceStateMachineHandle_t xStateMachineHa
  * @brief Disabled by TRC_CFG_RECORDER_MODE
  */
 #define xTraceStateMachineSetState(__xStateMachineHandle, __xStateHandle) ((void)(__xStateMachineHandle), (void)(__xStateHandle), TRC_SUCCESS)
-
-#endif
 
 #endif
 

@@ -201,7 +201,8 @@ DfmResult_t xDfmCloudGenerateMQTTTopic(char* cTopicBuffer, uint32_t ulBufferSize
 		return DFM_FAIL;
 		break;
 	}
-	
+
+	/* TODO: Instead of doing an strlen after calling this function, we should reuse this value (pass a pointer to a len var or similar */
 	if ((lRetVal < (int32_t)0) || (lRetVal >= (int32_t)ulBufferSize))
 	{
 		return DFM_FAIL;

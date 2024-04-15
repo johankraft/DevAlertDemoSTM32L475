@@ -672,6 +672,8 @@ static DfmResult_t prvDfmGetAll(DfmAlertEntryCallback_t xAlertCallback, DfmAlert
 		return DFM_FAIL;
 	}
 
+	memset(pvBuffer, 0, ulBufferSize);
+
 	while (xDfmStorageGetAlert(pvBuffer, ulBufferSize) == DFM_SUCCESS)
 	{
 		if (xDfmEntryCreateAlertFromBuffer(&xEntryHandle) == DFM_FAIL)
@@ -705,6 +707,8 @@ static DfmResult_t prvDfmGetAll(DfmAlertEntryCallback_t xAlertCallback, DfmAlert
 			}
 		}
 
+		memset(pvBuffer, 0, ulBufferSize);
+
 		while (xDfmStorageGetPayloadChunk(cSessionIdBuffer, ulAlertId, pvBuffer, ulBufferSize) == DFM_SUCCESS)
 		{
 			if (xDfmEntryCreatePayloadChunkFromBuffer(cSessionIdBuffer , ulAlertId, &xEntryHandle) == DFM_FAIL)
@@ -716,6 +720,7 @@ static DfmResult_t prvDfmGetAll(DfmAlertEntryCallback_t xAlertCallback, DfmAlert
 			{
 				return DFM_FAIL;
 			}
+			memset(pvBuffer, 0, ulBufferSize);
 		}
 	}
 
@@ -804,9 +809,8 @@ static DfmResult_t prvDfmProcessAlert(DfmAlertEntryCallback_t xAlertCallback, Df
 			{
 				ulChunkSize = pxDfmAlertData->xPayloads[i].ulSize - ulOffset;
 			}
-
-			/* TODO: 64-bit compatible */
-			if (xDfmEntryCreatePayloadChunk((DfmAlertHandle_t)pxAlert, (uint16_t)(i + 1UL), j + (uint16_t)1, usChunkCount, (void*)((uint32_t)pxDfmAlertData->xPayloads[i].pvData + ulOffset), ulChunkSize, pxDfmAlertData->xPayloads[i].cDescriptionBuffer, &xEntryHandle) == DFM_FAIL) /*cstat !MISRAC2012-Rule-11.6 We need to modify the address by an offset in order to get next payload chunk*/
+			
+			if (xDfmEntryCreatePayloadChunk((DfmAlertHandle_t)pxAlert, (uint16_t)(i + 1UL), j + (uint16_t)1, usChunkCount, (void*)((uintptr_t)pxDfmAlertData->xPayloads[i].pvData + ulOffset), ulChunkSize, pxDfmAlertData->xPayloads[i].cDescriptionBuffer, &xEntryHandle) == DFM_FAIL) /*cstat !MISRAC2012-Rule-11.6 We need to modify the address by an offset in order to get next payload chunk*/
 			{
 				/* Couldn't create entry for this payload chunk, continue to next */
 				continue;

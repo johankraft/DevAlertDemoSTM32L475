@@ -1,5 +1,5 @@
 /*
-* Trace Recorder for Tracealyzer v4.7.0
+* Trace Recorder for Tracealyzer v4.8.2
 * Copyright 2023 Percepio AB
 * www.percepio.com
 *
@@ -13,6 +13,8 @@
 #if (TRC_USE_TRACEALYZER_RECORDER == 1)
 
 #if (TRC_CFG_RECORDER_MODE == TRC_RECORDER_MODE_STREAMING)
+
+#include <string.h>
 
 /* (EntryAddress >= FirstEntryAddress) && (EntryAddress < EntryAddressOutsideArray) */
 #define VALIDATE_ENTRY_HANDLE(xEntryHandle) (((void*)(xEntryHandle) >= (void*)&pxEntryTable->axEntries[0]) && ((void*)(xEntryHandle) < (void*)&pxEntryTable->axEntries[TRC_ENTRY_TABLE_SLOTS]))
@@ -194,8 +196,6 @@ traceResult xTraceEntryFind(const void* const pvAddress, TraceEntryHandle_t* pxE
 /*cstat !MISRAC2004-6.3 !MISRAC2012-Dir-4.6_a Suppress basic char type usage*/
 traceResult xTraceEntrySetSymbol(const TraceEntryHandle_t xEntryHandle, const char* szSymbol, uint32_t uiLength)
 {
-	uint32_t i;
-
 	/* This should never fail */
 	TRC_ASSERT(xTraceIsComponentInitialized(TRC_RECORDER_COMPONENT_ENTRY));
 
@@ -211,12 +211,12 @@ traceResult xTraceEntrySetSymbol(const TraceEntryHandle_t xEntryHandle, const ch
 	if (uiLength >= (uint32_t)(TRC_ENTRY_TABLE_SYMBOL_LENGTH))
 	{
 		/* No room for null termination. Set to max. */
-		uiLength = (uint32_t)(TRC_ENTRY_TABLE_SYMBOL_LENGTH) / sizeof(uint32_t); /*cstat !MISRAC2012-Rule-17.8 Suppress modified function parameter check*/
+		uiLength = (uint32_t)(TRC_ENTRY_TABLE_SYMBOL_LENGTH); /*cstat !MISRAC2012-Rule-17.8 Suppress modified function parameter check*/
 	}
 	else
 	{
-		/* Make room for null termination by increasing the number of uint32_t required by 1 */
-		uiLength = (uiLength / sizeof(uint32_t)) + 1u; /*cstat !MISRAC2012-Rule-17.8 Suppress modified function parameter check*/
+		/* Include null termination by increasing the size by 1 */
+		uiLength = uiLength + 1u; /*cstat !MISRAC2012-Rule-17.8 Suppress modified function parameter check*/
 	}
 
 	/* Does not need to be locked. */
@@ -224,10 +224,7 @@ traceResult xTraceEntrySetSymbol(const TraceEntryHandle_t xEntryHandle, const ch
 	TRC_ASSERT(VALIDATE_ENTRY_HANDLE(xEntryHandle)); /*cstat !MISRAC2004-17.3 !MISRAC2012-Rule-18.3 Suppress pointer comparison check*/
 
 	/* This will also copy the null termination, if possible */
-	for (i = 0u; i < uiLength; i++)
-	{
-		((uint32_t*)(((TraceEntry_t*)xEntryHandle)->szSymbol))[i] = ((const uint32_t*)szSymbol)[i];  /*cstat !MISRAC2004-11.4 !MISRAC2012-Rule-11.3 Suppress conversion between pointer types checks*/ /*cstat !MISRAC2004-17.4_b We cast it to a uint32_t* in order to copy 4 bytes at a time*/
-	}
+	memcpy(((TraceEntry_t*)xEntryHandle)->szSymbol, szSymbol, uiLength);
 
 	return TRC_SUCCESS;
 }
@@ -271,18 +268,18 @@ traceResult xTraceEntryCreateWithAddress(void* const pvAddress, TraceEntryHandle
 	return TRC_ENTRY_CREATE_WITH_ADDRESS(pvAddress, pxEntryHandle);
 }
 
-traceResult xTraceEntrySetState(const TraceEntryHandle_t xEntryHandle, uint32_t uiStateIndex, TraceUnsignedBaseType_t uxState)
+traceResult xTraceEntrySetState(const TraceEntryHandle_t xEntryHandle, TraceUnsignedBaseType_t uxStateIndex, TraceUnsignedBaseType_t uxState)
 {
 	/* This should never fail */
 	TRC_ASSERT(xTraceIsComponentInitialized(TRC_RECORDER_COMPONENT_ENTRY));
 
 	/* This should never fail */
-	TRC_ASSERT(uiStateIndex < (uint32_t)(TRC_ENTRY_TABLE_STATE_COUNT));
+	TRC_ASSERT(uxStateIndex < (TraceUnsignedBaseType_t)(TRC_ENTRY_TABLE_STATE_COUNT));
 
 	/* This should never fail */
 	TRC_ASSERT(VALIDATE_ENTRY_HANDLE(xEntryHandle)); /*cstat !MISRAC2004-17.3 !MISRAC2012-Rule-18.3 Suppress pointer comparison check*/
 
-	return TRC_ENTRY_SET_STATE(xEntryHandle, uiStateIndex, uxState);
+	return TRC_ENTRY_SET_STATE(xEntryHandle, uxStateIndex, uxState);
 }
 
 traceResult xTraceEntrySetOptions(const TraceEntryHandle_t xEntryHandle, uint32_t uiMask)
@@ -340,7 +337,7 @@ traceResult xTraceEntryGetSymbol(const TraceEntryHandle_t xEntryHandle, const ch
 	return TRC_ENTRY_GET_SYMBOL(xEntryHandle, pszSymbol);
 }
 
-traceResult xTraceEntryGetState(const TraceEntryHandle_t xEntryHandle, uint32_t uiStateIndex, TraceUnsignedBaseType_t *puxState)
+traceResult xTraceEntryGetState(const TraceEntryHandle_t xEntryHandle, TraceUnsignedBaseType_t uxStateIndex, TraceUnsignedBaseType_t *puxState)
 {
 	/* This should never fail */
 	TRC_ASSERT(xTraceIsComponentInitialized(TRC_RECORDER_COMPONENT_ENTRY));
@@ -349,19 +346,19 @@ traceResult xTraceEntryGetState(const TraceEntryHandle_t xEntryHandle, uint32_t 
 	TRC_ASSERT(puxState != (void*)0);
 
 	/* This should never fail */
-	TRC_ASSERT(uiStateIndex < TRC_ENTRY_TABLE_STATE_COUNT);
+	TRC_ASSERT(uxStateIndex < (TraceUnsignedBaseType_t)(TRC_ENTRY_TABLE_STATE_COUNT));
 
 	/* Does not need to be locked. */
 	/* This should never fail */
 	TRC_ASSERT(VALIDATE_ENTRY_HANDLE(xEntryHandle)); /*cstat !MISRAC2004-17.3 !MISRAC2012-Rule-18.3 Suppress pointer comparison check*/
 
-	return TRC_ENTRY_GET_STATE(xEntryHandle, uiStateIndex, puxState);
+	return TRC_ENTRY_GET_STATE(xEntryHandle, uxStateIndex, puxState);
 }
 
 /*cstat !MISRAC2012-Rule-8.13 Suppress const check for xEntryHandle*/
-TraceUnsignedBaseType_t xTraceEntryGetStateReturn(const TraceEntryHandle_t xEntryHandle, uint32_t uiStateIndex)
+TraceUnsignedBaseType_t xTraceEntryGetStateReturn(const TraceEntryHandle_t xEntryHandle, TraceUnsignedBaseType_t uxStateIndex)
 {
-	return TRC_ENTRY_GET_STATE_RETURN(xEntryHandle, uiStateIndex);
+	return TRC_ENTRY_GET_STATE_RETURN(xEntryHandle, uxStateIndex);
 }
 
 traceResult xTraceEntryGetOptions(const TraceEntryHandle_t xEntryHandle, uint32_t *puiOptions)

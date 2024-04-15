@@ -23,16 +23,30 @@
 static DfmData_t xDfmData;
 static DfmData_t* pxDfmData = &xDfmData;
 
+DfmUserCallback_t xDfmUserGetUniqueSessionID;
+DfmUserCallback_t xDfmUserGetDeviceName;
 
-
-DfmResult_t xDfmInitialize()
+DfmResult_t xDfmInitialize(DfmUserCallback_t xGetUniqueSessionID, DfmUserCallback_t xGetDeviceName)
 {
 	if (pxDfmData == (void*)0)
 	{
 		return DFM_FAIL;
 	}
 
+	if (xGetUniqueSessionID == 0)
+	{
+		return DFM_FAIL;
+	}
+
+	if (xGetDeviceName == 0)
+	{
+		return DFM_FAIL;
+	}
+
 	(void)memset(pxDfmData, 0, sizeof(DfmData_t));
+
+	xDfmUserGetUniqueSessionID = xGetUniqueSessionID;
+	xDfmUserGetDeviceName = xGetDeviceName;
 
 	if (xDfmSessionInitialize(&pxDfmData->xSessionData) == DFM_FAIL)
 	{

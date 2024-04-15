@@ -24,10 +24,6 @@ extern "C" {
  */
 #define DFM_CFG_ENABLED (1)
 
-/**
- * @brief The firmware version. This needs to be set to differentiate the alerts between versions.
- */
-#define DFM_CFG_FIRMWARE_VERSION "v1.0-LatestDevBuild"
 
 /**
  * @brief An identifier of the product type.
@@ -50,6 +46,15 @@ extern "C" {
  */
 #ifndef DFM_CFG_SERIAL_UPLOAD_ONLY
 #define DFM_CFG_SERIAL_UPLOAD_ONLY 1
+#endif
+
+/**
+ * @brief The firmware version. This needs to be set to differentiate the alerts between versions.
+ */
+#if (DFM_CFG_SERIAL_UPLOAD_ONLY == 1)
+#define DFM_CFG_FIRMWARE_VERSION "_DevBuild_Serial"
+#else
+#define DFM_CFG_FIRMWARE_VERSION "_DevBuild_MQTT"
 #endif
 
 /* Enable diagnostic messages from DFM_DEBUG(...). Will use DFM_ERROR to output debug information. */

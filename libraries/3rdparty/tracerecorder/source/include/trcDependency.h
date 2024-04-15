@@ -1,5 +1,5 @@
 /*
-* Percepio Trace Recorder for Tracealyzer v4.7.0
+* Percepio Trace Recorder for Tracealyzer v4.8.2
 * Copyright 2023 Percepio AB
 * www.percepio.com
 *
@@ -15,15 +15,19 @@
 #ifndef TRC_DEPENDENCY_H
 #define TRC_DEPENDENCY_H
 
-#if (TRC_USE_TRACEALYZER_RECORDER == 1)
-
-#if (TRC_CFG_RECORDER_MODE == TRC_RECORDER_MODE_STREAMING)
+#if (TRC_USE_TRACEALYZER_RECORDER == 1) && (TRC_CFG_RECORDER_MODE == TRC_RECORDER_MODE_STREAMING)
 
 #include <trcTypes.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @defgroup trace_dependency_apis Trace Dependency APIs
+ * @ingroup trace_recorder_apis
+ * @{
+ */
 
 /**
  * @brief Registers a dependency.
@@ -46,11 +50,9 @@ traceResult xTraceDependencyRegister(const char* szName, TraceUnsignedBaseType_t
 #else
 
 #ifndef xTraceDependencyRegister
-#define xTraceDependencyRegister(szName, uxDependencyType) TRC_COMMA_EXPR_TO_STATEMENT_EXPR_4((void)(szName), (void)(uxRegisterMethod), (void)(pxRunnableHandle), TRC_SUCCESS)
+#define xTraceDependencyRegister(szName, uxDependencyType) ((void)szName, (void)uxDependencyType, TRC_SUCCESS)
 #endif
 
-#endif
+#endif /* #if (TRC_USE_TRACEALYZER_RECORDER == 1) */
 
-#endif
-
-#endif
+#endif /* #ifndef TRC_DEPENDENCY_H */

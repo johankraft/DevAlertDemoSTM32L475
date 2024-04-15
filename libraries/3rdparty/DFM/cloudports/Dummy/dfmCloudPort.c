@@ -5,13 +5,13 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  *
- * DFM dummy Cloud port
+ * DFM Dummy cloud port implementation that refuses to send anything
  */
 
 #include <dfm.h>
 #include <dfmCloudPort.h>
 
-#if (defined(DFM_CFG_ENABLED) && ((DFM_CFG_ENABLED) >= 1))
+#if ((DFM_CFG_ENABLED) >= 1)
 
 DfmResult_t xDfmCloudPortInitialize(DfmCloudPortData_t* pxBuffer)
 {

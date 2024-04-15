@@ -97,7 +97,7 @@ DfmResult_t xDfmStoragePortGetAlert(void* pvBuffer, uint32_t ulBufferSize);
  * @brief Store Payload chunk Entry
  *
  * @param[in] xEntryHandle Entry handle.
- * @param[in] ulOverwrite Flag indicating if existing Entries shuold be overwritten.
+ * @param[in] ulOverwrite Flag indicating if existing Entries should be overwritten.
  *
  * @retval DFM_FAIL Failure
  * @retval DFM_SUCCESS Success

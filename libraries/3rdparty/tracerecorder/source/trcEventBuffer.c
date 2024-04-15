@@ -1,5 +1,5 @@
 /*
-* Percepio Trace Recorder for Tracealyzer v4.7.0
+* Percepio Trace Recorder for Tracealyzer v4.8.2
 * Copyright 2023 Percepio AB
 * www.percepio.com
 *
@@ -36,7 +36,7 @@ traceResult xTraceEventBufferInitialize(TraceEventBuffer_t* pxTraceEventBuffer, 
 	pxTraceEventBuffer->uiNextHead = 0u;
 	pxTraceEventBuffer->uiTimerWraparounds = 0u;
 
-	xTraceSetComponentInitialized(TRC_RECORDER_COMPONENT_EVENT_BUFFER);
+	(void)xTraceSetComponentInitialized(TRC_RECORDER_COMPONENT_EVENT_BUFFER);
 
 	return TRC_SUCCESS;
 }
@@ -426,14 +426,14 @@ traceResult xTraceEventBufferTransferAll(TraceEventBuffer_t* pxTraceEventBuffer,
 	if (uiHead > uiTail)
 	{
 		/* No wrapping */
-		xTraceStreamPortWriteData(&pxTraceEventBuffer->puiBuffer[uiTail], (uiHead - uiTail), &iBytesWritten); /*cstat !MISRAC2004-17.4_b We need to access a specific part of the buffer*/
+		(void)xTraceStreamPortWriteData(&pxTraceEventBuffer->puiBuffer[uiTail], (uiHead - uiTail), &iBytesWritten); /*cstat !MISRAC2004-17.4_b We need to access a specific part of the buffer*/
 	}
 	else
 	{
 		/* Wrapping */
 
 		/* Try to write: tail -> end of buffer */
-		xTraceStreamPortWriteData(&pxTraceEventBuffer->puiBuffer[uiTail], (pxTraceEventBuffer->uiSize - uiTail - uiSlack), &iBytesWritten); /*cstat !MISRAC2004-17.4_b We need to access a specific part of the buffer*/
+		(void)xTraceStreamPortWriteData(&pxTraceEventBuffer->puiBuffer[uiTail], (pxTraceEventBuffer->uiSize - uiTail - uiSlack), &iBytesWritten); /*cstat !MISRAC2004-17.4_b We need to access a specific part of the buffer*/
 
 		/* Did we manage to write all bytes? */
 		if ((uint32_t)iBytesWritten == (pxTraceEventBuffer->uiSize - uiTail - uiSlack))
@@ -449,7 +449,7 @@ traceResult xTraceEventBufferTransferAll(TraceEventBuffer_t* pxTraceEventBuffer,
 			iBytesWritten = 0;
 
 			/* Try to write: start of buffer -> head */
-			xTraceStreamPortWriteData(&pxTraceEventBuffer->puiBuffer[0], uiHead, &iBytesWritten); /*cstat !MISRAC2004-17.4_b We need to access a specific part of the buffer*/
+			(void)xTraceStreamPortWriteData(&pxTraceEventBuffer->puiBuffer[0], uiHead, &iBytesWritten); /*cstat !MISRAC2004-17.4_b We need to access a specific part of the buffer*/
 		}
 	}
 	
@@ -499,7 +499,7 @@ traceResult xTraceEventBufferTransferChunk(TraceEventBuffer_t* pxTraceEventBuffe
 			uiBytesToWrite = uiChunkSize;
 		}
 
-		xTraceStreamPortWriteData(&pxTraceEventBuffer->puiBuffer[uiTail], uiBytesToWrite, &iBytesWritten); /*cstat !MISRAC2004-17.4_b We need to access a specific part of the buffer*/
+		(void)xTraceStreamPortWriteData(&pxTraceEventBuffer->puiBuffer[uiTail], uiBytesToWrite, &iBytesWritten); /*cstat !MISRAC2004-17.4_b We need to access a specific part of the buffer*/
 
 		pxTraceEventBuffer->uiTail += (uint32_t)iBytesWritten;
 	}
@@ -511,7 +511,7 @@ traceResult xTraceEventBufferTransferChunk(TraceEventBuffer_t* pxTraceEventBuffe
 			uiBytesToWrite = uiChunkSize;
 		}
 
-		xTraceStreamPortWriteData(&pxTraceEventBuffer->puiBuffer[uiTail], uiBytesToWrite, &iBytesWritten); /*cstat !MISRAC2004-17.4_b We need to access a specific part of the buffer*/
+		(void)xTraceStreamPortWriteData(&pxTraceEventBuffer->puiBuffer[uiTail], uiBytesToWrite, &iBytesWritten); /*cstat !MISRAC2004-17.4_b We need to access a specific part of the buffer*/
 
 		/* Check if we managed to write until the end or not, if we didn't we
 		 * add the number of bytes written. If we managed to write the last

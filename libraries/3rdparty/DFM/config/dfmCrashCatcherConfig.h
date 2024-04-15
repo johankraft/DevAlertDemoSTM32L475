@@ -20,6 +20,8 @@ extern "C" {
 #endif
 
 
+#include <stm32l4xx.h>
+
 /**
  * @brief How many bytes to dump from the stack (relative to current stack pointer).
  */

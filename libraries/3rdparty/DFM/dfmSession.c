@@ -58,6 +58,12 @@ DfmResult_t xDfmSessionInitialize(DfmSessionData_t* pxBuffer)
 
 	if (pxDfmSessionData->xSessionIdStrategy == DFM_SESSIONID_STRATEGY_ONSTARTUP)
 	{
+		/* Verify that the user supplied callback has been set */
+		if (xDfmUserGetUniqueSessionID == 0)
+		{
+			return DFM_FAIL;
+		}
+
 		if (xDfmUserGetUniqueSessionID(pxDfmSessionData->cUniqueSessionIdBuffer, DFM_SESSION_ID_MAX_LEN, &ulBytesWritten) == DFM_FAIL) /*cstat !MISRAC2012-Rule-14.3_b The User implementation used for MISRA always returns DFM_SUCCESS so this check will never be true. In a real system that will not be the case.*/
 		{
 			return DFM_FAIL;
@@ -92,8 +98,9 @@ DfmResult_t xDfmSessionInitialize(DfmSessionData_t* pxBuffer)
 
 DfmResult_t xDfmSessionEnable(uint32_t ulOverride)
 {
-	uint8_t cSessionStorageBuffer[8] = {0}; /* This must be large enough to hold all previous versions of DfmSessionStorage_t */
+	uint8_t cSessionStorageBuffer[8] = { 0 }; /* This must be large enough to hold all previous versions of DfmSessionStorage_t */
 	uint32_t ulStoredEnabledValue = DFM_SESSION_STORAGE_DUMMY_VALUE;
+	DfmSessionStorage_t* pxSessionStorage = (DfmSessionStorage_t*)cSessionStorageBuffer; /*cstat !MISRAC2012-Rule-11.3 We use an untyped buffer to retrieve the session data since we can't know what version and size it might have been stored in the past. The stored Session data might be larger than the current DfmSessionStorage_t*/
 
 	if (pxDfmSessionData == (void*)0)
 	{
@@ -129,10 +136,10 @@ DfmResult_t xDfmSessionEnable(uint32_t ulOverride)
 	if ((ulStoredEnabledValue == DFM_SESSION_STORAGE_DUMMY_VALUE) || ((ulOverride == 1UL) && (ulStoredEnabledValue == DFM_DISABLED)))
 	{
 		/* Couldn't read stored value or we override a disabled value */
-		((DfmSessionStorage_t*)cSessionStorageBuffer)->ulVersion = DFM_SESSION_STORAGE_VERSION; /*cstat !MISRAC2012-Rule-11.3 We use an untyped buffer to retrieve the session data since we can't know what version and size it might have been stored in the past. The stored Session data might be larger than the current DfmSessionStorage_t*/
-		((DfmSessionStorage_t*)cSessionStorageBuffer)->ulEnabled = DFM_ENABLED; /*cstat !MISRAC2012-Rule-11.3 We use an untyped buffer to retrieve the session data since we can't know what version and size it might have been stored in the past. The stored Session data might be larger than the current DfmSessionStorage_t*/
+		pxSessionStorage->ulVersion = DFM_SESSION_STORAGE_VERSION;
+		pxSessionStorage->ulEnabled = DFM_ENABLED;
 
-		(void)xDfmStorageStoreSession(cSessionStorageBuffer, sizeof(DfmSessionStorage_t)); /* Attempt to store the session info. We can't really do anything if it fails. */
+		(void)xDfmStorageStoreSession(pxSessionStorage, sizeof(DfmSessionStorage_t)); /* Attempt to store the session info. We can't really do anything if it fails. */
 
 		ulStoredEnabledValue = DFM_ENABLED;
 	}
@@ -152,6 +159,7 @@ DfmResult_t xDfmSessionDisable(uint32_t ulRemember)
 {
 	uint8_t cSessionStorageBuffer[8] = { 0 }; /* This must be large enough to hold all previous versions of DfmSessionStorage_t */
 	uint32_t ulStoredEnabledValue = DFM_SESSION_STORAGE_DUMMY_VALUE;
+	DfmSessionStorage_t* pxSessionStorage = (DfmSessionStorage_t*)cSessionStorageBuffer; /*cstat !MISRAC2012-Rule-11.3 We use an untyped buffer to retrieve the session data since we can't know what version and size it might have been stored in the past. The stored Session data might be larger than the current DfmSessionStorage_t*/
 
 	if (pxDfmSessionData == (void*)0)
 	{
@@ -176,12 +184,12 @@ DfmResult_t xDfmSessionDisable(uint32_t ulRemember)
 	if (ulStoredEnabledValue != DFM_DISABLED)
 	{
 		/* We didn't find disabled */
-		((DfmSessionStorage_t*)cSessionStorageBuffer)->ulVersion = DFM_SESSION_STORAGE_VERSION; /*cstat !MISRAC2012-Rule-11.3 We use an untyped buffer to retrieve the session data since we can't know what version and size it might have been stored in the past. The stored Session data might be larger than the current DfmSessionStorage_t*/
-		((DfmSessionStorage_t*)cSessionStorageBuffer)->ulEnabled = DFM_DISABLED; /*cstat !MISRAC2012-Rule-11.3 We use an untyped buffer to retrieve the session data since we can't know what version and size it might have been stored in the past. The stored Session data might be larger than the current DfmSessionStorage_t*/
+		pxSessionStorage->ulVersion = DFM_SESSION_STORAGE_VERSION;
+		pxSessionStorage->ulEnabled = DFM_DISABLED;
 
 		if (ulRemember != 0UL)
 		{
-			(void)xDfmStorageStoreSession(cSessionStorageBuffer, sizeof(DfmSessionStorage_t)); /* Attempt to store the session info. We can't really do anything if it fails. */
+			(void)xDfmStorageStoreSession(pxSessionStorage, sizeof(DfmSessionStorage_t)); /* Attempt to store the session info. We can't really do anything if it fails. */
 		}
 	}
 
@@ -233,6 +241,12 @@ DfmResult_t xDfmSessionGetUniqueSessionId(char **pszUniqueSessionId)
 	{
 		if (pxDfmSessionData->xSessionIdStrategy == DFM_SESSIONID_STRATEGY_ONALERT)
 		{
+			/* Verify that the user supplied callback has been set */
+			if (xDfmUserGetUniqueSessionID == 0)
+			{
+				return DFM_FAIL;
+			}
+
 			/* Attempt to get a valid session id. Reserve last buffer slot for null termination. */
 			if (xDfmUserGetUniqueSessionID(pxDfmSessionData->cUniqueSessionIdBuffer, (uint32_t)(DFM_SESSION_ID_MAX_LEN) - 1UL, &ulBytesWritten) == DFM_FAIL) /*cstat !MISRAC2012-Rule-14.3_b The User implementation used for MISRA always returns DFM_SUCCESS so this check will never be true. In a real system that will not be the case.*/
 			{
@@ -320,6 +334,12 @@ DfmResult_t xDfmSessionGetDeviceName(const char** pszDeviceName)
 
 	if (pxDfmSessionData->cDeviceNameBuffer[0] == (char)0)
 	{
+		/* Verify that the user supplied callback has been set */
+		if (xDfmUserGetDeviceName == 0)
+		{
+			return DFM_FAIL;
+		}
+
 		/* Attempt to get a valid device name. Reserve last buffer slot for null termination. */
 		if (xDfmUserGetDeviceName(pxDfmSessionData->cDeviceNameBuffer, (uint32_t)(DFM_DEVICE_NAME_MAX_LEN) - 1UL, &ulBytesWritten) == DFM_FAIL) /*cstat !MISRAC2012-Rule-14.3_b The User implementation used for MISRA always returns DFM_SUCCESS so this check will never be true. In a real system that will not be the case.*/
 		{

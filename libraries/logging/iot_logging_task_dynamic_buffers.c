@@ -352,7 +352,7 @@ static void prvLoggingPrintfCommon( uint8_t usLoggingLevel,
         {
 
         	// Logging to Tracealyzer as well, shown in the "Debug Console" user event channel.
-        	xTraceConsoleChannelPrintF(pcPrintString);
+//        	xTraceConsoleChannelPrintF(pcPrintString);
 
             /* Send the string to the logging task for IO. */
             if( xQueueSend( xQueue, &pcPrintString, loggingDONT_BLOCK ) != pdPASS )

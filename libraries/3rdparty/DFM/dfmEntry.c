@@ -30,7 +30,6 @@ typedef struct DfmEntryHeader
 	uint16_t usDescriptionSize;
 	uint16_t usReserved;
 	uint32_t ulDataSize;
-	uint32_t ulUnused;
 } DfmEntryHeader_t;
 
 typedef struct DfmEntryPayloadHeader
@@ -202,34 +201,29 @@ static DfmResult_t prvDfmEntrySetup(uint16_t usType, uint16_t usEntryId, uint16_
 	pxEntryHeader->ulDataSize = ulDataSize;
 
 	ulOffset += sizeof(DfmEntryHeader_t);
-
-	/* TODO: 64-bit support */
+	
 	/* Write SessionId after Header */
-	(void)memcpy((char*)((uint32_t)pxDfmEntryData->buffer + ulOffset), szSessionId, DFM_SESSION_ID_MAX_LEN); /*cstat !MISRAC2012-Rule-11.6 We need to write the Session Id to the buffer with an offset*/
+	(void)memcpy((char*)((uintptr_t)pxDfmEntryData->buffer + ulOffset), szSessionId, DFM_SESSION_ID_MAX_LEN); /*cstat !MISRAC2012-Rule-11.6 We need to write the Session Id to the buffer with an offset*/
 
 	ulOffset += (uint32_t)(DFM_SESSION_ID_MAX_LEN);
 	
-	/* TODO: 64-bit support */
 	/* Write DeviceName after SessionId */
-	(void)memcpy((char*)((uint32_t)pxDfmEntryData->buffer + ulOffset), szDeviceName, DFM_DEVICE_NAME_MAX_LEN); /*cstat !MISRAC2012-Rule-11.6 We need to write the Device Name to the buffer with an offset*/
+	(void)memcpy((char*)((uintptr_t)pxDfmEntryData->buffer + ulOffset), szDeviceName, DFM_DEVICE_NAME_MAX_LEN); /*cstat !MISRAC2012-Rule-11.6 We need to write the Device Name to the buffer with an offset*/
 
 	ulOffset += (uint32_t)(DFM_DEVICE_NAME_MAX_LEN);
-
-	/* TODO: 64-bit support */
+	
 	/* Write Description after DeviceName */
-	(void)memcpy((char*)((uint32_t)pxDfmEntryData->buffer + ulOffset), szDescription, ulDescriptionSize); /*cstat !MISRAC2012-Rule-11.6 We need to write the Description to the buffer with an offset*/
+	(void)memcpy((char*)((uintptr_t)pxDfmEntryData->buffer + ulOffset), szDescription, ulDescriptionSize); /*cstat !MISRAC2012-Rule-11.6 We need to write the Description to the buffer with an offset*/
 
 	ulOffset += ulDescriptionSize;
-
-	/* TODO: 64-bit support */
+	
 	/* Write Data after Description */
-	(void)memcpy((void*)((uint32_t)pxDfmEntryData->buffer + ulOffset), pvData, ulDataSize); /*cstat !MISRAC2012-Rule-11.6 We need to write the Entry data to the buffer with an offset*/
+	(void)memcpy((void*)((uintptr_t)pxDfmEntryData->buffer + ulOffset), pvData, ulDataSize); /*cstat !MISRAC2012-Rule-11.6 We need to write the Entry data to the buffer with an offset*/
 
 	ulOffset += ulDataSize;
-
-	/* TODO: 64-bit support */
+	
 	/* Write Footer after Data */
-	DfmEntryFooter_t* pxEntryFooter = (DfmEntryFooter_t*)((uint32_t)pxDfmEntryData->buffer + ulOffset);
+	DfmEntryFooter_t* pxEntryFooter = (DfmEntryFooter_t*)((uintptr_t)pxDfmEntryData->buffer + ulOffset);
 	pxEntryFooter->cEndMarkers[0] = pxEntryHeader->cStartMarkers[3];
 	pxEntryFooter->cEndMarkers[1] = pxEntryHeader->cStartMarkers[2];
 	pxEntryFooter->cEndMarkers[2] = pxEntryHeader->cStartMarkers[1];
@@ -487,10 +481,9 @@ DfmResult_t xDfmEntryCreatePayloadChunkFromBuffer(const char* szSessionId, uint3
 	{
 		return DFM_FAIL;
 	}
-
-	/* TODO: 64-bit compatible */
+	
 	/* Make sure szSessiondId is not pointing to a string inside the buffer since that means this function is incorrectly used! */
-	if (((uint32_t)szSessionId >= (uint32_t)pxDfmEntryData->buffer) && ((uint32_t)szSessionId < (uint32_t)pxDfmEntryData->buffer + sizeof(pxDfmEntryData->buffer)))
+	if (((uintptr_t)szSessionId >= (uintptr_t)pxDfmEntryData->buffer) && ((uintptr_t)szSessionId < (uintptr_t)pxDfmEntryData->buffer + sizeof(pxDfmEntryData->buffer)))
 	{
 		return DFM_FAIL;
 	}
@@ -967,10 +960,9 @@ DfmResult_t xDfmEntryGetSessionId(DfmEntryHandle_t xEntryHandle, const char** ps
 	}
 
 	pxEntryHeader = (DfmEntryHeader_t*)xEntryHandle;
-
-	/* TODO: 64-bit support */
+	
 	/* SessionId is located right after Header */
-	*pszSessionId = (char*)((uint32_t)pxEntryHeader + sizeof(DfmEntryHeader_t)); /*cstat !MISRAC2012-Rule-18.4 The Session Id is stored after the Entry Header*/
+	*pszSessionId = (char*)((uintptr_t)pxEntryHeader + sizeof(DfmEntryHeader_t)); /*cstat !MISRAC2012-Rule-18.4 The Session Id is stored after the Entry Header*/
 
 	return DFM_SUCCESS;
 }
@@ -1000,10 +992,9 @@ DfmResult_t xDfmEntryGetDeviceName(DfmEntryHandle_t xEntryHandle, const char** p
 	}
 
 	pxEntryHeader = (DfmEntryHeader_t*)xEntryHandle;
-
-	/* TODO: 64-bit support. Also check alignment of all sizes. */
+	
 	/* Description is located right after SessionId */
-	*pszDeviceName = (char*)((uint32_t)pxEntryHeader + sizeof(DfmEntryHeader_t) + (uint32_t)pxEntryHeader->usSessionIdSize); /*cstat !MISRAC2012-Rule-18.4 The Device Name is stored after the Entry Header and Session Id*/
+	*pszDeviceName = (char*)((uintptr_t)pxEntryHeader + sizeof(DfmEntryHeader_t) + (uint32_t)pxEntryHeader->usSessionIdSize); /*cstat !MISRAC2012-Rule-18.4 The Device Name is stored after the Entry Header and Session Id*/
 
 	return DFM_SUCCESS;
 }
@@ -1033,10 +1024,9 @@ DfmResult_t xDfmEntryGetDescription(DfmEntryHandle_t xEntryHandle, const char** 
 	}
 
 	pxEntryHeader = (DfmEntryHeader_t*)xEntryHandle;
-
-	/* TODO: 64-bit support. Also check alignment of all sizes. */
+	
 	/* Description is located right after SessionId */
-	*pszDescription = (char*)((uint32_t)pxEntryHeader + sizeof(DfmEntryHeader_t) + (uint32_t)pxEntryHeader->usSessionIdSize + (uint32_t)pxEntryHeader->usDeviceNameSize); /*cstat !MISRAC2012-Rule-18.4 The Description is stored after the Entry Header, Session Id and Device Name*/
+	*pszDescription = (char*)((uintptr_t)pxEntryHeader + sizeof(DfmEntryHeader_t) + (uint32_t)pxEntryHeader->usSessionIdSize + (uint32_t)pxEntryHeader->usDeviceNameSize); /*cstat !MISRAC2012-Rule-18.4 The Description is stored after the Entry Header, Session Id and Device Name*/
 
 	return DFM_SUCCESS;
 }
@@ -1066,10 +1056,9 @@ DfmResult_t xDfmEntryGetData(DfmEntryHandle_t xEntryHandle, void** ppvData)
 	}
 
 	pxEntryHeader = (DfmEntryHeader_t*)xEntryHandle;
-
-	/* TODO: 64-bit support. Also check alignment of all sizes. */
+	
 	/* Data is located right after Description */
-	*ppvData = (void*)((uint32_t)pxEntryHeader + sizeof(DfmEntryHeader_t) + (uint32_t)pxEntryHeader->usSessionIdSize + (uint32_t)pxEntryHeader->usDeviceNameSize + (uint32_t)pxEntryHeader->usDescriptionSize); /*cstat !MISRAC2012-Rule-11.6 !MISRAC2012-Rule-18.4 The Entry Data is stored after the Entry Header, Session Id, Device Name and Description*/
+	*ppvData = (void*)((uintptr_t)pxEntryHeader + sizeof(DfmEntryHeader_t) + (uint32_t)pxEntryHeader->usSessionIdSize + (uint32_t)pxEntryHeader->usDeviceNameSize + (uint32_t)pxEntryHeader->usDescriptionSize); /*cstat !MISRAC2012-Rule-11.6 !MISRAC2012-Rule-18.4 The Entry Data is stored after the Entry Header, Session Id, Device Name and Description*/
 
 	return DFM_SUCCESS;
 }
@@ -1107,10 +1096,9 @@ DfmResult_t xDfmEntryGetEndMarkers(DfmEntryHandle_t xEntryHandle, uint8_t** pucM
 	{
 		return DFM_FAIL;
 	}
-
-	/* TODO: 64-bit support. Also check alignment of all sizes. */
+	
 	/* Footer is located right after Data */
-	*pucMarkersBuffer = (uint8_t*)((uint32_t)pxEntryHeader + sizeof(DfmEntryHeader_t) + (uint32_t)pxEntryHeader->usSessionIdSize + (uint32_t)pxEntryHeader->usDeviceNameSize + (uint32_t)pxEntryHeader->usDescriptionSize + pxEntryHeader->ulDataSize); /*cstat !MISRAC2012-Rule-18.4 The End Markers are stored after the Entry Header, Session Id, Device Name, Description and Entry Data*/
+	*pucMarkersBuffer = (uint8_t*)((uintptr_t)pxEntryHeader + sizeof(DfmEntryHeader_t) + (uint32_t)pxEntryHeader->usSessionIdSize + (uint32_t)pxEntryHeader->usDeviceNameSize + (uint32_t)pxEntryHeader->usDescriptionSize + pxEntryHeader->ulDataSize); /*cstat !MISRAC2012-Rule-18.4 The End Markers are stored after the Entry Header, Session Id, Device Name, Description and Entry Data*/
 
 	return DFM_SUCCESS;
 }
