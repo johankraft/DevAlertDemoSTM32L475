@@ -146,7 +146,7 @@ extern "C" {
  * In snapshot mode, the TzCtrl task is only used for stack monitoring and is
  * not created unless this is enabled.
  */
-#define TRC_CFG_ENABLE_STACK_MONITOR 1
+#define TRC_CFG_ENABLE_STACK_MONITOR 0
 
 /**
  * @def TRC_CFG_STACK_MONITOR_MAX_TASKS
@@ -194,7 +194,7 @@ extern "C" {
  * not created if stack monitoring is disabled. TRC_CFG_CTRL_TASK_PRIORITY should
  * be low, to avoid disturbing any time-sensitive tasks.
  */
-#define TRC_CFG_CTRL_TASK_PRIORITY 1
+#define TRC_CFG_CTRL_TASK_PRIORITY 0
 
 /**
  * @def TRC_CFG_CTRL_TASK_DELAY
@@ -206,7 +206,7 @@ extern "C" {
  * increases the CPU load of TzCtrl somewhat, but may improve the performance of
  * of the trace streaming, especially if the trace buffer is small.
  */
-#define TRC_CFG_CTRL_TASK_DELAY 50
+#define TRC_CFG_CTRL_TASK_DELAY 5
 
 /**
  * @def TRC_CFG_CTRL_TASK_STACK_SIZE

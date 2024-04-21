@@ -94,6 +94,8 @@ RNG_HandleTypeDef xHrng;
 
 IotUARTHandle_t xConsoleUart;
 
+int speedTestLoops = 10;
+
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config( void );
 static void Console_UART_Init( void );
@@ -237,7 +239,9 @@ void ButtonTask(void* argument)
     {
     	ulTaskNotifyTake( pdTRUE, portMAX_DELAY );  /* Block indefinitely. */
 
-    	switch(getHardwareRand() % 4)
+    	speedTestLoops += 10;
+
+/*    	switch(getHardwareRand() % 4)
         {
         		case 0:
 
@@ -277,8 +281,8 @@ void ButtonTask(void* argument)
 
         			testBufferOverrun();
         			break;
-/*
-        		case 4:
+
+        		case 999: // Not working
 
         			configPRINTF(( "Test case: Stack overflow\n"));
 
@@ -289,9 +293,9 @@ void ButtonTask(void* argument)
         	        	memset(data, 0, 4000);
         	        }
 
-        	        break; */
+        	        break;
 
-        }
+        }*/
     }
 }
 
@@ -332,6 +336,11 @@ void prvRXTask(void* argument)
     	xTracePrintCompactF0("Command", messages[counter]);
     	xTracePrintCompactF1("Bytes", "%d", len);
 
+
+    	for (int i=0; i<speedTestLoops; i++)
+    		xTracePrintCompactF1("TEST", "%d", i);
+
+
     	counter = (counter+1) % nMSG;
 
    		xTraceStateMachineSetState(myfsm, myfsm_statePr);
@@ -351,11 +360,12 @@ void prvRXTask(void* argument)
     	xTraceStateMachineSetState(myfsm, myfsm_stateIn);
 
 
-    	vTaskDelay(delay);
+    	vTaskDelay( 10 /*delay*/);
     }
 
 }
 
+char* testdata ="abcdefghij01234567891\n\r";
 
 /**
  * @brief Application runtime entry point.
@@ -368,6 +378,22 @@ int main( void )
 	/* Perform any hardware initialization that does not require the RTOS to be
      * running.  */
     prvMiscInitialization();
+
+    /* Init and start tracing */
+    xTraceEnable(TRC_START);
+
+    // Enables "compact logging" with e.g. xTracePrintCompactF1(). The dispatcher tool must have access to the elf file.
+    // Disabled this since Tz 4.8.2 locks the elf file if referenced.
+    //xTraceDependencyRegister("aws_demos.elf", TRC_DEPENDENCY_TYPE_ELF);
+
+#if (DFM_CFG_SERIAL_UPLOAD_ONLY == 1)
+
+    if (xDfmInitialize(myGetUniqueSessionID, myGetDeviceName) == DFM_FAIL)
+    {
+    	configPRINTF(("Failed to initialize DFM\r\n"));
+    }
+
+#endif
 
     if (myGetDeviceName(tmp, sizeof(tmp), &bytesWritten) == DFM_SUCCESS)
     {
@@ -874,11 +900,6 @@ static void prvMiscInitialization( void )
 	// Enable usage fault and bus fault
 	SCB->SHCSR |= SCB_SHCSR_USGFAULTENA_Msk | SCB_SHCSR_BUSFAULTENA_Msk;
 
-    /* Init and start tracing */
-    xTraceEnable(TRC_START);
-
-    // Enables "compact logging" with e.g. xTracePrintCompactF1(). The dispatcher tool must have access to the elf file.
-    xTraceDependencyRegister("aws_demos.elf", TRC_DEPENDENCY_TYPE_ELF);
 
     BSP_LED_Init( LED_GREEN );
     BSP_PB_Init( BUTTON_USER, BUTTON_MODE_EXTI );
@@ -898,14 +919,6 @@ static void prvMiscInitialization( void )
     Console_UART_Init();
 
 
-#if (DFM_CFG_SERIAL_UPLOAD_ONLY == 1)
-
-    if (xDfmInitialize(myGetUniqueSessionID, myGetDeviceName) == DFM_FAIL)
-    {
-    	configPRINTF(("Failed to initialize DFM\r\n"));
-    }
-
-#endif
 
 }
 
@@ -1030,7 +1043,8 @@ static void Console_UART_Init( void )
 
      IotUARTConfig_t xConfig =
      {
-         .ulBaudrate    = 115200,
+    		 	 	 	 //2200000 seems promising with the new code - 160 KB/s stable for 3 min so far. //921600 and 1497600 are stable. 1612800 worked well for a while, but then disconnect. Might be other things...
+         .ulBaudrate    = 2200000, //1497600, //115200, //2000000, //921600, /* Default 115200, but up to 2200000 seems to work */
          .xParity      = UART_PARITY_NONE,
          .ucWordlength  = UART_WORDLENGTH_8B,
          .xStopbits    = UART_STOPBITS_1,
@@ -1249,6 +1263,12 @@ void SPI3_IRQHandler( void )
 {
     HAL_SPI_IRQHandler( &( hspi ) );
 }
+
+/*
+void USART1_IRQHandler( void )
+{
+	for (;;);
+}*/
 /*-----------------------------------------------------------*/
 
 /**

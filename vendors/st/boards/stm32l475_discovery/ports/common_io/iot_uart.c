@@ -59,7 +59,7 @@ typedef struct IotUARTDescriptor
 /**
  * @brief The number of USART ports on this ST microcontroller.
  */
-#define IOT_UART_BLOCKING_TIMEOUT    ( ( uint32_t ) 3000UL )
+#define IOT_UART_BLOCKING_TIMEOUT    ( ( uint32_t ) 30000UL )
 #define IOT_UART_CLOSED              ( ( uint8_t ) 0 )
 #define IOT_UART_OPENED              ( ( uint8_t ) 1 )
 
@@ -323,6 +323,14 @@ int32_t iot_uart_read_async( IotUARTHandle_t const pxUartPeripheral,
     return lError;
 }
 /*-----------------------------------------------------------*/
+
+void iot_uart_wait_johan(IotUARTHandle_t const pxUartPeripheral)
+{
+	if( xSemaphoreTake( pxUartPeripheral->xSemphr, pdMS_TO_TICKS( IOT_UART_BLOCKING_TIMEOUT ) ) == pdFALSE )
+	{
+		HAL_UART_Abort( pxUartPeripheral->pxHuart );
+	}
+}
 
 int32_t iot_uart_write_async( IotUARTHandle_t const pxUartPeripheral,
                               uint8_t * const pvBuffer,

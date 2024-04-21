@@ -146,10 +146,10 @@ void vLoggingPrintf( const char * pcFormat,
                      ... );
 
 /* Map the FreeRTOS printf() to the logging task printf. */
-#define configPRINTF( x )          vLoggingPrintf x
+#define configPRINTF( x )          /* vLoggingPrintf x */
 
 /* Map the logging task's printf to the board specific output function. */
-#define configPRINT_STRING( x )    vMainUARTPrintString( x );
+#define configPRINT_STRING( x )    /* vMainUARTPrintString( x ); */
 
 /* Sets the length of the buffers into which logging messages are written - so
  * also defines the maximum length of each log message. */
