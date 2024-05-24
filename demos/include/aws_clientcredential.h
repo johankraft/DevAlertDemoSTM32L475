@@ -26,14 +26,16 @@
 #ifndef __AWS_CLIENTCREDENTIAL__H__
 #define __AWS_CLIENTCREDENTIAL__H__
 
+#if (DFM_CFG_SERIAL_UPLOAD_ONLY != 1)
+#error "Update Wi-Fi and AWS IoT Core details below, then remove this line."
+#endif
+
 /*
  * @brief MQTT Broker endpoint.
  *
  * @todo Set this to the fully-qualified DNS name of your MQTT broker.
  */
 #define clientcredentialMQTT_BROKER_ENDPOINT        "....amazonaws.com"
-#error "Update clientcredentialMQTT_BROKER_ENDPOINT"
-
 /*
  * @brief Host name.
  *
@@ -45,7 +47,7 @@
  * than a hard coded constant.
  */
 #define clientcredentialIOT_THING_NAME "..."
-#error "Update clientcredentialIOT_THING_NAME"
+
 
 /*
  * @brief Port number the MQTT broker is using.
@@ -63,14 +65,12 @@
  * @todo If you are using Wi-Fi, set this to your network name.
  */
 #define clientcredentialWIFI_SSID       "..."
-#error "Update clientcredentialWIFI_SSID"
 
 /*
  * @brief Password needed to join Wi-Fi network.
  * @todo If you are using WPA, set this to your network password.
  */
 #define clientcredentialWIFI_PASSWORD   "..."
-#error "Update clientcredentialWIFI_PASSWORD"
 
 /*
  * @brief Wi-Fi network security type.

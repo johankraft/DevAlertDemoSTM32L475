@@ -37,6 +37,10 @@
 #ifndef AWS_CLIENT_CREDENTIAL_KEYS_H
 #define AWS_CLIENT_CREDENTIAL_KEYS_H
 
+#if (DFM_CFG_SERIAL_UPLOAD_ONLY != 1)
+#error "Update AWS IoT Core certificate below, i.e. CERTIFICATE_PEM and PRIVATE_KEY_PEM, then remove this line."
+#endif
+
 /*
  * @brief PEM-encoded client certificate.
  *
@@ -49,7 +53,28 @@
  * "-----END CERTIFICATE-----\n"
  */
 #define keyCLIENT_CERTIFICATE_PEM "..."
-#error "Update keyCLIENT_CERTIFICATE_PEM"
+
+/*
+ * @brief PEM-encoded client private key.
+ *
+ * @todo If you are running one of the FreeRTOS demo projects, set this
+ * to the private key that will be used for TLS client authentication.
+ * Please note pasting a key into the header file in this manner is for
+ * convenience of demonstration only and should not be done in production.
+ * Never past a production private key here!.  Production devices should
+ * store keys securely, such as within a secure element.  Additionally,
+ * we provide the corePKCS library that further enhances security by
+ * enabling keys to be used without exposing them to software.
+ *
+ * @note Must include the PEM header and footer:
+ * "-----BEGIN RSA PRIVATE KEY-----\n"\
+ * "...base64 data...\n"\
+ * "-----END RSA PRIVATE KEY-----\n"
+ */
+#define keyCLIENT_PRIVATE_KEY_PEM "..."
+
+
+// Below is not required for DevAlert demo.
 
 /*
  * @brief PEM-encoded issuer certificate for AWS IoT Just In Time Registration (JITR).
@@ -72,24 +97,5 @@
  */
 #define keyJITR_DEVICE_CERTIFICATE_AUTHORITY_PEM    NULL
 
-/*
- * @brief PEM-encoded client private key.
- *
- * @todo If you are running one of the FreeRTOS demo projects, set this
- * to the private key that will be used for TLS client authentication.
- * Please note pasting a key into the header file in this manner is for
- * convenience of demonstration only and should not be done in production.
- * Never past a production private key here!.  Production devices should
- * store keys securely, such as within a secure element.  Additionally,
- * we provide the corePKCS library that further enhances security by
- * enabling keys to be used without exposing them to software.
- *
- * @note Must include the PEM header and footer:
- * "-----BEGIN RSA PRIVATE KEY-----\n"\
- * "...base64 data...\n"\
- * "-----END RSA PRIVATE KEY-----\n"
- */
-#define keyCLIENT_PRIVATE_KEY_PEM "..."
-#error "Update keyCLIENT_PRIVATE_KEY_PEM"
 
 #endif /* AWS_CLIENT_CREDENTIAL_KEYS_H */
