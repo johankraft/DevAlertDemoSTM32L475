@@ -981,21 +981,6 @@
 			<locationURI>PROJECT_LOC/libraries/logging/include/logging_stack.h</locationURI>
 		</link>
 		<link>
-			<name>DevAlertDemo/DFM/cloudports/AWS/dfmCloudPort.c</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/DevAlertDemo/DFM/kernelports/FreeRTOS/cloudports/AWS_MQTT/dfmCloudPort.c</locationURI>
-		</link>
-		<link>
-			<name>DevAlertDemo/DFM/cloudports/AWS/dfmCloudPort.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/DevAlertDemo/DFM/kernelports/FreeRTOS/cloudports/AWS_MQTT/include/dfmCloudPort.h</locationURI>
-		</link>
-		<link>
-			<name>DevAlertDemo/DFM/cloudports/AWS/dfmCloudPortConfig.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/DevAlertDemo/DFM/kernelports/FreeRTOS/cloudports/AWS_MQTT/config/dfmCloudPortConfig.h</locationURI>
-		</link>
-		<link>
 			<name>DevAlertDemo/DFM/cloudports/Serial/dfmCloudPort.c</name>
 			<type>1</type>
 			<locationURI>PROJECT_LOC/DevAlertDemo/DFM/cloudports/Serial/dfmCloudPort.c</locationURI>
