@@ -40,13 +40,14 @@ Please contact support@percepio.com if you wish to evaluate this.
 
 First, make sure you have selected what build configuration to use under "Project" -> "Build Configurations" -> "Set Active".
 
-Next, we start a debug session. This will also build the project.
+- Select "Project" -> "Build All".
 
-- Right-click on the "Debug" symbol and select the Debug Configuration matching your Build Configuration, i.e. DevAlertDemo-Serial or DevAlertDemo-AWS_MQTT.
+- Right-click on the "Debug" symbol and select the right Debug Configuration (Serial or AWS_MQTT).
 
 - Select "Debug" to start execution
 
-- Open a terminal program on the right COM port to view the output. You should see something like:
+- Open a terminal program on the right COM port to view the output. The baud rate is 115200. 
+  You should see something like:
 
     ------ Starting up DevAlert demo ------
 
