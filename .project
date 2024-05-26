@@ -2071,33 +2071,4 @@
 			<locationURI>PROJECT_LOC/libraries/abstractions/pkcs11/corePKCS11/source/portable/mbedtls/core_pkcs11_mbedtls.c</locationURI>
 		</link>
 	</linkedResources>
-	<filteredResources>
-		<filter>
-			<id>1716711515559</id>
-			<name></name>
-			<type>10</type>
-			<matcher>
-				<id>org.eclipse.ui.ide.multiFilter</id>
-				<arguments>1.0-name-matches-false-false-Debug-Serial</arguments>
-			</matcher>
-		</filter>
-		<filter>
-			<id>1716711515578</id>
-			<name></name>
-			<type>10</type>
-			<matcher>
-				<id>org.eclipse.ui.ide.multiFilter</id>
-				<arguments>1.0-name-matches-false-false-Debug-WifiAWS</arguments>
-			</matcher>
-		</filter>
-		<filter>
-			<id>1716711515595</id>
-			<name></name>
-			<type>10</type>
-			<matcher>
-				<id>org.eclipse.ui.ide.multiFilter</id>
-				<arguments>1.0-name-matches-false-false-tools</arguments>
-			</matcher>
-		</filter>
-	</filteredResources>
 </projectDescription>
