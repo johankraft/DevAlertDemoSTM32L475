@@ -47,11 +47,6 @@ RAM2 (xrw)      : ORIGIN = 0x10000000, LENGTH = 32K
 
 FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 464K    /* Use only the first bank */
 FLASH_UC (r)	: ORIGIN = 0x08074000, LENGTH = 25K		/* Fixed-location area,  */
-
-/* Johan tested, but got errors from this. Failed storing crash dump... */
-/* FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 450K    /* Use only the first bank */
-/* FLASH_UC (r)	: ORIGIN = 0x08070000, LENGTH = 39K		/* Fixed-location area,  */
-
 }
 
 /* Define output sections */
@@ -140,15 +135,13 @@ SECTIONS
 	. = ALIGN(8);
   } >FLASH
   
-  /* DFM alert data goes into FLASH (shouldn't this be in UNINIT_FIXED_LOC?)  */
+  /* DFM alert data goes into .dfm_alert section when using the FLASH storage port */
   .dfm_alert :
   {
     . = ALIGN(8);
     *(.dfm_alert)         /* .dfm_alert sections */
     . = ALIGN(8);
   } >FLASH_UC
-  
-  /* JOHAN: Above used to be FLASH_UC */
   
   /* used by the startup to initialize data */
   _sidata = LOADADDR(.data);
