@@ -1,7 +1,12 @@
 # Percepio DevAlert on the STM32L4 IoT Discovery Kit
+[Percepio DevAlert](https://percepio.com/devalert) is a cloud-based observability solution for edge devices and embedded software,
+that lets you detect and analyze issues remotely. Both during system testing and in deployed customer use. 
+If your device software would encounter an unexpected situation or misbehave for other reasons, you will be notified right away
+and get comprehensive diagnostic information to quickly solve the problem.
 
-This project demonstrates [Percepio DevAlert v2.0](https://percepio.com/devalert) on the STM32L4 IoT Discovery kit using STM32CubeIDE.
-More information is found in the [DevAlert Getting Started Guide](https://percepio.com/devalert/gettingstarted/).
+This project demonstrates DevAlert v2.0 on the STM32L4 IoT Discovery kit using STM32CubeIDE, including support for GDB core dump debugging and Tracealyzer traces.
+
+More information about how to run this demo is found in the [DevAlert Getting Started Guide](https://percepio.com/getstarted/devalert-guide.pdf). When using this demo, only steps 1-13 are needed. Steps 14-16 are already implemented in the demo code.
 
 Learn more about the STM32L4 IoT Discovery kit at https://www.st.com/en/evaluation-tools/b-l475e-iot01a.html. 
 
