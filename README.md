@@ -1,4 +1,4 @@
-# Percepio DevAlert v2.0 on the STM32L4 IoT Discovery Kit
+# Percepio DevAlert on the STM32L4 IoT Discovery Kit
 
 This project demonstrates [Percepio DevAlert v2.0](https://percepio.com/devalert) on the STM32L4 IoT Discovery kit using STM32CubeIDE.
 
