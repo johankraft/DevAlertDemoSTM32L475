@@ -801,16 +801,6 @@
 			<locationURI>PROJECT_LOC/libraries/3rdparty/pkcs11/pkcs11t.h</locationURI>
 		</link>
 		<link>
-			<name>libraries/abstractions/mqtt_agent/freertos_agent_message.c</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/mqtt_agent/freertos_agent_message.c</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/mqtt_agent/freertos_command_pool.c</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/mqtt_agent/freertos_command_pool.c</locationURI>
-		</link>
-		<link>
 			<name>libraries/coreJSON/source/core_json.c</name>
 			<type>1</type>
 			<locationURI>PROJECT_LOC/libraries/coreJSON/source/core_json.c</locationURI>
@@ -831,16 +821,6 @@
 			<locationURI>PROJECT_LOC/libraries/coreMQTT/source/core_mqtt_state.c</locationURI>
 		</link>
 		<link>
-			<name>libraries/coreMQTT-Agent/source/core_mqtt_agent.c</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/coreMQTT-Agent/source/core_mqtt_agent.c</locationURI>
-		</link>
-		<link>
-			<name>libraries/coreMQTT-Agent/source/core_mqtt_agent_command_functions.c</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/coreMQTT-Agent/source/core_mqtt_agent_command_functions.c</locationURI>
-		</link>
-		<link>
 			<name>libraries/dev_mode_key_provisioning/include/aws_dev_mode_key_provisioning.h</name>
 			<type>1</type>
 			<locationURI>PROJECT_LOC/libraries/dev_mode_key_provisioning/include/aws_dev_mode_key_provisioning.h</locationURI>
@@ -854,11 +834,6 @@
 			<name>libraries/device_shadow_for_aws/source/shadow.c</name>
 			<type>1</type>
 			<locationURI>PROJECT_LOC/libraries/device_shadow_for_aws/source/shadow.c</locationURI>
-		</link>
-		<link>
-			<name>libraries/jobs_for_aws/source/jobs.c</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/jobs_for_aws/source/jobs.c</locationURI>
 		</link>
 		<link>
 			<name>libraries/logging/include/iot_logging_task.h</name>
@@ -1301,16 +1276,6 @@
 			<locationURI>PROJECT_LOC/libraries/abstractions/backoff_algorithm/source/backoff_algorithm.c</locationURI>
 		</link>
 		<link>
-			<name>libraries/abstractions/mqtt_agent/include/freertos_agent_message.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/mqtt_agent/include/freertos_agent_message.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/mqtt_agent/include/freertos_command_pool.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/mqtt_agent/include/freertos_command_pool.h</locationURI>
-		</link>
-		<link>
 			<name>libraries/abstractions/platform/freertos/iot_clock_freertos.c</name>
 			<type>1</type>
 			<locationURI>PROJECT_LOC/libraries/abstractions/platform/freertos/iot_clock_freertos.c</locationURI>
@@ -1329,21 +1294,6 @@
 			<name>libraries/abstractions/platform/freertos/iot_threads_freertos.c</name>
 			<type>1</type>
 			<locationURI>PROJECT_LOC/libraries/abstractions/platform/freertos/iot_threads_freertos.c</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/secure_sockets/include/iot_secure_sockets.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/secure_sockets/include/iot_secure_sockets.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/secure_sockets/include/iot_secure_sockets_config_defaults.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/secure_sockets/include/iot_secure_sockets_config_defaults.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/secure_sockets/include/iot_secure_sockets_wrapper_metrics.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/secure_sockets/include/iot_secure_sockets_wrapper_metrics.h</locationURI>
 		</link>
 		<link>
 			<name>libraries/abstractions/transport/secure_sockets/transport_secure_sockets.c</name>
@@ -1401,21 +1351,6 @@
 			<locationURI>PROJECT_LOC/libraries/coreMQTT/source/interface/transport_interface.h</locationURI>
 		</link>
 		<link>
-			<name>libraries/coreMQTT-Agent/source/include/core_mqtt_agent.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/coreMQTT-Agent/source/include/core_mqtt_agent.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/coreMQTT-Agent/source/include/core_mqtt_agent_command_functions.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/coreMQTT-Agent/source/include/core_mqtt_agent_command_functions.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/coreMQTT-Agent/source/include/core_mqtt_agent_message_interface.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/coreMQTT-Agent/source/include/core_mqtt_agent_message_interface.h</locationURI>
-		</link>
-		<link>
 			<name>libraries/device_shadow_for_aws/source/include/shadow.h</name>
 			<type>1</type>
 			<locationURI>PROJECT_LOC/libraries/device_shadow_for_aws/source/include/shadow.h</locationURI>
@@ -1424,11 +1359,6 @@
 			<name>libraries/device_shadow_for_aws/source/include/shadow_config_defaults.h</name>
 			<type>1</type>
 			<locationURI>PROJECT_LOC/libraries/device_shadow_for_aws/source/include/shadow_config_defaults.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/jobs_for_aws/source/include/jobs.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/jobs_for_aws/source/include/jobs.h</locationURI>
 		</link>
 		<link>
 			<name>libraries/3rdparty/mbedtls/include/mbedtls/aes.h</name>

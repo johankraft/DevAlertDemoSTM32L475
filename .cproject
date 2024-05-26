@@ -100,12 +100,12 @@
 							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.1909651670" name="MCU GCC Assembler" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler">
 								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.option.debuglevel.607741941" name="Debug level" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.option.debuglevel" useByScannerDiscovery="false" value="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.option.debuglevel.value.g3" valueType="enumerated"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.option.includepaths.2080212123" name="Include paths (-I)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.option.includepaths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries/abstractions/mqtt_agent}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries/abstractions/backoff_algorithm}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries/abstractions/pkcs11}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries/abstractions/platform}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries/abstractions/transport}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries/abstractions/pkcs11/corePKCS11/source/portable/mbedtls}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries/abstractions/aws_iot_includes}&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.input.1645607957" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.input"/>
 							</tool>
@@ -138,22 +138,16 @@
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/platform/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/platform/freertos/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/platform/include/platform"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/secure_sockets/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/freertos_plus/standard/tls/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/freertos_plus/standard/crypto/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/pkcs11/corePKCS11/source/include"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/wifi/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/freertos_plus/standard/utils/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/logging/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/dev_mode_key_provisioning/include"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/common_io/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/coreMQTT/source/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/coreMQTT/source/interface"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/backoff_algorithm/source/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/transport/secure_sockets"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/coreMQTT-Agent/source/include"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/mqtt_agent/include"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/mqtt_agent"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/aws_iot_includes"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/coreJSON/source/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/device_shadow_for_aws/source/include"/>
@@ -280,14 +274,38 @@
 							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.objcopy.symbolsrec.1957956593" name="MCU Output Converter Motorola S-rec with symbols" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.objcopy.symbolsrec.1304445666"/>
 						</toolChain>
 					</folderInfo>
+					<folderInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1925763599.40204171" name="/" resourcePath="libraries/abstractions/aws_iot_includes">
+						<toolChain id="com.st.stm32cube.ide.mcu.gnu.managedbuild.toolchain.exe.debug.1802877448" name="MCU ARM GCC" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.toolchain.exe.debug" unusedChildren="">
+							<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.target_mcu.1955986460.135512392" name="MCU" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.target_mcu.1955986460"/>
+							<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.target_board.1394666575.152424747" name="Board" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.target_board.1394666575"/>
+							<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.instructionset.919758765.1916222308" name="Instruction set" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.instructionset.919758765"/>
+							<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.floatabi.232006838.521237943" name="Floating-point ABI" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.floatabi.232006838"/>
+							<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.fpu.2059142274.285745946" name="Floating-point unit" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.fpu.2059142274"/>
+							<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.target_cpuid.1763366655.418020636" name="CPU" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.target_cpuid.1763366655"/>
+							<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.target_coreid.1892076685.1370217380" name="Core" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.target_coreid.1892076685"/>
+							<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.runtimelibrary_c.820357699.2038813459" name="Runtime library" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.runtimelibrary_c.820357699"/>
+							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.498930034" name="MCU GCC Assembler" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.1909651670"/>
+							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.1753779015" name="MCU GCC Compiler" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.1233017785"/>
+							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.50148907" name="MCU G++ Compiler" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.410170273"/>
+							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.2059891019" name="MCU GCC Linker" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.2054830414"/>
+							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.linker.1630863557" name="MCU G++ Linker" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.linker.1059324656"/>
+							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.archiver.1106128996" name="MCU GCC Archiver" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.archiver.819273163"/>
+							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.size.1775502120" name="MCU Size" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.size.50098022"/>
+							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.objdump.listfile.243794880" name="MCU Output Converter list file" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.objdump.listfile.660405292"/>
+							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.objcopy.hex.1583509116" name="MCU Output Converter Hex" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.objcopy.hex.2004353928"/>
+							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.objcopy.binary.1134700116" name="MCU Output Converter Binary" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.objcopy.binary.1820226206"/>
+							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.objcopy.verilog.165933556" name="MCU Output Converter Verilog" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.objcopy.verilog.289186798"/>
+							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.objcopy.srec.333640554" name="MCU Output Converter Motorola S-rec" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.objcopy.srec.197530960"/>
+							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.objcopy.symbolsrec.1083977200" name="MCU Output Converter Motorola S-rec with symbols" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.objcopy.symbolsrec.1304445666"/>
+						</toolChain>
+					</folderInfo>
 					<sourceEntries>
-						<entry excluding="libraries/abstractions|_aws_demos|aws_demos|aws_demos/coreMQTT|aws_demos/common/pkcs11_helpers|aws_demos/common/mqtt_demo_helpers|aws_demos/device_shadow_for_aws|aws_demos/demo_runner|aws_demos/coreMQTT_Agent|aws_demos/tcp|aws_demos/network_manager|aws_demos/jobs_for_aws|libraries/abstractions/pkcs11/corePKCS11/source/portable/posix|libraries/abstractions/pkcs11/corePKCS11/source/portable/windows|libraries/abstractions/pkcs11/ecc608a|libraries/abstractions/pkcs11/psa|libraries/3rdparty/mbedtls/programs|DevAlertDemo/TraceRecorder/streamports|libraries/abstractions/secure_sockets/lwip|libraries/abstractions/secure_sockets/freertos_plus_tcp|libraries/3rdparty/mbedtls/tests|libraries/3rdparty/mbedtls/visualc|libraries/3rdparty/mbedtls/scripts|freertos_kernel/portable|DevAlertDemo/DFM/kernelports/Zephyr|DevAlertDemo/DFM/storageports/Dummy|DevAlertDemo/DFM/cloudports/Dummy|DevAlertDemo/DFM/cloudports/Serial|Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/gcc|Libraries/ThirdParty/printf-stdarg/printf-stdarg.c|Application/User/subscribe_publish_sample.c|Application/Common/iot_flash_config.c|Application/Common/aws_iot_test_metering.c|Application/Common/printf.c|Libraries/FreeRTOS-Plus-TCP|Application/Common/timer.c|Application/Common/subscribe_publish_sensor_values.c|Application/Common/network_st_wrapper.c|Application/Common/aws_iot_test_basic_connectivity.c|Application/Common/sensors_data.c|Application/Common/firewall_wrapper.c|Application/Common/timedate.c|Application/Common/mbedtls_patch.c|Application/Common/heap.c|Application/Common/metering.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="libraries/abstractions|aws_demos|aws_demos/coreMQTT|aws_demos/common/pkcs11_helpers|aws_demos/common/mqtt_demo_helpers|aws_demos/device_shadow_for_aws|aws_demos/demo_runner|aws_demos/coreMQTT_Agent|aws_demos/tcp|aws_demos/network_manager|aws_demos/jobs_for_aws|libraries/abstractions/pkcs11/corePKCS11/source/portable/posix|libraries/abstractions/pkcs11/corePKCS11/source/portable/windows|libraries/abstractions/pkcs11/ecc608a|libraries/abstractions/pkcs11/psa|libraries/3rdparty/mbedtls/programs|DevAlertDemo/TraceRecorder/streamports|libraries/abstractions/secure_sockets/lwip|libraries/abstractions/secure_sockets/freertos_plus_tcp|libraries/3rdparty/mbedtls/tests|libraries/3rdparty/mbedtls/visualc|libraries/3rdparty/mbedtls/scripts|freertos_kernel/portable|DevAlertDemo/DFM/kernelports/Zephyr|DevAlertDemo/DFM/storageports/Dummy|DevAlertDemo/DFM/cloudports/Dummy|DevAlertDemo/DFM/cloudports/Serial|Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/gcc|Libraries/ThirdParty/printf-stdarg/printf-stdarg.c|Application/User/subscribe_publish_sample.c|Application/Common/iot_flash_config.c|Application/Common/aws_iot_test_metering.c|Application/Common/printf.c|Libraries/FreeRTOS-Plus-TCP|Application/Common/timer.c|Application/Common/subscribe_publish_sensor_values.c|Application/Common/network_st_wrapper.c|Application/Common/aws_iot_test_basic_connectivity.c|Application/Common/sensors_data.c|Application/Common/firewall_wrapper.c|Application/Common/timedate.c|Application/Common/mbedtls_patch.c|Application/Common/heap.c|Application/Common/metering.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="DevAlertDemo/TraceRecorder/streamports/RingBuffer"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="freertos_kernel/portable/Common"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="freertos_kernel/portable/GCC/ARM_CM4F"/>
 						<entry excluding="heap_4.c|heap_3.c|heap_2.c|heap_1.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="freertos_kernel/portable/MemMang"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="libraries/abstractions/aws_iot_includes"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="libraries/abstractions/backoff_algorithm"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="libraries/abstractions/mqtt_agent"/>
 						<entry excluding="corePKCS11/source/portable/posix|corePKCS11/source/portable/windows|psa|ecc608a" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="libraries/abstractions/pkcs11"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="libraries/abstractions/platform"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="libraries/abstractions/transport"/>
@@ -325,12 +343,12 @@
 							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.1102503737" name="MCU GCC Assembler" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler">
 								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.option.debuglevel.1064175864" name="Debug level" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.option.debuglevel" useByScannerDiscovery="false" value="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.option.debuglevel.value.g3" valueType="enumerated"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.option.includepaths.1242618094" name="Include paths (-I)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.option.includepaths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries/abstractions/mqtt_agent}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries/abstractions/backoff_algorithm}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries/abstractions/pkcs11}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries/abstractions/platform}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries/abstractions/transport}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries/abstractions/pkcs11/corePKCS11/source/portable/mbedtls}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/libraries/abstractions/aws_iot_includes}&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.input.521906345" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.input"/>
 							</tool>
@@ -363,22 +381,16 @@
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/platform/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/platform/freertos/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/platform/include/platform"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/secure_sockets/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/freertos_plus/standard/tls/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/freertos_plus/standard/crypto/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/pkcs11/corePKCS11/source/include"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/wifi/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/freertos_plus/standard/utils/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/logging/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/dev_mode_key_provisioning/include"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/common_io/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/coreMQTT/source/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/coreMQTT/source/interface"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/backoff_algorithm/source/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/transport/secure_sockets"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/coreMQTT-Agent/source/include"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/mqtt_agent/include"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/mqtt_agent"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/aws_iot_includes"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/coreJSON/source/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/device_shadow_for_aws/source/include"/>
@@ -509,7 +521,6 @@
 					<sourceEntries>
 						<entry excluding="_aws_demos|aws_demos/coreMQTT|aws_demos/common/pkcs11_helpers|aws_demos/common/mqtt_demo_helpers|aws_demos/device_shadow_for_aws|aws_demos/demo_runner|aws_demos/coreMQTT_Agent|aws_demos/tcp|aws_demos/network_manager|aws_demos/jobs_for_aws|libraries/3rdparty/mbedtls/programs|DevAlertDemo/CrashCatcher/HexDump|DevAlertDemo/CrashCatcher/samples|DevAlertDemo/CrashCatcher/HexDump/tests|DevAlertDemo/CrashCatcher/FloatMocks/tests|DevAlertDemo/CrashCatcher/Core/tests|DevAlertDemo/CrashCatcher/Core/mocks|DevAlertDemo/CrashCatcher/HexDump/mocks|DevAlertDemo/TraceRecorder/extras|DevAlertDemo/DFM/storageports/Dummy|DevAlertDemo/DFM/kernelports/FreeRTOS/cloudports/AWS_MQTT|DevAlertDemo/DFM/kernelports/Zephyr|DevAlertDemo/DFM/cloudports/Dummy|DevAlertDemo/DFM/cloudports/AWS|DevAlertDemo/TraceRecorder/streamports|freertos_kernel/portable|libraries/abstractions/pkcs11|libraries/abstractions/pkcs11/ecc608a|libraries/abstractions/pkcs11/psa|libraries/abstractions/secure_sockets/freertos_plus_tcp|libraries/abstractions/secure_sockets/lwip|libraries/3rdparty/DFM/cloudports/Serial|Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/gcc|Libraries/ThirdParty/printf-stdarg/printf-stdarg.c|Application/User/subscribe_publish_sample.c|Application/Common/iot_flash_config.c|Application/Common/aws_iot_test_metering.c|Libraries/ThirdParty/tracealyzer_recorder|Application/Common/printf.c|Libraries/FreeRTOS-Plus-TCP|Application/Common/timer.c|Application/Common/subscribe_publish_sensor_values.c|Application/Common/network_st_wrapper.c|Application/Common/aws_iot_test_basic_connectivity.c|Application/Common/sensors_data.c|Application/Common/firewall_wrapper.c|Application/Common/timedate.c|Application/Common/mbedtls_patch.c|Application/Common/heap.c|Application/Common/metering.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="DevAlertDemo/TraceRecorder/streamports/RingBuffer"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="freertos_kernel/portable/Common"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="freertos_kernel/portable/GCC/ARM_CM4F"/>
 						<entry excluding="heap_4.c|heap_3.c|heap_2.c|heap_1.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="freertos_kernel/portable/MemMang"/>
 					</sourceEntries>
