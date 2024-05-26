@@ -42,7 +42,6 @@
 #include "task.h"
 
 /* Demo includes */
-#include "aws_demo.h"
 #include "iot_system_init.h"
 #include "iot_logging_task.h"
 #include "iot_wifi.h"
@@ -465,6 +464,7 @@ void vApplicationDaemonTaskStartupHook( void )
 
             srand(getHardwareRand());
 
+            // When using AWS MQTT upload, DFM is initialized after the connection is established.
             if (xDfmInitialize(myGetUniqueSessionID, myGetDeviceName) == DFM_FAIL)
             {
                 configPRINTF(("Failed to initialize DFM\r\n"));

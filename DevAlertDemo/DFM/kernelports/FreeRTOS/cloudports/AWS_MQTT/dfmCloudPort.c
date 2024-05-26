@@ -21,7 +21,6 @@
 #include <transport_secure_sockets.h>
 #include <iot_network.h>
 #include <aws_clientcredential.h>
-#include <aws_iot_metrics.h>
 #include <iot_default_root_certificates.h>
 
 /**
@@ -135,11 +134,6 @@ static uint32_t prvMqttConnect()
      * unique, such as a device serial number. */
     xConnectInfo.pClientIdentifier = clientcredentialIOT_THING_NAME;
     xConnectInfo.clientIdentifierLength = (uint16_t)strlen(clientcredentialIOT_THING_NAME);
-
-    /* Use the metrics string as username to report the OS and MQTT client version
-     * metrics to AWS IoT. */
-    xConnectInfo.pUserName = AWS_IOT_METRICS_STRING;
-    xConnectInfo.userNameLength = AWS_IOT_METRICS_STRING_LENGTH;
 
     /* Set MQTT keep-alive period. If the application does not send packets at an interval less than
      * the keep-alive period, the MQTT library will send PINGREQ packets. */

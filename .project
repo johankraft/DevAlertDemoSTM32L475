@@ -421,101 +421,6 @@
 			<locationURI>PROJECT_LOC/DevAlertDemo/TraceRecorder/trcTimestamp.c</locationURI>
 		</link>
 		<link>
-			<name>aws_demos/coreMQTT/mqtt_demo_mutual_auth.c</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/coreMQTT/mqtt_demo_mutual_auth.c</locationURI>
-		</link>
-		<link>
-			<name>aws_demos/coreMQTT_Agent/mqtt_agent_task.c</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/coreMQTT_Agent/mqtt_agent_task.c</locationURI>
-		</link>
-		<link>
-			<name>aws_demos/coreMQTT_Agent/simple_sub_pub_demo.c</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/coreMQTT_Agent/simple_sub_pub_demo.c</locationURI>
-		</link>
-		<link>
-			<name>aws_demos/coreMQTT_Agent/subscription_manager.c</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/coreMQTT_Agent/subscription_manager.c</locationURI>
-		</link>
-		<link>
-			<name>aws_demos/coreMQTT_Agent/subscription_manager.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/coreMQTT_Agent/subscription_manager.h</locationURI>
-		</link>
-		<link>
-			<name>aws_demos/demo_runner/aws_demo.c</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/demo_runner/aws_demo.c</locationURI>
-		</link>
-		<link>
-			<name>aws_demos/demo_runner/iot_demo_freertos.c</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/demo_runner/iot_demo_freertos.c</locationURI>
-		</link>
-		<link>
-			<name>aws_demos/demo_runner/iot_demo_runner.c</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/demo_runner/iot_demo_runner.c</locationURI>
-		</link>
-		<link>
-			<name>aws_demos/device_shadow_for_aws/shadow_demo_main.c</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/device_shadow_for_aws/shadow_demo_main.c</locationURI>
-		</link>
-		<link>
-			<name>aws_demos/include/aws_demo.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/include/aws_demo.h</locationURI>
-		</link>
-		<link>
-			<name>aws_demos/include/aws_iot_metrics.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/include/aws_iot_metrics.h</locationURI>
-		</link>
-		<link>
-			<name>aws_demos/include/iot_config_common.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/include/iot_config_common.h</locationURI>
-		</link>
-		<link>
-			<name>aws_demos/include/iot_demo_logging.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/include/iot_demo_logging.h</locationURI>
-		</link>
-		<link>
-			<name>aws_demos/include/iot_demo_runner.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/include/iot_demo_runner.h</locationURI>
-		</link>
-		<link>
-			<name>aws_demos/jobs_for_aws/jobs_demo.c</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/jobs_for_aws/jobs_demo.c</locationURI>
-		</link>
-		<link>
-			<name>aws_demos/network_manager/aws_iot_network_manager.c</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/network_manager/aws_iot_network_manager.c</locationURI>
-		</link>
-		<link>
-			<name>aws_demos/network_manager/iot_network_manager_private.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/network_manager/iot_network_manager_private.h</locationURI>
-		</link>
-		<link>
-			<name>aws_demos/tcp/aws_tcp_echo_client_single_task.c</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/tcp/aws_tcp_echo_client_single_task.c</locationURI>
-		</link>
-		<link>
-			<name>aws_demos/tcp/aws_tcp_echo_client_single_tasks.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/tcp/aws_tcp_echo_client_single_tasks.h</locationURI>
-		</link>
-		<link>
 			<name>freertos_kernel/include/FreeRTOS.h</name>
 			<type>1</type>
 			<locationURI>PROJECT_LOC/freertos_kernel/include/FreeRTOS.h</locationURI>
@@ -856,26 +761,6 @@
 			<locationURI>PROJECT_LOC/DevAlertDemo/TraceRecorder/include/trcUtility.h</locationURI>
 		</link>
 		<link>
-			<name>aws_demos/common/mqtt_demo_helpers/mqtt_demo_helpers.c</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/common/mqtt_demo_helpers/mqtt_demo_helpers.c</locationURI>
-		</link>
-		<link>
-			<name>aws_demos/common/pkcs11_helpers/pkcs11_helpers.c</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/common/pkcs11_helpers/pkcs11_helpers.c</locationURI>
-		</link>
-		<link>
-			<name>aws_demos/dev_mode_key_provisioning/include/aws_dev_mode_key_provisioning.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/dev_mode_key_provisioning/include/aws_dev_mode_key_provisioning.h</locationURI>
-		</link>
-		<link>
-			<name>aws_demos/dev_mode_key_provisioning/src/aws_dev_mode_key_provisioning.c</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/aws_demos/dev_mode_key_provisioning/src/aws_dev_mode_key_provisioning.c</locationURI>
-		</link>
-		<link>
 			<name>freertos_kernel/portable/MemMang/heap_5.c</name>
 			<type>1</type>
 			<locationURI>PROJECT_LOC/freertos_kernel/portable/MemMang/heap_5.c</locationURI>
@@ -954,6 +839,16 @@
 			<name>libraries/coreMQTT-Agent/source/core_mqtt_agent_command_functions.c</name>
 			<type>1</type>
 			<locationURI>PROJECT_LOC/libraries/coreMQTT-Agent/source/core_mqtt_agent_command_functions.c</locationURI>
+		</link>
+		<link>
+			<name>libraries/dev_mode_key_provisioning/include/aws_dev_mode_key_provisioning.h</name>
+			<type>1</type>
+			<locationURI>PROJECT_LOC/libraries/dev_mode_key_provisioning/include/aws_dev_mode_key_provisioning.h</locationURI>
+		</link>
+		<link>
+			<name>libraries/dev_mode_key_provisioning/src/aws_dev_mode_key_provisioning.c</name>
+			<type>1</type>
+			<locationURI>PROJECT_LOC/libraries/dev_mode_key_provisioning/src/aws_dev_mode_key_provisioning.c</locationURI>
 		</link>
 		<link>
 			<name>libraries/device_shadow_for_aws/source/shadow.c</name>
@@ -2176,4 +2071,33 @@
 			<locationURI>PROJECT_LOC/libraries/abstractions/pkcs11/corePKCS11/source/portable/mbedtls/core_pkcs11_mbedtls.c</locationURI>
 		</link>
 	</linkedResources>
+	<filteredResources>
+		<filter>
+			<id>1716711515559</id>
+			<name></name>
+			<type>10</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-Debug-Serial</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1716711515578</id>
+			<name></name>
+			<type>10</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-Debug-WifiAWS</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1716711515595</id>
+			<name></name>
+			<type>10</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-tools</arguments>
+			</matcher>
+		</filter>
+	</filteredResources>
 </projectDescription>

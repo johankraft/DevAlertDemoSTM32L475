@@ -125,9 +125,6 @@
 									<listOptionValue builtIn="false" value="${ProjDirPath}/st/stm32l475_discovery/STM32L4xx_HAL_Driver/Inc/Legacy"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/st"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/aws_demos/include"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/aws_demos/config_files"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/aws_demos/network_manager"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/c_sdk/standard/common/include/private"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/c_sdk/standard/common/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/platform/include"/>
@@ -140,21 +137,18 @@
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/wifi/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/freertos_plus/standard/utils/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/logging/include"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/aws_demos/dev_mode_key_provisioning/include"/>
+									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/dev_mode_key_provisioning/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/common_io/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/coreMQTT/source/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/coreMQTT/source/interface"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/backoff_algorithm/source/include"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/aws_demos/common/pkcs11_helpers"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/transport/secure_sockets"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/coreMQTT-Agent/source/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/mqtt_agent/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/mqtt_agent"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/coreJSON/source/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/device_shadow_for_aws/source/include"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/aws_demos/common/mqtt_demo_helpers"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/jobs_for_aws/source/include"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/aws_demos/coreMQTT_Agent"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/3rdparty/pkcs11"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/3rdparty/mbedtls/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/3rdparty/mbedtls_config"/>
@@ -273,7 +267,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="aws_demos/device_shadow_for_aws|aws_demos/demo_runner|aws_demos/coreMQTT_Agent|aws_demos/tcp|aws_demos/network_manager|aws_demos/jobs_for_aws|libraries/abstractions/pkcs11/corePKCS11/source/portable/posix|libraries/abstractions/pkcs11/corePKCS11/source/portable/windows|libraries/abstractions/pkcs11/ecc608a|libraries/abstractions/pkcs11/psa|libraries/3rdparty/mbedtls/programs|DevAlertDemo/TraceRecorder/streamports|libraries/abstractions/secure_sockets/lwip|libraries/abstractions/secure_sockets/freertos_plus_tcp|libraries/3rdparty/mbedtls/tests|libraries/3rdparty/mbedtls/visualc|libraries/3rdparty/mbedtls/scripts|freertos_kernel/portable|DevAlertDemo/DFM/kernelports/Zephyr|DevAlertDemo/DFM/storageports/Dummy|DevAlertDemo/DFM/cloudports/Dummy|DevAlertDemo/DFM/cloudports/Serial|Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/gcc|Libraries/ThirdParty/printf-stdarg/printf-stdarg.c|Application/User/subscribe_publish_sample.c|Application/Common/iot_flash_config.c|Application/Common/aws_iot_test_metering.c|Application/Common/printf.c|Libraries/FreeRTOS-Plus-TCP|Application/Common/timer.c|Application/Common/subscribe_publish_sensor_values.c|Application/Common/network_st_wrapper.c|Application/Common/aws_iot_test_basic_connectivity.c|Application/Common/sensors_data.c|Application/Common/firewall_wrapper.c|Application/Common/timedate.c|Application/Common/mbedtls_patch.c|Application/Common/heap.c|Application/Common/metering.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="_aws_demos|aws_demos|aws_demos/coreMQTT|aws_demos/common/pkcs11_helpers|aws_demos/common/mqtt_demo_helpers|aws_demos/device_shadow_for_aws|aws_demos/demo_runner|aws_demos/coreMQTT_Agent|aws_demos/tcp|aws_demos/network_manager|aws_demos/jobs_for_aws|libraries/abstractions/pkcs11/corePKCS11/source/portable/posix|libraries/abstractions/pkcs11/corePKCS11/source/portable/windows|libraries/abstractions/pkcs11/ecc608a|libraries/abstractions/pkcs11/psa|libraries/3rdparty/mbedtls/programs|DevAlertDemo/TraceRecorder/streamports|libraries/abstractions/secure_sockets/lwip|libraries/abstractions/secure_sockets/freertos_plus_tcp|libraries/3rdparty/mbedtls/tests|libraries/3rdparty/mbedtls/visualc|libraries/3rdparty/mbedtls/scripts|freertos_kernel/portable|DevAlertDemo/DFM/kernelports/Zephyr|DevAlertDemo/DFM/storageports/Dummy|DevAlertDemo/DFM/cloudports/Dummy|DevAlertDemo/DFM/cloudports/Serial|Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/gcc|Libraries/ThirdParty/printf-stdarg/printf-stdarg.c|Application/User/subscribe_publish_sample.c|Application/Common/iot_flash_config.c|Application/Common/aws_iot_test_metering.c|Application/Common/printf.c|Libraries/FreeRTOS-Plus-TCP|Application/Common/timer.c|Application/Common/subscribe_publish_sensor_values.c|Application/Common/network_st_wrapper.c|Application/Common/aws_iot_test_basic_connectivity.c|Application/Common/sensors_data.c|Application/Common/firewall_wrapper.c|Application/Common/timedate.c|Application/Common/mbedtls_patch.c|Application/Common/heap.c|Application/Common/metering.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="DevAlertDemo/TraceRecorder/streamports/RingBuffer"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="freertos_kernel/portable/Common"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="freertos_kernel/portable/GCC/ARM_CM4F"/>
@@ -337,8 +331,6 @@
 									<listOptionValue builtIn="false" value="${ProjDirPath}/st/stm32l475_discovery/STM32L4xx_HAL_Driver/Inc/Legacy"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/st"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/aws_demos/include"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/aws_demos/network_manager"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/c_sdk/standard/common/include/private"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/c_sdk/standard/common/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/platform/include"/>
@@ -351,21 +343,18 @@
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/wifi/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/freertos_plus/standard/utils/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/logging/include"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/aws_demos/dev_mode_key_provisioning/include"/>
+									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/dev_mode_key_provisioning/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/common_io/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/coreMQTT/source/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/coreMQTT/source/interface"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/backoff_algorithm/source/include"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/aws_demos/common/pkcs11_helpers"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/transport/secure_sockets"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/coreMQTT-Agent/source/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/mqtt_agent/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/abstractions/mqtt_agent"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/coreJSON/source/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/device_shadow_for_aws/source/include"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/aws_demos/common/mqtt_demo_helpers"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/jobs_for_aws/source/include"/>
-									<listOptionValue builtIn="false" value="${ProjDirPath}/aws_demos/coreMQTT_Agent"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/3rdparty/pkcs11"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/3rdparty/mbedtls/include"/>
 									<listOptionValue builtIn="false" value="${ProjDirPath}/libraries/3rdparty/mbedtls_config"/>
@@ -485,7 +474,7 @@
 					</folderInfo>
 					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1106203701.1666497071" name="trcKernelPortConfig.h" rcbsApplicability="disable" resourcePath="DevAlertDemo/TraceRecorder/config/trcKernelPortConfig.h" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="aws_demos/device_shadow_for_aws|aws_demos/demo_runner|aws_demos/coreMQTT_Agent|aws_demos/tcp|aws_demos/network_manager|aws_demos/jobs_for_aws|libraries/3rdparty/mbedtls/programs|DevAlertDemo/CrashCatcher/HexDump|DevAlertDemo/CrashCatcher/samples|DevAlertDemo/CrashCatcher/HexDump/tests|DevAlertDemo/CrashCatcher/FloatMocks/tests|DevAlertDemo/CrashCatcher/Core/tests|DevAlertDemo/CrashCatcher/Core/mocks|DevAlertDemo/CrashCatcher/HexDump/mocks|DevAlertDemo/TraceRecorder/extras|DevAlertDemo/DFM/storageports/Dummy|DevAlertDemo/DFM/kernelports/FreeRTOS/cloudports/AWS_MQTT|DevAlertDemo/DFM/kernelports/Zephyr|DevAlertDemo/DFM/cloudports/Dummy|DevAlertDemo/DFM/cloudports/AWS|DevAlertDemo/TraceRecorder/streamports|freertos_kernel/portable|libraries/abstractions/pkcs11|libraries/abstractions/pkcs11/ecc608a|libraries/abstractions/pkcs11/psa|libraries/abstractions/secure_sockets/freertos_plus_tcp|libraries/abstractions/secure_sockets/lwip|libraries/3rdparty/DFM/cloudports/Serial|Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/gcc|Libraries/ThirdParty/printf-stdarg/printf-stdarg.c|Application/User/subscribe_publish_sample.c|Application/Common/iot_flash_config.c|Application/Common/aws_iot_test_metering.c|Libraries/ThirdParty/tracealyzer_recorder|Application/Common/printf.c|Libraries/FreeRTOS-Plus-TCP|Application/Common/timer.c|Application/Common/subscribe_publish_sensor_values.c|Application/Common/network_st_wrapper.c|Application/Common/aws_iot_test_basic_connectivity.c|Application/Common/sensors_data.c|Application/Common/firewall_wrapper.c|Application/Common/timedate.c|Application/Common/mbedtls_patch.c|Application/Common/heap.c|Application/Common/metering.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="_aws_demos|aws_demos/coreMQTT|aws_demos/common/pkcs11_helpers|aws_demos/common/mqtt_demo_helpers|aws_demos/device_shadow_for_aws|aws_demos/demo_runner|aws_demos/coreMQTT_Agent|aws_demos/tcp|aws_demos/network_manager|aws_demos/jobs_for_aws|libraries/3rdparty/mbedtls/programs|DevAlertDemo/CrashCatcher/HexDump|DevAlertDemo/CrashCatcher/samples|DevAlertDemo/CrashCatcher/HexDump/tests|DevAlertDemo/CrashCatcher/FloatMocks/tests|DevAlertDemo/CrashCatcher/Core/tests|DevAlertDemo/CrashCatcher/Core/mocks|DevAlertDemo/CrashCatcher/HexDump/mocks|DevAlertDemo/TraceRecorder/extras|DevAlertDemo/DFM/storageports/Dummy|DevAlertDemo/DFM/kernelports/FreeRTOS/cloudports/AWS_MQTT|DevAlertDemo/DFM/kernelports/Zephyr|DevAlertDemo/DFM/cloudports/Dummy|DevAlertDemo/DFM/cloudports/AWS|DevAlertDemo/TraceRecorder/streamports|freertos_kernel/portable|libraries/abstractions/pkcs11|libraries/abstractions/pkcs11/ecc608a|libraries/abstractions/pkcs11/psa|libraries/abstractions/secure_sockets/freertos_plus_tcp|libraries/abstractions/secure_sockets/lwip|libraries/3rdparty/DFM/cloudports/Serial|Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/gcc|Libraries/ThirdParty/printf-stdarg/printf-stdarg.c|Application/User/subscribe_publish_sample.c|Application/Common/iot_flash_config.c|Application/Common/aws_iot_test_metering.c|Libraries/ThirdParty/tracealyzer_recorder|Application/Common/printf.c|Libraries/FreeRTOS-Plus-TCP|Application/Common/timer.c|Application/Common/subscribe_publish_sensor_values.c|Application/Common/network_st_wrapper.c|Application/Common/aws_iot_test_basic_connectivity.c|Application/Common/sensors_data.c|Application/Common/firewall_wrapper.c|Application/Common/timedate.c|Application/Common/mbedtls_patch.c|Application/Common/heap.c|Application/Common/metering.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="DevAlertDemo/TraceRecorder/streamports/RingBuffer"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="freertos_kernel/portable/Common"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="freertos_kernel/portable/GCC/ARM_CM4F"/>
