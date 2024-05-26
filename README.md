@@ -29,12 +29,11 @@ The build configuration is selected under "Project" -> "Build Configurations" ->
 
 **Debug-Serial**
 In this mode, the alerts are written to the debug console (UART) as binary hex strings.
-The data is intended to be received by a host tool and relayed to the cloud, as described in the [DevAlert Getting Started Guide](https://percepio.com/devalert/gettingstarted/). 
+The data is received by a host tool and relayed to your DevAlert evaluation account, as described in the [DevAlert Getting Started Guide](https://percepio.com/devalert/gettingstarted/). 
 
 **Debug-WifiAWS**
-This modeuploads the alerts to AWS IoT Core using MQTT over Wi-Fi. 
+This mode uploads the alerts to AWS IoT Core using MQTT over Wi-Fi. This is not yet covered in the Getting Started guide. 
 
-This is not yet covered in the Getting Started guide. This requires DevAlert integration in your AWS account and as well as a proper "production" DevAlert account.
 Please contact support@percepio.com if you wish to evaluate this.
 
 ## Building and Running the Demo
