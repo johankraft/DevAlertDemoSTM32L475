@@ -901,6 +901,8 @@ static void prvMiscInitialization( void )
 
 #if (DFM_CFG_SERIAL_UPLOAD_ONLY == 1)
 
+    // DFM can be initialized quite early when using the Serial upload
+
     if (xDfmInitialize(myGetUniqueSessionID, myGetDeviceName) == DFM_FAIL)
     {
     	configPRINTF(("Failed to initialize DFM\r\n"));
