@@ -135,6 +135,9 @@ static uint32_t prvMqttConnect()
     xConnectInfo.pClientIdentifier = clientcredentialIOT_THING_NAME;
     xConnectInfo.clientIdentifierLength = (uint16_t)strlen(clientcredentialIOT_THING_NAME);
 
+    xConnectInfo.pUserName = "Dummy";
+    xConnectInfo.userNameLength = (uint16_t)strlen(xConnectInfo.pUserName);
+
     /* Set MQTT keep-alive period. If the application does not send packets at an interval less than
      * the keep-alive period, the MQTT library will send PINGREQ packets. */
     xConnectInfo.keepAliveSeconds = KEEP_ALIVE_TIMEOUT_SECONDS;

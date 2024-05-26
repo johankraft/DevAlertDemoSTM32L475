@@ -674,6 +674,8 @@ int32_t SOCKETS_Connect( Socket_t xSocket,
                 xWiFiConnection.Number = ( uint8_t ) ulSocketNumber;
                 xWiFiConnection.Type = pxSecureSocket->xSocketType;
                 xWiFiConnection.RemotePort = SOCKETS_ntohs( pxAddress->usPort ); /* WiFi Module expects the port number in host byte order. */
+
+                // If you get a fault exception here, make sure "Exception on Unaligned Access" is disabled in Debug Configuration.
                 memcpy( &( xWiFiConnection.RemoteIP ),
                         &( pxAddress->ulAddress ),
                         sizeof( xWiFiConnection.RemoteIP ) );

@@ -1,0 +1,13 @@
+diff a/DevAlertDemo/DFM/kernelports/FreeRTOS/cloudports/AWS_MQTT/dfmCloudPort.c b/DevAlertDemo/DFM/kernelports/FreeRTOS/cloudports/AWS_MQTT/dfmCloudPort.c	(rejected hunks)
+@@ -135,11 +135,6 @@
+     xConnectInfo.pClientIdentifier = clientcredentialIOT_THING_NAME;
+     xConnectInfo.clientIdentifierLength = (uint16_t)strlen(clientcredentialIOT_THING_NAME);
+ 
+-    /* Use the metrics string as username to report the OS and MQTT client version
+-     * metrics to AWS IoT. */
+-    xConnectInfo.pUserName = AWS_IOT_METRICS_STRING;
+-    xConnectInfo.userNameLength = AWS_IOT_METRICS_STRING_LENGTH;
+-
+     /* Set MQTT keep-alive period. If the application does not send packets at an interval less than
+      * the keep-alive period, the MQTT library will send PINGREQ packets. */
+     xConnectInfo.keepAliveSeconds = KEEP_ALIVE_TIMEOUT_SECONDS;
