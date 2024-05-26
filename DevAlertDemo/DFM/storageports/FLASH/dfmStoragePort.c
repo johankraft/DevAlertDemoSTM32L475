@@ -102,8 +102,6 @@ DfmResult_t xDfmStoragePortGetPayloadChunk(char* szSessionId, uint32_t ulAlertId
  * It does not preserve other data that might be present on these pages (future improvement!) */
 static DfmResult_t prvDfmStoragePortWrite(DfmEntryHandle_t xEntryHandle, uint32_t ulType, uint32_t ulOverwrite)
 {
-	DFM_DEBUG_PRINT("prvDfmStoragePortWrite\n");
-
 	if (xEntryHandle == 0)
 	{
 		return DFM_FAIL;
@@ -154,14 +152,15 @@ static DfmResult_t prvDfmStoragePortWrite(DfmEntryHandle_t xEntryHandle, uint32_
 
 DfmResult_t xDfmStoragePortReset(void)
 {
-	DFM_DEBUG_PRINT("xDfmStoragePortReset()\n");
-
 	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
 
 	if (FLASH_unlock_erase((uint32_t)&dfmFlashData, sizeof(dfmFlashData)) != 0)
 	{
 		return DFM_FAIL;
 	}
+
+    /* Enabled overwriting any earlier stored alerts - This is a workaround to ensure new alerts can be added. DFM is currently missing a "xDfmResetAll" function... */
+    xDfmSessionSetStorageStrategy(DFM_STORAGE_STRATEGY_OVERWRITE);
 
 	return DFM_SUCCESS;
 }

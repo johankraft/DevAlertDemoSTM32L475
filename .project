@@ -1301,111 +1301,6 @@
 			<locationURI>PROJECT_LOC/libraries/abstractions/backoff_algorithm/source/backoff_algorithm.c</locationURI>
 		</link>
 		<link>
-			<name>libraries/abstractions/common_io/include/iot_adc.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/common_io/include/iot_adc.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/common_io/include/iot_battery.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/common_io/include/iot_battery.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/common_io/include/iot_efuse.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/common_io/include/iot_efuse.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/common_io/include/iot_flash.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/common_io/include/iot_flash.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/common_io/include/iot_gpio.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/common_io/include/iot_gpio.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/common_io/include/iot_hw.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/common_io/include/iot_hw.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/common_io/include/iot_i2c.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/common_io/include/iot_i2c.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/common_io/include/iot_i2s.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/common_io/include/iot_i2s.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/common_io/include/iot_perfcounter.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/common_io/include/iot_perfcounter.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/common_io/include/iot_power.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/common_io/include/iot_power.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/common_io/include/iot_pwm.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/common_io/include/iot_pwm.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/common_io/include/iot_reset.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/common_io/include/iot_reset.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/common_io/include/iot_rtc.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/common_io/include/iot_rtc.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/common_io/include/iot_sdio.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/common_io/include/iot_sdio.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/common_io/include/iot_spi.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/common_io/include/iot_spi.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/common_io/include/iot_timer.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/common_io/include/iot_timer.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/common_io/include/iot_tsensor.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/common_io/include/iot_tsensor.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/common_io/include/iot_uart.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/common_io/include/iot_uart.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/common_io/include/iot_usb_device.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/common_io/include/iot_usb_device.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/common_io/include/iot_usb_host.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/common_io/include/iot_usb_host.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/common_io/include/iot_watchdog.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/common_io/include/iot_watchdog.h</locationURI>
-		</link>
-		<link>
 			<name>libraries/abstractions/mqtt_agent/include/freertos_agent_message.h</name>
 			<type>1</type>
 			<locationURI>PROJECT_LOC/libraries/abstractions/mqtt_agent/include/freertos_agent_message.h</locationURI>
@@ -1459,11 +1354,6 @@
 			<name>libraries/abstractions/transport/secure_sockets/transport_secure_sockets.h</name>
 			<type>1</type>
 			<locationURI>PROJECT_LOC/libraries/abstractions/transport/secure_sockets/transport_secure_sockets.h</locationURI>
-		</link>
-		<link>
-			<name>libraries/abstractions/wifi/include/iot_wifi.h</name>
-			<type>1</type>
-			<locationURI>PROJECT_LOC/libraries/abstractions/wifi/include/iot_wifi.h</locationURI>
 		</link>
 		<link>
 			<name>libraries/c_sdk/standard/common/iot_device_metrics.c</name>

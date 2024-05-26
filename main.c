@@ -147,8 +147,6 @@ typedef struct task_arg {
     const char* message;
 } task_arg_t;
 
-SemaphoreHandle_t xSemaphore;
-
 // Provokes a hard fault exception
 static int MakeFaultExceptionByIllegalRead(void)
 {
@@ -213,25 +211,9 @@ TaskHandle_t xBhjHandle = NULL;
 
 char* ptr = NULL;
 
-void _ButtonTask(void* argument)
-{
-	//configPRINTF( ( "Waiting for button press to cause random error...\n\n" ) );
-	configPRINT_STRING( "Waiting for button press to cause random error...\n\n" );
-    for(;;)
-    {
-    	ulTaskNotifyTake( pdTRUE, portMAX_DELAY );  /* Block indefinitely. */
-
-    	//test_delay = test_delay / 2;
-
-    	vTaskDelay(500);
-    }
-}
-
-
 void ButtonTask(void* argument)
 {
-	//configPRINTF( ( "Waiting for button press to cause random error...\n\n" ) );
-	configPRINT_STRING( "Waiting for button press to cause random error...\n\n" );
+	configPRINT_STRING( "\n\nDemo ready - Press blue button to trigger an error that is captured by DevAlert.\n\n" );
     for(;;)
     {
     	ulTaskNotifyTake( pdTRUE, portMAX_DELAY );  /* Block indefinitely. */
@@ -240,7 +222,7 @@ void ButtonTask(void* argument)
         {
         		case 0:
 
-        			configPRINTF(( "Test case: assert failed\n"));
+        			configPRINTF(( "Test case: Assert failed\n"));
 
         			vTaskDelay(1000);
 
@@ -250,7 +232,7 @@ void ButtonTask(void* argument)
 
         		case 1:
 
-        			configPRINTF(( "Test case: malloc failed\n"));
+        			configPRINTF(( "Test case: Malloc failed\n"));
 
         			vTaskDelay(1000);
 
@@ -477,8 +459,13 @@ void vApplicationDaemonTaskStartupHook( void )
 
             #endif /* USE_OFFLOAD_SSL */
 
-            // Not used, might be needed later
-            xSemaphore = xSemaphoreCreateMutex();
+            configPRINTF(("DFM: Sending any stored alerts.\n"));
+
+            /* Try sending any stored alerts from a prior crash */
+            xDfmAlertSendAll();
+
+            /* Reset and delete any alerts from storage - this is specific for the STM32 FLASH storage port. */
+            xDfmStoragePortReset();
 
             xTaskCreate(ButtonTask,       /* Function that implements the task. */
                         "DemoTask1",          /* Text name for the task. */
@@ -486,18 +473,6 @@ void vApplicationDaemonTaskStartupHook( void )
                         NULL,    		/* Parameter passed into the task. */
                         tskIDLE_PRIORITY,/* Priority at which the task is created. */
                         &xBhjHandle );      /* Used to pass out the created task's handle. */
-
-
-            configPRINTF(("DFM: Attempting to send any stored alerts.\n\n"));
-
-            /* Try sending any stored alerts from a prior crash */
-            xDfmAlertSendAll();
-
-            /* Delete any stored events */
-            xDfmStoragePortReset();
-
-            // IS THIS NEEDED? TODO: TEST WITHOUT THIS
-            xDfmSessionSetStorageStrategy(DFM_STORAGE_STRATEGY_OVERWRITE);
 
             BSP_LED_On( LED_GREEN );
 
