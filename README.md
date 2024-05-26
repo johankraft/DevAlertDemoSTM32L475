@@ -1,6 +1,9 @@
 # Percepio DevAlert on the STM32L4 IoT Discovery Kit
 
 This project demonstrates [Percepio DevAlert v2.0](https://percepio.com/devalert) on the STM32L4 IoT Discovery kit using STM32CubeIDE.
+More information is found in the [DevAlert Getting Started Guide](https://percepio.com/devalert/gettingstarted/).
+
+Learn more about the STM32L4 IoT Discovery kit at https://www.st.com/en/evaluation-tools/b-l475e-iot01a.html. 
 
 ## Loading the demo project
 
@@ -21,15 +24,13 @@ The build configuration is selected under "Project" -> "Build Configurations" ->
 
 **Debug-Serial**
 In this mode, the alerts are written to the debug console (UART) as binary hex strings.
-The data is intended to be received by a host tool and relayed to the cloud. 
-Learn more in the [DevAlert Getting Started Guide](https://percepio.com/devalert/gettingstarted/). 
+The data is intended to be received by a host tool and relayed to the cloud, as described in the [DevAlert Getting Started Guide](https://percepio.com/devalert/gettingstarted/). 
 
 **Debug-WifiAWS**
-This mode uploads the alerts to AWS IoT Core using MQTT over Wi-Fi. 
-To view the data in DevAlert you also need DevAlert integration in your AWS account and as well as a "production" DevAlert account.
-Please contact support@percepio.com if you wish to evaluate this.
+This modeuploads the alerts to AWS IoT Core using MQTT over Wi-Fi. 
 
-Learn more about the STM32L4 IoT Discovery kit at https://www.st.com/en/evaluation-tools/b-l475e-iot01a.html. 
+This is not yet covered in the Getting Started guide. This requires DevAlert integration in your AWS account and as well as a proper "production" DevAlert account.
+Please contact support@percepio.com if you wish to evaluate this.
 
 ## Building and Running the Demo
 
