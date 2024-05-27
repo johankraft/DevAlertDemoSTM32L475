@@ -6,7 +6,7 @@ and get comprehensive diagnostic information to quickly solve the problem.
 
 This project demonstrates DevAlert v2.0 on the [STM32L4 IoT Discovery](https://www.st.com/en/evaluation-tools/b-l475e-iot01a.html) kit using STM32CubeIDE, including support for GDB core dump debugging and Tracealyzer traces.
 
-More information about how to run this demo is found in the [DevAlert Getting Started Guide](https://percepio.com/getstarted/devalert-guide.pdf). When using this demo, only steps 1-13 are needed. Steps 14-16 are already implemented in the demo code.
+More information about how to run this demo is found in the [DevAlert Getting Started Guide](https://percepio.com/getstarted/devalert-guide.pdf). When using this demo, only steps 1-13 are needed. These are fairly quick and easy. The firmware integration (steps 14-16) is already implemented in this demo.
 
 ## Loading the demo project
 
