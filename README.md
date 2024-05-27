@@ -58,6 +58,9 @@ First, make sure you have selected what build configuration to use under "Projec
 The demo has intentional errors that are captured and reported using DevAlert.
 Press the blue button on the board to execute one of the test cases.
 
+## DevAlert client code
+An overview of the DevAlert client and related libraries is found in in the [DevAlertDemo readme file](https://github.com/johankraft/DevAlertDemoSTM32L475/blob/main/DevAlertDemo/README.md). 
+
 ## License and Copyright
 
 The DFM and TraceRecorder libraries are copyright (c) Percepio AB 2023 (https://percepio.com) and provided under the Apache 2.0 license.
