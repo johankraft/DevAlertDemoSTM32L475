@@ -72,6 +72,9 @@
 
 /*-----------------------------------------------------------*/
 
+// Move this to a DFM file?
+int vDfmSetGCCBuildID(char* dest, int size);
+
 void vApplicationDaemonTaskStartupHook( void );
 
 /* Defined in es_wifi_io.c. */
@@ -338,6 +341,8 @@ void prvRXTask(void* argument)
 }
 
 
+char gcc_build_id[48];
+
 /**
  * @brief Application runtime entry point.
  */
@@ -373,6 +378,9 @@ int main( void )
     	configPRINT_STRING(("SessionID: FAIL\n"));
     }
 
+    vDfmSetGCCBuildID(gcc_build_id, 48);
+	printf("BuildID: %s\n", gcc_build_id);
+
 
     BSP_LED_Off( LED_GREEN );
 
@@ -403,12 +411,51 @@ unsigned int getHardwareRand(void)
     return rand;
 }
 
+typedef struct {
+    uint32_t namesz;
+    uint32_t descsz;
+    uint32_t type;
+    uint8_t data[];
+} ElfNoteSection_t;
+
+extern const ElfNoteSection_t build_id_elf_note;
+
+/******************************************************************************
+ * vDfmSetGCCBuildID - Writes the GCC Build ID to dest.
+ * Parameter size is the maximum length (at least 42)
+ *
+ * * For this to work:
+ *   - Add  .gnu_build_id section in linker script (see .ld file in root folder)
+ *   - Add  -Wl,--build-id in linker flags
+ *
+ * Can be read from elf file by "arm-none-eabi-readelf -n aws_demos.elf"
+ * to archive the elf file for automated lookup using the Build ID.
+ *****************************************************************************/
+
+int vDfmSetGCCBuildID(char* dest, int size)
+{
+	if (size < 42) return DFM_FAIL;
+
+	const uint8_t *build_id_data = &build_id_elf_note.data[build_id_elf_note.namesz];
+
+    // The GNU Build ID is 20 bytes.
+    for (int i = 0; i < 20; i++)
+    {
+    	char byte_str[4] = "";
+        sprintf(byte_str, "%02x", build_id_data[i]);
+        strncat(dest, byte_str, 2);
+    }
+
+    return DFM_SUCCESS;
+}
+
 void vApplicationDaemonTaskStartupHook( void )
 {
 
     configPRINTF( ( "\n\n\n\n------ Starting up DevAlert demo ------\n" ) );
 
-    configPRINTF(("Firmware revision: " DFM_CFG_FIRMWARE_VERSION "\n"));
+    // Can be read from elf file by "arm-none-eabi-readelf -n aws_demos.elf"
+    configPRINTF(("Firmware revision: %s\n", DFM_CFG_FIRMWARE_VERSION));
 
 #if (DFM_CFG_SERIAL_UPLOAD_ONLY == 1)
     configPRINTF(("Upload method: Serial (upload via host computer)\n"));

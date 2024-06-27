@@ -51,11 +51,18 @@ extern "C" {
 /**
  * @brief The firmware version. This needs to be set to differentiate the alerts between versions.
  */
-#if (DFM_CFG_SERIAL_UPLOAD_ONLY == 1)
-#define DFM_CFG_FIRMWARE_VERSION "_DevBuild_Serial"
-#else
-#define DFM_CFG_FIRMWARE_VERSION "_DevBuild_MQTT"
-#endif
+
+/*
+ * gcc_build_id is set using vDfmSetGCCBuildID()
+ * For this to work:
+ *   - Add  .gnu_build_id definition in linker script (see .ld file in the project root)
+ *   - Add  -Wl,--build-id in linker flags
+ * Note that the build id can be read from elf file, by "arm-none-eabi-readelf -n aws_demos.elf"
+ */
+
+extern char gcc_build_id[48];
+
+#define DFM_CFG_FIRMWARE_VERSION gcc_build_id
 
 /* Enable diagnostic messages from DFM_DEBUG(...). Will use DFM_ERROR to output debug information. */
 #define DFM_CFG_ENABLE_DEBUG_PRINT 1
