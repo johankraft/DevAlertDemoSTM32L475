@@ -1,0 +1,13 @@
+Add the following entries in your settings.json file.
+This is found in the PercepioDevAlertDispatcher folder, on Windows in %appdata%, on Linux in ~/.config (hidden folder)
+
+NOTE: This assumes the elf files are stored in C:\da-elf-library. Create this folder or update the path here, and in the STM32CubeIDE post-build action.
+
+{
+  "key": "FileMapping__0",
+  "value": "{\r\n  \u0022enabled\u0022: true,\r\n  \u0022priority\u0022: 1,\r\n  \u0022description\u0022: \u0022CrashDebug (gdb)\u0022,\r\n  \u0022mappingType\u0022: 1,\r\n  \u0022mappingDetails\u0022: \u0022dmp\u0022,\r\n  \u0022startupFolder\u0022: \u0022\u0022,\r\n  \u0022executable\u0022: \u0022C:\\\\da-tools\\\\crash_debug.bat\u0022,\r\n  \u0022shellExecutable\u0022: false,\r\n  \u0022createWindow\u0022: true,\r\n  \u0022parameters\u0022: \u0022C:/da-elf-library/${revision}.elf ${file} --gdb\u0022\r\n}"
+},
+{
+  "key": "FileMapping__1",
+  "value": "{\r\n  \u0022enabled\u0022: true,\r\n  \u0022priority\u0022: 2,\r\n  \u0022description\u0022: \u0022Tracealyzer\u0022,\r\n  \u0022mappingType\u0022: 1,\r\n  \u0022mappingDetails\u0022: \u0022psfs\u0022,\r\n  \u0022startupFolder\u0022: \u0022\u0022,\r\n  \u0022executable\u0022: \u0022C:\\\\Program Files\\\\Percepio\\\\Tracealyzer 4\\\\Tracealyzer.exe\u0022,\r\n  \u0022shellExecutable\u0022: false,\r\n  \u0022createWindow\u0022: true,\r\n  \u0022parameters\u0022: \u0022/open ${file}\u0022\r\n}"
+}

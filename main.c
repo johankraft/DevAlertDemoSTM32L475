@@ -216,6 +216,8 @@ char* ptr = NULL;
 
 void ButtonTask(void* argument)
 {
+	int counter = 0;
+
 	configPRINT_STRING( "\n\nDemo ready - Press blue button to trigger an error that is captured by DevAlert.\n\n" );
     for(;;)
     {
@@ -281,6 +283,7 @@ void ButtonTask(void* argument)
 
 
 #define nMSG 5
+#define nSTATE 3
 
 const char * messages[nMSG] = {	"SetMode A",
 								"SetOptionsFlags X,Y",
@@ -288,52 +291,55 @@ const char * messages[nMSG] = {	"SetMode A",
 								"SetRemoteIP 127.0.0.1",
 								"SetRemotePort 8888"};
 
+const char * states[nSTATE] = {	"State A",
+						   	    "State B",
+							    "State C"};
+
+
 void prvRXTask(void* argument)
 {
 	int delay;
 	volatile int dummy;
 
 	int counter = 0;
+	int state = 0;
 	int len = 0;
 
+	TraceStringHandle_t command_chn = xTraceRegisterString("Command Log");
+
 	TraceStateMachineHandle_t myfsm;
-	TraceStateMachineStateHandle_t myfsm_statePr, myfsm_stateSp, myfsm_stateDo, myfsm_stateIn;
+	TraceStateMachineStateHandle_t myfsm_state[5];
 
 	/* Trace a state machine (states can span between tasks) */
-	xTraceStateMachineCreate("RX States", &myfsm);
-	xTraceStateMachineStateCreate(myfsm, "Preparing", &myfsm_statePr);
-	xTraceStateMachineStateCreate(myfsm, "SpecialStep", &myfsm_stateSp);
-	xTraceStateMachineStateCreate(myfsm, "Doing", &myfsm_stateDo);
-	xTraceStateMachineStateCreate(myfsm, "Inactive", &myfsm_stateIn);
-
-	xTraceStateMachineSetState(myfsm, myfsm_stateIn);
+	xTraceStateMachineCreate("RX State", &myfsm);
+	for (int i = 0; i < nSTATE; i++)
+	{
+		// Register each state name, one for each message
+		xTraceStateMachineStateCreate(myfsm, states[i], &myfsm_state[i]);
+	}
 
     for(;;)
     {
 
     	len = strlen(messages[counter]);
 
-    	xTracePrintCompactF0("Command", messages[counter]);
-    	xTracePrintCompactF1("Bytes", "%d", len);
+    	xTracePrintF(command_chn, messages[counter]);
 
+    	// Just cycle through these...
     	counter = (counter+1) % nMSG;
+    	state = (state+1) % nSTATE;
 
-   		xTraceStateMachineSetState(myfsm, myfsm_statePr);
-   		for (dummy = 0; dummy < 1200; dummy++);
-   		xTraceStateMachineSetState(myfsm, myfsm_stateSp);
-   		for (dummy = 0; dummy < 2000; dummy++);
-   		xTraceStateMachineSetState(myfsm, myfsm_statePr);
+    	// Make the task run longer...
    		for (dummy = 0; dummy < 3000; dummy++);
-    	xTraceStateMachineSetState(myfsm, myfsm_stateDo);
 
-    	// This state takes some time...
- 	    for (dummy = 0; dummy < (1000 * len); dummy++);
+   		// Log a state transition
+    	xTraceStateMachineSetState(myfsm, myfsm_state[state]);
+
+    	// Make the task run longer...
+    	for (dummy = 0; dummy < (1000 * len); dummy++);
 
     	// Simulate timing of incoming messages
     	delay = 5 + getHardwareRand() % 85;
-
-    	xTraceStateMachineSetState(myfsm, myfsm_stateIn);
-
 
     	vTaskDelay(delay);
     }
@@ -348,7 +354,7 @@ char gcc_build_id[48];
  */
 int main( void )
 {
-	char tmp[32];
+	char tmp[48];
 	uint32_t bytesWritten = 0;
 
 	/* Perform any hardware initialization that does not require the RTOS to be
@@ -448,11 +454,10 @@ int vDfmSetGCCBuildID(char* dest, int size)
 
 void vApplicationDaemonTaskStartupHook( void )
 {
-
-    configPRINTF( ( "\n\n\n\n------ Starting up DevAlert demo ------\n" ) );
+    configPRINTF( ( "\n\n\n\n--- Percepio DevAlert Demonstration ---\n" ) );
 
     // Can be read from elf file by "arm-none-eabi-readelf -n aws_demos.elf"
-    configPRINTF(("Firmware revision: %s\n", DFM_CFG_FIRMWARE_VERSION));
+    configPRINTF(("Revision: %s\n", DFM_CFG_FIRMWARE_VERSION));
 
 #if (DFM_CFG_SERIAL_UPLOAD_ONLY == 1)
     configPRINTF(("Upload method: Serial (upload via host computer)\n"));
@@ -896,9 +901,6 @@ static void prvMiscInitialization( void )
 
     /* Init and start tracing */
     xTraceEnable(TRC_START);
-
-    // Enables "compact logging" with e.g. xTracePrintCompactF1(). The dispatcher tool must have access to the elf file.
-    xTraceDependencyRegister("aws_demos.elf", TRC_DEPENDENCY_TYPE_ELF);
 
     BSP_LED_Init( LED_GREEN );
     BSP_PB_Init( BUTTON_USER, BUTTON_MODE_EXTI );
