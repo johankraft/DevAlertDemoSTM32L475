@@ -11,7 +11,7 @@
 **
 **  Environment : System Workbench for MCU
 **
-**  Distribution: The file is distributed “as is,” without any warranty
+**  Distribution: The file is distributed ï¿½as is,ï¿½ without any warranty
 **                of any kind.
 **
 **  (c)Copyright System Workbench for MCU.
@@ -42,7 +42,8 @@ extern int errno;
 #define FreeRTOS
 #define MAX_STACK_SIZE 0x2000
 
-extern int __io_putchar(int ch) __attribute__((weak));
+int __io_putchar(int ch) __attribute__((weak));
+
 extern int __io_getchar(void) __attribute__((weak));
 
 #ifndef FreeRTOS
@@ -89,6 +90,14 @@ int _read (int file, char *ptr, int len)
 
 	return 1;
 }
+
+extern void vSTM32L475putc( void * pv, char ch );
+
+int __io_putchar(int ch)
+{
+	vSTM32L475putc(0, ch);
+}
+
 
 int _write(int file, char *ptr, int len)
 {
