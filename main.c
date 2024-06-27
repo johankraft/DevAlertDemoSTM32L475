@@ -378,9 +378,6 @@ int main( void )
     	configPRINT_STRING(("SessionID: FAIL\n"));
     }
 
-    vDfmSetGCCBuildID(gcc_build_id, 48);
-	printf("BuildID: %s\n", gcc_build_id);
-
 
     BSP_LED_Off( LED_GREEN );
 
@@ -919,6 +916,9 @@ static void prvMiscInitialization( void )
 
     /* UART console init. */
     Console_UART_Init();
+
+    vDfmSetGCCBuildID(gcc_build_id, 48);
+    printf("BuildID: %s\n", gcc_build_id);
 
 
 #if (DFM_CFG_SERIAL_UPLOAD_ONLY == 1)
