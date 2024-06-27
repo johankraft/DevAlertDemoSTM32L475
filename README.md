@@ -38,6 +38,7 @@ Please contact support@percepio.com if you wish to evaluate this.
 
 This demo uses gdb for viewing core dumps, and the gdb tool needs the elf file from the build.
 When setting up the Dispatcher configuration for gdb, the easiest solution is provide a hard-coded path to the elf file in your build directory.
+Obviously, this is not proposed for production use, but can work as a first test on a development build.
 
 However, if making changes to the STM32CubeIDE demo, you will soon notice that older core dumps are not displayed properly
 since the ELF file has been updated and no longer matches the core dumps from earlier builds. 
