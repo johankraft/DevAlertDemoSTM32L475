@@ -34,6 +34,52 @@ This mode uploads the alerts to AWS IoT Core using MQTT over Wi-Fi. This is not 
 
 Please contact support@percepio.com if you wish to evaluate this.
 
+## ELF File Management
+
+This demo uses gdb for viewing core dumps, and the gdb tool needs the elf file from the build.
+When setting up the Dispatcher configuration for gdb, the easiest solution is provide a hard-coded path to the elf file in your build directory.
+
+However, if making changes to the STM32CubeIDE demo, you will soon notice that older core dumps are not displayed properly
+since the ELF file has been updated and no longer matches the core dumps from earlier builds. 
+
+To simplify ELF file management for development builds, a tool is included that archives a copy of the elf file after each build.
+The elf file copies are given unique names based on the gcc build id, and this is also included with each alert as metadata.
+This enables the Dispatcher tool to automatically locate the right elf file in the "archive", even if the original file has been lost.
+
+This way, you can view core dumps also from earlier development builds where the elf file is no longer available or has been overwritten.
+
+Before building the demo, you need to:
+
+1. Make sure python is installed and accessable from the command line.
+
+2. Configure the elf storage directory. By default, the elf files are stored in "C:\da-elf-library".
+If using Windows, create this directory and the solution should work out-of-the-box.
+
+If using Linux, or if you want to change the directory for other reasons, you find this reference in STM32CubeIDE
+under Project Properties, C/C++ Build, Settings, Build Steps. 
+Check the "Command" under Post-build Steps. In the end you find the following: 
+
+   && python ../store-elf.py "${BuildArtifactFileName}" C:/da-elf-library
+
+Replace "C:/da-elf-library" with a suitable "elf library" path.
+
+When setting up the Dispatcher "File Mapping" settings for core dumps, use the following settings for core dumps:
+  -- "Extension" is "dmp"
+  -- "Executable" is "crash_debug.bat" or "crash_debug.sh" (found in the Templates directory in the Dispatcher folder).
+  -- "Parameters" should be "C:/da-elf-library/${revision}.elf ${file} --gdb"
+
+If you have changes the "C:/da-elf-library" path in the STM32CubeIDE settings, make sure to apply the same change in the Dispatcher elf path.
+Note that forward slashes must be used also on Windows, since required by gdb.
+
+To replicate this solution on your own project, you need the following:
+- Instruct the gcc linker by includeing the build id using the linker flag -Wl,--build-id.
+- Update your linker file with a .gnu_build_id section, like in STM32L475VGTx_FLASH.ld in the demo project root folder. Keep the same symbol name, since this is used in the vDfmSetGCCBuildID function (see below).
+- The demo function vDfmSetGCCBuildID is used to read the build ID and format it as a hexadecimal string. 
+  Store the result in a string buffer (at least 42 char long) and define DFM_CFG_FIRMWARE_REVISION (dfmConfig.h) to this string.
+
+Note: The ${revision} field in Dispatcher gives the DFM_CFG_FIRMWARE_REVISION setting from dfmConfig.h, provided with the alert metadata. 
+The DFM_CFG_FIRMWARE_REVISION setting is configured to give the gcc build id. The gcc build id is also used to name the copies of the elf file.
+
 ## Building and Running the Demo
 
 First, make sure you have selected what build configuration to use under "Project" -> "Build Configurations" -> "Set Active".
