@@ -216,8 +216,6 @@ char* ptr = NULL;
 
 void ButtonTask(void* argument)
 {
-	int counter = 0;
-
 	configPRINT_STRING( "\n\nDemo ready - Press blue button to trigger an error that is captured by DevAlert.\n\n" );
     for(;;)
     {
