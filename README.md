@@ -61,8 +61,6 @@ To simplify ELF file management for development builds, a tool is included that 
 The elf file copies are given unique names based on the gcc build id, and this is also included with each alert as metadata.
 This enables the Dispatcher tool to automatically locate the right elf file in the "archive", even if the original file has been lost.
 
-This way, you can view core dumps also from earlier development builds where the elf file is no longer available or has been overwritten.
-
 To use this solution:
 
 1. Make sure python is installed and accessable from the command line.
@@ -75,15 +73,18 @@ To use this solution:
 
 4. Use 'storage-directory/${revision}.elf' in the Dispatcher "File Mapping" settings when configuring tools that require the ELF file.
 
+Note: The ${revision} field in Dispatcher gives the DFM_CFG_FIRMWARE_REVISION setting from dfmConfig.h, that is configured to give the gcc build id.
+The gcc build id is also used in store-elf.py to name the archived elf file.
+
 To replicate this solution on your own project, you need the following:
+
 - Instruct the gcc linker to include the build id. This using the linker flag "-Wl,--build-id".
+
 - Update your linker file with a .gnu_build_id section, like in STM32L475VGTx_FLASH.ld in the demo project root folder.
   Keep the same symbol name, since this is used in the vDfmSetGCCBuildID function (see below).
+
 - The function vDfmSetGCCBuildID is used to read the build ID and format it as a hexadecimal string. 
   Store the result in a string buffer (at least 42 chars long) and define DFM_CFG_FIRMWARE_REVISION to this string (in dfmConfig.h).
-
-Note: The ${revision} field in Dispatcher gives the DFM_CFG_FIRMWARE_REVISION setting from dfmConfig.h, provided with the alert metadata. 
-The DFM_CFG_FIRMWARE_REVISION setting is configured to give the gcc build id. The gcc build id is also used to name the copies of the elf file.
 
 ## Building and Running the Demo
 
