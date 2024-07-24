@@ -96,6 +96,7 @@ extern void vSTM32L475putc( void * pv, char ch );
 int __io_putchar(int ch)
 {
 	vSTM32L475putc(0, ch);
+	return 0;
 }
 
 

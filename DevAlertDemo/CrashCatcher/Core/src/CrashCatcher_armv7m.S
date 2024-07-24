@@ -12,6 +12,9 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
+#if (!defined(USE_ZEPHYR_CORE_DUMP_FORMAT) || USE_ZEPHYR_CORE_DUMP_FORMAT==0)
+
 #include "CrashCatcherPriv.h"
 
 /* Implementation of ARMv7-M assembly language code to trap exceptions and call CrashCatcher_Entry(). */
@@ -23,23 +26,11 @@
 
         extern "C" void HardFault_Handler(void);
     */
-    .global HardFault_Handler
-    .type HardFault_Handler, %function
-
-    .global UsageFault_Handler
-    .type UsageFault_Handler, %function
-
-	.global BusFault_Handler
-    .type BusFault_Handler, %function
-
-    .global NMI_Handler
-    .type NMI_Handler, %function
+    .global DFM_Fault_Handler
+    .type DFM_Fault_Handler, %function
 
     .thumb_func
-HardFault_Handler:
-UsageFault_Handler:
-BusFault_Handler:
-NMI_Handler:		/* NMI is used as a software trap when a crash dump is desired. */
+DFM_Fault_Handler:
 
     /* Push the following onto the stack (see CrashCatcherExceptionRegisters structure). The g_crashCatcherStack buffer
        is reserved for use as the stack while CrashCatcher is running.
@@ -75,7 +66,7 @@ NMI_Handler:		/* NMI is used as a software trap when a crash dump is desired. */
 
     // Let assembler know that we have hit the end of the HardFault_Handler function.
     .pool
-    .size   HardFault_Handler, .-HardFault_Handler
+    .size   DFM_Fault_Handler, .-DFM_Fault_Handler
 
 
 
@@ -127,3 +118,6 @@ CrashCatcher_CopyUpperFloatingPointRegisters:
 
 
     .end
+
+
+#endif

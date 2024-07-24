@@ -12,6 +12,9 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
+#if (!defined(USE_ZEPHYR_CORE_DUMP_FORMAT) || USE_ZEPHYR_CORE_DUMP_FORMAT==0)
+
 #include "CrashCatcherPriv.h"
 
 /* Implementation of ARMv6-M assembly language code to trap exceptions and call CrashCatcher_Entry(). */
@@ -23,10 +26,10 @@
 
         extern "C" void HardFault_Handler(void);
     */
-    .global HardFault_Handler
-    .type HardFault_Handler, %function
+    .global DFM_Fault_Handler
+    .type DFM_Fault_Handler, %function
     .thumb_func
-HardFault_Handler:
+DFM_Fault_Handler:
     /* Push the following onto the stack (see CrashCatcherExceptionRegisters structure). The g_crashCatcherStack buffer
        is reserved for use as the stack while CrashCatcher is running.
         msp
@@ -113,3 +116,5 @@ CrashCatcher_CopyUpperFloatingPointRegisters:
 
 
     .end
+
+#endif

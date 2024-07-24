@@ -17,7 +17,7 @@
 
 #include <dfmCrashCatcherConfig.h>
 
-#define CRASH_DUMP_NAME "crash.dmp"
+#define CRASH_DUMP_NAME "zcoredump.bin"
 
 /**
  * @brief Should call a function that reboots device
