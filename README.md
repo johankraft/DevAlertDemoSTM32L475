@@ -67,14 +67,13 @@ To use this solution:
 
 1. Make sure python is installed and accessable from the command line.
 
-2. Create an archive directory for your elf files, for example "C:\da-elf-library".
-This can also be a shared network drive, or perhaps a Dropbox folder or similar, if you want to access the ELF archive on different computers.
+2. Create an archive directory for your elf files. This can be a local folder, but you may also use a shared network drive or a Dropbox folder if you want to access the ELF archive on different computers. 
 
 3. Archive the elf file from your build by running:
 
-    python store-elf.py <new-elf-file> <storage-directory>
+    python store-elf.py new-elf-file storage-directory
 
-You can then use '<storage-directory>/${revision}.elf' in the Dispatcher to provide the right ELF file in your "File Mapping" setting.
+You can then use 'storage-directory/${revision}.elf' in the Dispatcher to provide the right ELF file in your "File Mapping" setting.
 
 To replicate this solution on your own project, you need the following:
 - Instruct the gcc linker to include the build id. This using the linker flag "-Wl,--build-id".
