@@ -73,7 +73,7 @@ To use this solution:
 
     python store-elf.py new-elf-file storage-directory
 
-You can then use 'storage-directory/${revision}.elf' in the Dispatcher to provide the right ELF file in your "File Mapping" setting.
+4. Use 'storage-directory/${revision}.elf' in the Dispatcher "File Mapping" settings when configuring tools that require the ELF file.
 
 To replicate this solution on your own project, you need the following:
 - Instruct the gcc linker to include the build id. This using the linker flag "-Wl,--build-id".
