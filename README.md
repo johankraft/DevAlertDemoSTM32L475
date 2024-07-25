@@ -45,17 +45,18 @@ To select what core dump format to use, use the DEMO_CFG_USE_ZEPHYR_CORE_DUMP_FO
 
 - If set to 1, the core dumps are generated using the Zephyr core dump format, intended for the coredump_gdbserver.py tool.
 
-To view Zephyr-formatted core dumps, follow these steps. This guide assumes Dispatcher runs on Windows and the core dump viewer runs in WSL2 (tested on Ubuntu22).
-If using Linux, you need to adjust the Dispatcher File Mapping accordingly (call zdump.sh directly, not wsl.exe). 
+## Viewing Zephyr-formatted Core Dumps
 
-- On the WSL/Linux machine:
+To view Zephyr-formatted core dumps, use the zdump.sh script, as described below. This guide assumes Dispatcher runs on Windows and zdump.sh in WSL2 (tested on Ubuntu22). If you run Dispatcher on a Linux machine, adjust the Dispatcher File Mapping so it calls zdump.sh directly instead of calling it via wsl.exe.
 
-    - Make sure you have python3 installed.
+### 1. Installing dependencies for zdump.sh
 
-    - Install the pyelftools package using "pip install pyelftools"
+1.1 Make sure you have python3 installed.
 
-    - Install arm-none-eabi-gdb, for example using the example steps provided below:
- 
+1.2 Install the pyelftools package using "pip install pyelftools"
+
+1.3 Install arm-none-eabi-gdb, for example using the example steps provided below:
+
 	cd opt
 	sudo wget "https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi.tar.xz"
 	sudo tar -xf ./arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi.tar.xz
@@ -63,35 +64,44 @@ If using Linux, you need to adjust the Dispatcher File Mapping accordingly (call
 	sudo apt-get install libncurses5 libncursesw5
 	export PATH="/opt/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi/bin:$PATH"
 
-    - Verify the GDB installation:
+1.4 Verify the GDB installation:
 
-      arm-none-eabi-gdb -v
+	arm-none-eabi-gdb -v
 
-    - Copy the zdump-test folder from this repository to your WSL/Linux home folder, such that zdump.sh is found at ~/zdump-test/zdump.sh.
+1.5. Copy the zdump-test folder from this repository to your WSL/Linux home folder, such that zdump.sh is found at ~/zdump-test/zdump.sh.
 
-Using zdump.sh
+### 2. Using zdump.sh and making a Dispatcher file mapping
 
-The main script is zdump.sh, provided in the zdump-test folder. This script shows a summary report of the core dump, by running a set of gdb commands specified in gdb-commands.txt (edit these to tweak the report). It requires two arguments, arg 1 should be the ELF file (aws_demos.elf) and arg2 should be the core dump file (zcoredump.bin). 
+The zdump.sh script, provided in the zdump-test folder, shows a summary report of the core dump. This by running a set of gdb commands specified in gdb-commands.txt. You may edit this file to tweak the report. 
+
+The zdump.sh script requires two arguments:
+
+- Arg 1: the ELF file (aws_demos.elf, created by the STM32CubeIDE projecy build)
+
+- Arg 2: the core dump file (zcoredump.bin, included in the uploaded alerts) 
 
 Internally, this script works by first starting coredump_gdbserver.py, that works as a GDB server for viewing core dumps. Then it starts the gdb client (arm-none-eabi-gdb) and connects to coredump_gdbserver.py. Finally it runs gdb-commands.txt as a command file.
 
-Follow the [DevAlert Getting Started Guide](https://percepio.com/devalert/gettingstarted/) unil you see a "zcoredump.bin" payload in the DevAlert dashboard.
-Clicking the link will download the file using the Dispatcher tool. To make Dispatcher understand how to view the file, you need to create a File Mapping that calls zdump.sh.
-Here is how to create a Dispatcher File Mapping for zdump.sh, assuming Dispatcher runs in Windows and zdump.sh in WSL:
+Follow the [DevAlert Getting Started Guide](https://percepio.com/devalert/gettingstarted/) using this STM32 project, with DEMO_CFG_USE_ZEPHYR_CORE_DUMP_FORMAT set to 1.
+
+After uploading an alert, you should see a "zcoredump.bin" payload in your DevAlert dashboard. Clicking the link will download the file using the Dispatcher tool. To make Dispatcher understand how to view the file, you need to create a File Mapping for this file type. This makes Dispatcher call zdump.sh and display the core dump report.
+
+Here is how to create a Dispatcher File Mapping for zdump.sh:
 
 - Description: zcoredump (or what you prefer to call it)
 
 - Exact Filename: zcoredump.bin (hardcoded in the STM32 demo code)
 
-- Executable: C:\Program Files\WSL\wsl.exe (adjust this path to match your system)
+- Executable: C:\Program Files\WSL\wsl.exe (assuming WSL is used - adjust this path to match your system)
 
 - Startup folder: (empty)
 
-- Parameters: ~ zdump-test/zdump.sh elf-path '${file}' (elf-path should point to aws_demos.elf)
+- Parameters: ~ zdump-test/zdump.sh zdump-test/example-data/aws_demos.elf '${file}'
+  
+Once the project has been compiled, you find aws_demos.elf in the STM32CubeIDE project build folder (Debug-Serial).
+Copy this to ~/zdump-test/example-data/aws_demos.elf, or adjust the path accordingly. If STM32CubeIDE is installed on Windows, you may access the ELF file from WSL using a path like /mnt/c/.../ProjectFolder/Debug-Serial/aws_demos.elf.
 
-Notes: 
-- The ELF file (aws_demos.elf) is found in the STM32CubeIDE project build folder (Debug-Serial). Copy this manually if needed. 
-- Updates are currently in progress to simplify the DevAlert host tools configuration. More information will follow when this is ready.
+Updates are currently in progress to simplify the DevAlert host tools configuration. More information will follow when this is ready.
 
 ## ELF File Management
 
