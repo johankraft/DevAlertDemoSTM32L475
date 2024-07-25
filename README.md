@@ -1,6 +1,6 @@
 # Percepio DevAlert on the STM32L4 IoT Discovery Kit
 [Percepio DevAlert](https://percepio.com/devalert) is a cloud-based observability solution for edge devices and embedded software,
-that lets you detect and analyze issues remotely. Both during system testing and in deployed customer use. 
+that lets you detect and analyze issues remotely. Both during system testing and in deployed customer use.
 If your device software would encounter an unexpected situation or misbehave for other reasons, you will be notified right away
 and get comprehensive diagnostic information to quickly solve the problem.
 
@@ -37,7 +37,7 @@ Please contact support@percepio.com if you wish to evaluate this.
 ## Two Core Dump Formats
 
 This project has been extended to support two core dump formats, both CrashCatcher and the Zephyr core dump format, here called "zdump".
-The Zephyr core dump format can be used with any RTOS and supports several processor types. CrashCatcher only supports Arm Cortex-M.
+The Zephyr core dump format can be used with any RTOS (FreeRTOS in this case) and it supports several processor types. CrashCatcher only supports Arm Cortex-M.
 
 To select what core dump format to use, use the DEMO_CFG_USE_ZEPHYR_CORE_DUMP_FORMAT setting in config_files/dfm_demo_config.h.
 
@@ -173,4 +173,4 @@ The DFM and TraceRecorder libraries are copyright (c) Percepio AB 2023 (https://
 
 The CrashCatcher library is copyright (c) Adam Green (https://github.com/adamgreen) and provided under the Apache 2.0 license.
 
-The demo application is based on the AWS FreeRTOS demo for the STM32L4 IoT Discovery Kit, provided under the MIT license. 
+The demo application is based on the AWS FreeRTOS demo for the STM32L4 IoT Discovery Kit, provided under the MIT license.
