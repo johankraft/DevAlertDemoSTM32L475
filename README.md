@@ -37,21 +37,16 @@ Please contact support@percepio.com if you wish to evaluate this.
 ## Two Core Dump Formats
 
 This project has been extended to support two core dump formats, both CrashCatcher and the Zephyr core dump format, here called "zdump".
-Select this using DEMO_CFG_USE_ZEPHYR_CORE_DUMP_FORMAT (dfm_demo_config.h).
+The Zephyr core dump format can be used with any RTOS and supports several processor types. CrashCatcher only supports Arm Cortex-M.
 
-- If set to 0 (or undefined), CrashCatcher is used to generate the core dumps in the standard CrashCatcher format.
-In this case, the tool CrashDebug is used as GDB server. This is the default setup described by the getting started guide.
+To select what core dump format to use, use the DEMO_CFG_USE_ZEPHYR_CORE_DUMP_FORMAT setting in config_files/dfm_demo_config.h.
+
+- If set to 0, the CrashCatcher core dump format is used. To view such core dumps, see the [DevAlert Getting Started Guide](https://percepio.com/devalert/gettingstarted/). 
 
 - If set to 1, the core dumps are generated using the Zephyr core dump format, intended for the coredump_gdbserver.py tool.
-This is found in the Zephyr repo, under Zephyr/scripts/coredump.
 
-To view core dumps in the CrashCatcher format, see the [DevAlert Getting Started Guide](https://percepio.com/devalert/gettingstarted/). 
-
-At the time of writing this, the guide linked above does not yet describe how to view core dumps in the Zephyr format.
-Here are the steps needed to view Zephyr-formatted core dumps:
-
-- Setup: Dispatcher runs on Windows, the core dump viewer runs in WSL2 (tested on Ubuntu22).
-  If using Linux, you need to adjust the Dispatcher File Mapping accordingly.
+To view Zephyr-formatted core dumps, follow these steps. This guide assumes Dispatcher runs on Windows and the core dump viewer runs in WSL2 (tested on Ubuntu22).
+If using Linux, you need to adjust the Dispatcher File Mapping accordingly (call zdump.sh directly, not wsl.exe). 
 
 - On the WSL/Linux machine:
 
@@ -74,17 +69,15 @@ Here are the steps needed to view Zephyr-formatted core dumps:
 
     - Copy the zdump-test folder from this repository to your WSL/Linux home folder, such that zdump.sh is found at ~/zdump-test/zdump.sh.
 
-Usage:
+Using zdump.sh
 
-The main script is zdump.sh, provided in the zdump-test folder. This script shows a summary report of the core dump, by running a set of gdb commands specified in gdb-commands.txt (edit these to tweak the report). 
+The main script is zdump.sh, provided in the zdump-test folder. This script shows a summary report of the core dump, by running a set of gdb commands specified in gdb-commands.txt (edit these to tweak the report). It requires two arguments, arg 1 should be the ELF file (aws_demos.elf) and arg2 should be the core dump file (zcoredump.bin). 
 
-Internally, this script works by first starting coredump_gdbserver.py, that works as a GDB server for viewing core dumps. Then it starts the gdb client (arm-none-eabi-gdb) and connects to coredump_gdbserver.py.
-Finally it runs gdb-commands.txt as a command file.
+Internally, this script works by first starting coredump_gdbserver.py, that works as a GDB server for viewing core dumps. Then it starts the gdb client (arm-none-eabi-gdb) and connects to coredump_gdbserver.py. Finally it runs gdb-commands.txt as a command file.
 
-To run this automatically from the DevAlert Dispatcher tool (started clicking the payload links in the dashboard), you need to create a File Mapping for Zephyr-formatted core dumps.
-Note that the Dispatcher tool is described further in the [DevAlert Getting Started Guide](https://percepio.com/devalert/gettingstarted/.
-
-Here is how to create a Dispatcher File Mapping for Zephyr-formatted core dumps using zdump.sh, assuming Dispatcher runs in Windows and zdump.sh in WSL:
+Follow the [DevAlert Getting Started Guide](https://percepio.com/devalert/gettingstarted/) unil you see a "zcoredump.bin" payload in the DevAlert dashboard.
+Clicking the link will download the file using the Dispatcher tool. To make Dispatcher understand how to view the file, you need to create a File Mapping that calls zdump.sh.
+Here is how to create a Dispatcher File Mapping for zdump.sh, assuming Dispatcher runs in Windows and zdump.sh in WSL:
 
 - Description: zcoredump (or what you prefer to call it)
 
