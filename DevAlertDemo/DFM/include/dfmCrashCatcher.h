@@ -17,7 +17,13 @@
 
 #include <dfmCrashCatcherConfig.h>
 
+#include "dfm_demo_config.h"
+
+#if (DEMO_CFG_USE_ZEPHYR_CORE_DUMP_FORMAT == 1)
 #define CRASH_DUMP_NAME "zcoredump.bin"
+#else
+#define CRASH_DUMP_NAME "cc_coredump.dmp"
+#endif
 
 /**
  * @brief Should call a function that reboots device

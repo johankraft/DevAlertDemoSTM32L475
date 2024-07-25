@@ -26,7 +26,7 @@
 #ifndef __AWS_CLIENTCREDENTIAL__H__
 #define __AWS_CLIENTCREDENTIAL__H__
 
-#if (DFM_CFG_SERIAL_UPLOAD_ONLY != 1)
+#if (DEMO_CFG_SERIAL_UPLOAD_ONLY != 1)
 #warning "Update Wi-Fi and AWS IoT Core details below, then remove this line."
 #endif
 

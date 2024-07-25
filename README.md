@@ -37,12 +37,12 @@ Please contact support@percepio.com if you wish to evaluate this.
 ## Two Core Dump Formats
 
 This project has been extended to support two core dump formats, both CrashCatcher and the Zephyr core dump format.
-You find a setting for the core dump format in FreeRTOSConfig.h - #define USE_ZEPHYR_CORE_DUMP_FORMAT.
+Select this using DEMO_CFG_USE_ZEPHYR_CORE_DUMP_FORMAT (dfm_demo_config.h).
 
-If USE_ZEPHYR_CORE_DUMP_FORMAT is set to 0 (or undefined), CrashCatcher is used to generate the core dumps in the standard CrashCatcher format.
+- If set to 0 (or undefined), CrashCatcher is used to generate the core dumps in the standard CrashCatcher format.
 In this case, the tool CrashDebug is used as GDB server. This is the default setup described by the getting started guide.
 
-If USE_ZEPHYR_CORE_DUMP_FORMAT is set to 1, the core dumps are generated using the Zephyr core dump format, intended for the coredump_gdbserver.py tool.
+- If set to 1, the core dumps are generated using the Zephyr core dump format, intended for the coredump_gdbserver.py tool.
 This is found in the Zephyr repo, under Zephyr/scripts/coredump. 
 
 Updates are currently in progress to simplify the DevAlert host tools configuration. More information will follow when this is ready.

@@ -13,7 +13,9 @@
    limitations under the License.
 */
 
-#if (!defined(USE_ZEPHYR_CORE_DUMP_FORMAT) || USE_ZEPHYR_CORE_DUMP_FORMAT==0)
+#include "dfm_demo_config.h"
+
+#if (DEMO_CFG_USE_ZEPHYR_CORE_DUMP_FORMAT==0)
 
 #include "CrashCatcherPriv.h"
 

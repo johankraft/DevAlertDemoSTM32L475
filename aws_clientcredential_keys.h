@@ -37,7 +37,7 @@
 #ifndef AWS_CLIENT_CREDENTIAL_KEYS_H
 #define AWS_CLIENT_CREDENTIAL_KEYS_H
 
-#if (DFM_CFG_SERIAL_UPLOAD_ONLY != 1)
+#if (DEMO_CFG_SERIAL_UPLOAD_ONLY != 1)
 #warning "Update AWS IoT Core certificate below, i.e. CERTIFICATE_PEM and PRIVATE_KEY_PEM, then remove this line."
 #endif
 /*

@@ -82,7 +82,7 @@ extern void SPI_WIFI_ISR( void );
 extern SPI_HandleTypeDef hspi;
 
 #ifdef USE_OFFLOAD_SSL
-#if (DFM_CFG_SERIAL_UPLOAD_ONLY != 1)
+#if (DEMO_CFG_SERIAL_UPLOAD_ONLY != 1)
     /* Defined in iot_wifi.c. */
     extern WIFIReturnCode_t WIFI_GetFirmwareVersion( uint8_t * pucBuffer );
 #endif
@@ -101,7 +101,7 @@ static void SystemClock_Config( void );
 static void Console_UART_Init( void );
 static void RTC_Init( void );
 
-#if (DFM_CFG_SERIAL_UPLOAD_ONLY != 1)
+#if (DEMO_CFG_SERIAL_UPLOAD_ONLY != 1)
 static void prvWifiConnect( void );
 #endif
 
@@ -134,7 +134,7 @@ DfmResult_t myGetDeviceName(char cBuffer[], uint32_t ulSize, uint32_t* pulBytesW
  *
  * Prints a message to inform the user to update the WiFi firmware.
  */
-#if (DFM_CFG_SERIAL_UPLOAD_ONLY != 1)
+#if (DEMO_CFG_SERIAL_UPLOAD_ONLY != 1)
     static void prvCheckWiFiFirmwareVersion( void );
 #endif
 
@@ -457,14 +457,14 @@ void vApplicationDaemonTaskStartupHook( void )
     // Can be read from elf file by "arm-none-eabi-readelf -n aws_demos.elf"
     configPRINTF(("Revision: %s\n", DFM_CFG_FIRMWARE_VERSION));
 
-#if (DFM_CFG_SERIAL_UPLOAD_ONLY == 1)
+#if (DEMO_CFG_SERIAL_UPLOAD_ONLY == 1)
     configPRINTF(("Upload method: Serial (upload via host computer)\n"));
 #else
     configPRINTF(("Upload method: AWS_MQTT (direct upload to cloud)\n"));
 #endif
 
 /* For testing the serial port upload, Wifi/AWS connectivity not needed */
-#if (DFM_CFG_SERIAL_UPLOAD_ONLY != 1)
+#if (DEMO_CFG_SERIAL_UPLOAD_ONLY != 1)
 
     WIFIReturnCode_t xWifiStatus;
 
@@ -604,7 +604,7 @@ void vApplicationDaemonTaskStartupHook( void )
 }
 /*-----------------------------------------------------------*/
 
-#if (DFM_CFG_SERIAL_UPLOAD_ONLY != 1)
+#if (DEMO_CFG_SERIAL_UPLOAD_ONLY != 1)
 
 static void prvWifiConnect( void )
 {
@@ -921,7 +921,7 @@ static void prvMiscInitialization( void )
     printf("BuildID: %s\n", gcc_build_id);
 
 
-#if (DFM_CFG_SERIAL_UPLOAD_ONLY == 1)
+#if (DEMO_CFG_SERIAL_UPLOAD_ONLY == 1)
 
     // DFM can be initialized quite early when using the Serial upload
 
@@ -1162,7 +1162,7 @@ void vApplicationMallocFailedHook(void)
 /*-----------------------------------------------------------*/
 
 #ifdef USE_OFFLOAD_SSL
-#if (DFM_CFG_SERIAL_UPLOAD_ONLY != 1)
+#if (DEMO_CFG_SERIAL_UPLOAD_ONLY != 1)
 
     static void prvCheckWiFiFirmwareVersion( void )
     {

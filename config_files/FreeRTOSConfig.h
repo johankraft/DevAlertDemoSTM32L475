@@ -219,11 +219,4 @@ extern int iMainRand32( void );
 /* Integrates the Tracealyzer recorder with FreeRTOS */
 #include "trcRecorder.h"
 
-// If 0 or undefined, DFM will use crashcatcher for core dumps.
-// If 1, DFM will use the Zephyr core dump format.
-// Perhaps move this to a proper DFM setting instead.
-#ifndef USE_ZEPHYR_CORE_DUMP_FORMAT
-#define USE_ZEPHYR_CORE_DUMP_FORMAT 1
-#endif
-
 #endif /* FREERTOS_CONFIG_H */

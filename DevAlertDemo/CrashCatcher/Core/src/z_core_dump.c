@@ -5,11 +5,14 @@
  * https://docs.zephyrproject.org/latest/services/debugging/coredump.html#file-format
  */
 
+
 #include <stdint.h>
 #include "FreeRTOS.h"
 #include "CrashCatcher.h"
 
-#if (USE_ZEPHYR_CORE_DUMP_FORMAT == 1)
+#include "dfm_demo_config.h"
+
+#if (DEMO_CFG_USE_ZEPHYR_CORE_DUMP_FORMAT == 1)
 
 /* ----------------------------------------------------------------
  * COMPILE-TIME MACROS
