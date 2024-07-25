@@ -36,16 +36,69 @@ Please contact support@percepio.com if you wish to evaluate this.
 
 ## Two Core Dump Formats
 
-This project has been extended to support two core dump formats, both CrashCatcher and the Zephyr core dump format.
+This project has been extended to support two core dump formats, both CrashCatcher and the Zephyr core dump format, here called "zdump".
 Select this using DEMO_CFG_USE_ZEPHYR_CORE_DUMP_FORMAT (dfm_demo_config.h).
 
 - If set to 0 (or undefined), CrashCatcher is used to generate the core dumps in the standard CrashCatcher format.
 In this case, the tool CrashDebug is used as GDB server. This is the default setup described by the getting started guide.
 
 - If set to 1, the core dumps are generated using the Zephyr core dump format, intended for the coredump_gdbserver.py tool.
-This is found in the Zephyr repo, under Zephyr/scripts/coredump. 
+This is found in the Zephyr repo, under Zephyr/scripts/coredump.
 
-Updates are currently in progress to simplify the DevAlert host tools configuration. More information will follow when this is ready.
+To view core dumps in the CrashCatcher format, see the [DevAlert Getting Started Guide](https://percepio.com/devalert/gettingstarted/). 
+
+At the time of writing this, the guide linked above does not yet describe how to view core dumps in the Zephyr format.
+Here are the steps needed to view Zephyr-formatted core dumps:
+
+- Setup: Dispatcher runs on Windows, the core dump viewer runs in WSL2 (tested on Ubuntu22).
+  If using Linux, you need to adjust the Dispatcher File Mapping accordingly.
+
+- On the WSL/Linux machine:
+
+    - Make sure you have python3 installed.
+
+    - Install the pyelftools package using "pip install pyelftools"
+
+    - Install arm-none-eabi-gdb, for example using the example steps provided below:
+ 
+	cd opt
+	sudo wget "https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi.tar.xz"
+	sudo tar -xf ./arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi.tar.xz
+	sudo rm arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi.tar.xz
+	sudo apt-get install libncurses5 libncursesw5
+	export PATH="/opt/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi/bin:$PATH"
+
+    - Verify the GDB installation:
+
+      arm-none-eabi-gdb -v
+
+    - Copy the zdump-test folder from this repository to your WSL/Linux home folder, such that zdump.sh is found at ~/zdump-test/zdump.sh.
+
+Usage:
+
+The main script is zdump.sh, provided in the zdump-test folder. This script shows a summary report of the core dump, by running a set of gdb commands specified in gdb-commands.txt (edit these to tweak the report). 
+
+Internally, this script works by first starting coredump_gdbserver.py, that works as a GDB server for viewing core dumps. Then it starts the gdb client (arm-none-eabi-gdb) and connects to coredump_gdbserver.py.
+Finally it runs gdb-commands.txt as a command file.
+
+To run this automatically from the DevAlert Dispatcher tool (started clicking the payload links in the dashboard), you need to create a File Mapping for Zephyr-formatted core dumps.
+Note that the Dispatcher tool is described further in the [DevAlert Getting Started Guide](https://percepio.com/devalert/gettingstarted/.
+
+Here is how to create a Dispatcher File Mapping for Zephyr-formatted core dumps using zdump.sh, assuming Dispatcher runs in Windows and zdump.sh in WSL:
+
+- Description: zcoredump (or what you prefer to call it)
+
+- Exact Filename: zcoredump.bin (hardcoded in the STM32 demo code)
+
+- Executable: C:\Program Files\WSL\wsl.exe (adjust this path to match your system)
+
+- Startup folder: (empty)
+
+- Parameters: ~ zdump-test/zdump.sh elf-path '${file}' (elf-path should point to aws_demos.elf)
+
+Notes: 
+- The ELF file (aws_demos.elf) is found in the STM32CubeIDE project build folder (Debug-Serial). Copy this manually if needed. 
+- Updates are currently in progress to simplify the DevAlert host tools configuration. More information will follow when this is ready.
 
 ## ELF File Management
 
