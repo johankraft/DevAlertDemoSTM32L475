@@ -1,5 +1,5 @@
 /*
- * Percepio DFM v2.0.0
+ * Percepio DFM v2.1.0
  * Copyright 2023 Percepio AB
  * www.percepio.com
  *
@@ -216,6 +216,7 @@ void CrashCatcher_DumpMemory(const void* pvMemory, CrashCatcherElementSizes elem
 
 		***********************************************************************************************************/
 
+		vDfmDisableInterrupts();
 		for (;;); // Stop here...
 	}
 

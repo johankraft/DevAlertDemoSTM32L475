@@ -1,5 +1,5 @@
 /*
- * Percepio DFM v2.0.0
+ * Percepio DFM v2.1.0
  * Copyright 2023 Percepio AB
  * www.percepio.com
  *
@@ -236,7 +236,7 @@ DfmResult_t xDfmCloudPortSendAlert(DfmEntryHandle_t xEntryHandle)
 DfmResult_t xDfmCloudPortSendPayloadChunk(DfmEntryHandle_t xEntryHandle)
 {
 	configPRINTF(("  Uploading payload chunk."));
-	return xDfmCloudPortSend(xEntryHandle);
+    return xDfmCloudPortSend(xEntryHandle);
 }
 
 DfmResult_t xDfmCloudPortSend(DfmEntryHandle_t xEntryHandle)

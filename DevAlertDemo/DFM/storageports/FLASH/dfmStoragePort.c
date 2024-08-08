@@ -1,5 +1,5 @@
 /*
- * Percepio DFM v2.0.0
+ * Percepio DFM v2.1.0
  * Copyright 2023 Percepio AB
  * www.percepio.com
  *
@@ -102,6 +102,8 @@ DfmResult_t xDfmStoragePortGetPayloadChunk(char* szSessionId, uint32_t ulAlertId
  * It does not preserve other data that might be present on these pages (future improvement!) */
 static DfmResult_t prvDfmStoragePortWrite(DfmEntryHandle_t xEntryHandle, uint32_t ulType, uint32_t ulOverwrite)
 {
+	DFM_DEBUG_PRINT("prvDfmStoragePortWrite\n");
+
 	if (xEntryHandle == 0)
 	{
 		return DFM_FAIL;
@@ -152,6 +154,8 @@ static DfmResult_t prvDfmStoragePortWrite(DfmEntryHandle_t xEntryHandle, uint32_
 
 DfmResult_t xDfmStoragePortReset(void)
 {
+	DFM_DEBUG_PRINT("xDfmStoragePortReset()\n");
+
 	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
 
 	if (FLASH_unlock_erase((uint32_t)&dfmFlashData, sizeof(dfmFlashData)) != 0)

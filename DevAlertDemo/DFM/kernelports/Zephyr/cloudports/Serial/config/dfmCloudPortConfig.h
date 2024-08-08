@@ -15,10 +15,12 @@
 #ifndef DFM_CLOUD_PORT_CONFIG_H
 #define DFM_CLOUD_PORT_CONFIG_H
 
+#if CONFIG_PERCEPIO_DFM_CFG_CLOUDPORT_SERIAL == 1
+
 /**
  * @brief How to output the alert data over the serial port.
  */
-#define DFM_PRINT_ALERT_DATA DFM_CFG_PRINT
+#define DFM_PRINT_ALERT_DATA printk
 
 /**
  * @brief Maximum size of the MQTT topic.
@@ -44,3 +46,5 @@
 #define DFM_CFG_UNLOCK_SERIAL()
 
 #endif
+
+#endif //UNITTEST_DFMCLOUDPORTCONFIG_H

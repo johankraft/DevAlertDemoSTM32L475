@@ -6,37 +6,37 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-/**
- * @file
- *
- * @brief DFM dummy Cloud port API
- */
-
 #ifndef DFM_CLOUD_PORT_H
 #define DFM_CLOUD_PORT_H
 
 #include <stdint.h>
 #include <dfmTypes.h>
-#include <dfm.h>
-
-#if ((DFM_CFG_ENABLED) >= 1)
+#include <dfmCloudPortConfig.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @defgroup dfm_cloud_port_dummy_apis DFM Dummy Cloud port API
- * @ingroup dfm_apis
- * @{
- */
+/* This will allow DFM to attempt transfers in all situations, hardfaults included */
+#define DFM_CLOUD_PORT_ALWAYS_ATTEMPT_TRANSFER
+
+#if CONFIG_PERCEPIO_DFM_CFG_CLOUDPORT_SERIAL == 1
+
+typedef struct {
+	uint32_t startmarker;
+	uint16_t keylen;
+	uint16_t datalen;
+} DfmSerialHeader_t;
 
 /**
- * @brief Cloud port system data
- */
+* @brief Cloud port specific data, additional header data needed to make sure the message ends up
+ * 		 where it's supposed to.
+*/
 typedef struct DfmCloudPortData
 {
-	uint32_t dummy;
+	char buf[80];
+	char cKeyBuffer[DFM_CFG_CLOUD_PORT_MAX_TOPIC_SIZE];
+	DfmSerialHeader_t xDfmSerialHeader;
 } DfmCloudPortData_t;
 
 /**
@@ -69,12 +69,10 @@ DfmResult_t xDfmCloudPortSendAlert(DfmEntryHandle_t xEntryHandle);
  */
 DfmResult_t xDfmCloudPortSendPayloadChunk(DfmEntryHandle_t xEntryHandle);
 
-/** @} */
+#endif //PERCEPIO_DFM_CFG_CLOUDPORT_SERIAL == 1
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif
-
-#endif
+#endif //DFM_CLOUD_PORT_H
