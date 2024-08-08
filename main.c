@@ -303,10 +303,11 @@ void prvRXTask(void* argument)
 	int state = 0;
 	int len = 0;
 
-	TraceStringHandle_t command_chn = xTraceRegisterString("Command Log");
-
+	TraceStringHandle_t command_chn;
 	TraceStateMachineHandle_t myfsm;
 	TraceStateMachineStateHandle_t myfsm_state[5];
+
+	xTraceStringRegister("Command Log", &command_chn);
 
 	/* Trace a state machine (states can span between tasks) */
 	xTraceStateMachineCreate("RX State", &myfsm);
