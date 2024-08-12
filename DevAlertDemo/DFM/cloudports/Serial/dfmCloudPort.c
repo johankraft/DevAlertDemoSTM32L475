@@ -69,35 +69,25 @@ static DfmResult_t prvSerialPortUploadEntry(DfmEntryHandle_t xEntryHandle)
 	uint32_t checksum;
 	uint32_t datalen;
 
-	int counter = 0;
-
 	if (pxCloudPortData == (void*)0)
-	{
 		return DFM_FAIL;
-	}
 
 	if (xEntryHandle == 0)
-	{
 		return DFM_FAIL;
-	}
 
 	if (xDfmEntryGetSize(xEntryHandle, &datalen) == DFM_FAIL)
-	{
 		return DFM_FAIL;
-	}
 
 	if (datalen > 0xFFFF)
-	{
 		return DFM_FAIL;
-	}
 
 	DFM_CFG_LOCK_SERIAL();
 	DFM_PRINT_SERIAL_DATA("\n[[ DevAlert Data Begins ]]\n");
 	DFM_CFG_UNLOCK_SERIAL();
 
-	checksum = 0; // Make sure to clear this
-	checksum += prvPrintDataAsHex((uint8_t*)xEntryHandle, datalen);
+	checksum = prvPrintDataAsHex((uint8_t*)xEntryHandle, datalen);
 
+    // Checksum not provided (0) since not compatible with new python script.
 	snprintf(pxCloudPortData->buf, sizeof(pxCloudPortData->buf), "[[ DevAlert Data Ended. Checksum: %d ]]\n", (unsigned int)0);
 
 	DFM_CFG_LOCK_SERIAL();

@@ -229,13 +229,11 @@ DfmResult_t xDfmCloudPortInitialize(DfmCloudPortData_t* pxBuffer)
 
 DfmResult_t xDfmCloudPortSendAlert(DfmEntryHandle_t xEntryHandle)
 {
-	configPRINTF(("Uploading alert header."));
     return xDfmCloudPortSend(xEntryHandle);
 }
 
 DfmResult_t xDfmCloudPortSendPayloadChunk(DfmEntryHandle_t xEntryHandle)
 {
-	configPRINTF(("  Uploading payload chunk."));
     return xDfmCloudPortSend(xEntryHandle);
 }
 

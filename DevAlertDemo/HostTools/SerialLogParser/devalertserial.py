@@ -1,9 +1,5 @@
 #!/usr/bin/python3
 
-# Updated version supporting file output.
-# To save files locally, run this with python devalertserial.py --upload file --folder output dfm.log
-# (dfm.log is the terminal output log, saved e.g. using TeraTerm logging.) 
-
 import argparse
 import os
 import re
@@ -122,7 +118,7 @@ if __name__ == "__main__":
     )
     parser.add_argument('serial_file')
     parser.add_argument('--folder', type=str, help='The folder where the dumps should be outputted (only needed when using the s3 upload destination)')
-    parser.add_argument('--upload', type=str, help="Whether to use a separate s3 bucket, sandbox or file, valid options: s3, sandbox, file",  required=True)
+    parser.add_argument('--upload', type=str, help="How to output the data - s3: Amazon s3 bucket, sandbox: DevAlert evaluation account storage, file: store data as files (for local server).",  required=True)
     args = parser.parse_args()
 
     if args.upload != "s3" and args.upload != "sandbox" and args.upload != "file":
@@ -170,8 +166,7 @@ if __name__ == "__main__":
             elif block_parse_state == DataBlockParseState.Parsing:
 
                 if parse_result == ChunkResultType.Data:
-                    accumulated_payload += payload
-                    # print(' '.join(f'{x:02X}' for x in payload))
+                    accumulated_payload += payload                    
                     
                 elif parse_result == ChunkResultType.End:
                     block_parse_state = DataBlockParseState.NotRunning
@@ -187,22 +182,31 @@ if __name__ == "__main__":
                                    calculated_crc, payload, len(accumulated_payload)))
                                continue
 
-                        # We got a proper data block, let's send it to the sandbox
-                        # info_log("Found DFM data block, length: {}".format(len(accumulated_payload)))
+                        
+                        if args.upload == "file":      
 
-                        if args.upload == "file":                        
+                            # This is for generating raw alert files, intended for the local server. 
+                            # Note: Not compatible with the DevAlert upload tools.
+
+                            parsed_payload: bytes
+                            try:
+                                parsed_payload = DfmEntryParser.get_entry_data(accumulated_payload)
+                            except DfmEntryParserException as e:
+                                info_log("Got DfmParserException: {}".format(e))
+                                continue
+						                        
                             topic = DfmEntryParser.get_topic(accumulated_payload)
                             file_path = args.folder + "/" + topic;
                             
                             folder = str(Path(file_path).parent.resolve())
                             
-                            #info_log("Creating folder " + folder)                            
                             Path(folder).mkdir(parents=True, exist_ok=True)
 
-                            info_log("Creating file: " + file_path)
+                            info_log("Generating " + file_path)
                                                     
                             with open(file_path, 'wb') as dump_fh:
-                               dump_fh.write(accumulated_payload)
+                               dump_fh.write(parsed_payload)
+
                         else:
                             # Try to parse the payload to generate a proper devalerts3/devalerthttps payload
                             parsed_payload: bytes
