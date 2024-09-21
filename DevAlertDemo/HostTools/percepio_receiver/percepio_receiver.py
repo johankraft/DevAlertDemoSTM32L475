@@ -110,15 +110,19 @@ class LineParser:
                     self.parsing = False
                 return False
 
+from argparse import RawTextHelpFormatter
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        prog='DFM Zephyr Serial cloudport log parser',
-        description='Parse the log of the Zephyr DfmSerialCloudPort and dump the coredumps as separate files into a separate folder',
+        prog='percepio_receiver',
+        description='Extracts DFM data from device log files (text files) and converts the DFM data for Percepio Detect or Percepio DevAlert.\nFor Percepio Detect, use --upload file --eof wait and provide the ALERTS_DIR path as --folder.\nExample: python percepio_receiver.py device.log --upload file --folder alerts_dir --eof wait.',
+        formatter_class=RawTextHelpFormatter     
     )
-    parser.add_argument('serial_file')
-    parser.add_argument('--folder', type=str, help='The folder where the dumps should be outputted (only needed when using the s3 upload destination)')
-    parser.add_argument('--upload', type=str, help="How to output the data - s3: Amazon s3 bucket, sandbox: DevAlert evaluation account storage, file: store data as files (for local server).",  required=True)
+    parser.add_argument('inputfile', type=str, help='The log file to read, containing DFM data.')
+    parser.add_argument('--upload', type=str, help="Where to output the data:\n    file: store data as files (for Detect server).\n    s3: Amazon s3 bucket (requires the devalerts3 tool in the same folder).\n    sandbox: DevAlert evaluation account storage (requires the devalerthttps tool in the same folder)",  required=True)
+    parser.add_argument('--folder', type=str, help='The folder where the output data should be saved. Only needed if upload is s3 or file.')
+    parser.add_argument('--eof', type=str, help="What to do at end of file:\n    wait: keeps waiting for more data (exit using Ctrl-C).\n    exit: exits directly at end of file (default).",  required=False)
+
     args = parser.parse_args()
 
     if args.upload != "s3" and args.upload != "sandbox" and args.upload != "file":
@@ -135,14 +139,14 @@ if __name__ == "__main__":
     line_parser = LineParser()
     block_parse_state = DataBlockParseState.NotRunning
     accumulated_payload = bytes([])
-    with open(args.serial_file, "r", buffering=1) as fh:
+    with open(args.inputfile, "r", buffering=1) as fh:
         while 1:
             line = fh.readline()
 
             # We've reached the end of the file, just sleep and try reading again.
             # This makes it possible to continuously read the file
             if line == "":
-                if args.upload == "file":
+                if args.upload == "file" and args.eof!="wait":
                     # We've reached the end of the file, and we just wanted to do that
                     break
                 time.sleep(1)
