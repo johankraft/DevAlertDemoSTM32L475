@@ -926,7 +926,7 @@ static void prvMiscInitialization( void )
 
     // DFM can be initialized quite early when using the Serial upload
 
-    if (xDfmInitialize(myGetUniqueSessionID, myGetDeviceName) == DFM_FAIL)
+    if (xDfmInitializeForLocalUse() == DFM_FAIL)
     {
     	configPRINTF(("Failed to initialize DFM\r\n"));
     }

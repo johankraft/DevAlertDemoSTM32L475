@@ -26,6 +26,43 @@ static DfmData_t* pxDfmData = &xDfmData;
 DfmUserCallback_t xDfmUserGetUniqueSessionID;
 DfmUserCallback_t xDfmUserGetDeviceName;
 
+
+DfmResult_t prvDefaultGetDeviceName(char cBuffer[], uint32_t ulSize, uint32_t* pulBytesWritten)
+{
+	uint32_t nBytes;
+	nBytes = snprintf(cBuffer, ulSize, "$DUMMY_DEVICE_ID"); // This makes percepio-receiver.py set a provided DeviceID instead (i.e. on host).
+
+	if (nBytes > 0)
+	{
+		*pulBytesWritten = nBytes;
+		return DFM_SUCCESS;
+	}
+
+	return DFM_FAIL;
+}
+
+
+
+DfmResult_t prvDefaultSessionID(char cBuffer[], uint32_t ulSize, uint32_t* pulBytesWritten)
+{
+	uint32_t nBytes;
+	nBytes = snprintf(cBuffer, ulSize, "$DUMMY_SESSION_ID"); // This makes percepio-receiver.py set the current host time as SessionID instead (i.e. on host).
+
+	if (nBytes > 0)
+	{
+		*pulBytesWritten = nBytes;
+		return DFM_SUCCESS;
+	}
+
+	return DFM_FAIL;
+}
+
+DfmResult_t xDfmInitializeForLocalUse(void)
+{
+	return xDfmInitialize(prvDefaultSessionID, prvDefaultGetDeviceName);
+}
+
+
 DfmResult_t xDfmInitialize(DfmUserCallback_t xGetUniqueSessionID, DfmUserCallback_t xGetDeviceName)
 {
 	if (pxDfmData == (void*)0)

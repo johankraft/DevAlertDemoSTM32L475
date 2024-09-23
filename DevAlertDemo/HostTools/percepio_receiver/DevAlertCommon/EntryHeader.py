@@ -32,6 +32,18 @@ class EntryHeader:
             return "<"  # Little endian
         return ">"  # Big endian
 
+    def set_session_id(self, session_id: str):
+        barr = bytearray(self._payload)
+        barr[32:32 + self.session_id_size] = bytearray(session_id.ljust(self.session_id_size), encoding='utf-8', errors='strict')
+        self._payload = bytes(barr)
+    
+    def set_device_name(self, device_id: str):
+        start = 32 + self.session_id_size
+        end = start + self.device_name_size
+        barr = bytearray(self._payload)
+        barr[start:end] = bytearray(device_id.ljust(self.session_id_size), encoding='utf-8', errors='strict')
+        self._payload = bytes(barr)
+    
     @property
     def is_valid(self) -> bool:
         correct_start_marker_bytes = bytes([0xD1, 0xD2, 0xD3, 0xD4])
@@ -101,13 +113,13 @@ class EntryHeader:
 
     @property
     def session_id(self) -> str:
-        return self.__unpack_string(self._payload[32:32 + self.session_id_size]).replace('\00', '')
-
+        return self.__unpack_string(self._payload[32:32 + self.session_id_size]).replace('\00', '').strip()
+    
     @property
     def device_name(self) -> str:
         start = 32 + self.session_id_size
         end = start + self.device_name_size
-        return self.__unpack_string(self._payload[start:end]).replace('\00', '')
+        return self.__unpack_string(self._payload[start:end]).replace('\00', '').strip()
 
     @property
     def description(self) -> str:

@@ -5,6 +5,7 @@ import os
 import re
 import sys
 import time
+import math
 from binascii import unhexlify
 import enum
 from typing import Tuple
@@ -122,6 +123,9 @@ if __name__ == "__main__":
     parser.add_argument('--upload', type=str, help="Where to output the data:\n    file: store data as files (for Detect server).\n    s3: Amazon s3 bucket (requires the devalerts3 tool in the same folder).\n    sandbox: DevAlert evaluation account storage (requires the devalerthttps tool in the same folder)",  required=True)
     parser.add_argument('--folder', type=str, help='The folder where the output data should be saved. Only needed if upload is s3 or file.')
     parser.add_argument('--eof', type=str, help="What to do at end of file:\n    wait: keeps waiting for more data (exit using Ctrl-C).\n    exit: exits directly at end of file (default).",  required=False)
+    parser.add_argument('--deviceid', type=str, help="Sets the Device ID, assuming the device library (DFM) has been initialized using xDfmInitializeForLocalUse().\nThe xDfmInitializeForLocalUse() function applies a default DeviceID value that is replaced by the --deviceid parameter.",  required=False)
+
+    print("\nNOTE: There is a risk for duplicated alerts if the device library (DFM) has been initialized using xDfmInitializeForLocalUse(). The current host time is then used as SessionID. This avoids the need to implement a unique SessionID in DFM. But you then get repeated alerts in the server database if running this tool multiple times on the same data. Make sure to start this tool with a fresh log file, not containing any previously processed alerts.\n");
 
     args = parser.parse_args()
 
@@ -139,6 +143,11 @@ if __name__ == "__main__":
     line_parser = LineParser()
     block_parse_state = DataBlockParseState.NotRunning
     accumulated_payload = bytes([])
+    
+    session_id = ""
+    device_id = ""
+    alert_counter = 0;
+    
     with open(args.inputfile, "r", buffering=1) as fh:
         while 1:
             line = fh.readline()
@@ -189,25 +198,59 @@ if __name__ == "__main__":
                         
                         if args.upload == "file":      
 
-                            # This is for generating raw alert files, intended for the local server. 
-                            # Note: Not compatible with the DevAlert upload tools.
+                            # This is for generating raw alert files, intended for the Percepio Detect server. 
+                            # Note: Not compatible with the DevAlert upload tools, like devalerthttps.
 
                             parsed_payload: bytes
+                            topic: str
+                            
                             try:
-                                parsed_payload = DfmEntryParser.get_entry_data(accumulated_payload)
+                                if (DfmEntryParser.is_header(accumulated_payload)):
+                                    
+                                    # If the alert data contains the default SessionID (i.e. when
+                                    # DFM has been initialized using xDfmInitializeForLocalUse)
+                                    # this created a new SessionID based on the current time.
+                                    # This is convienent for local use, but if the same log file
+                                    # is processed again, this will result in duplicated alerts
+                                    # with different SessionIDs. The server will treat them as
+                                    # repetitions of the same issue.
+                                    ts = math.trunc(time.time())
+                                    session_id = str(ts)
+                                    
+                                    alert_counter = alert_counter + 1
+                                    print("Alert " + str(alert_counter) + " received at " + time.ctime() + ".")
+            
+                                parsed_payload, topic = DfmEntryParser.get_entry_data_modified(accumulated_payload, session_id, args.deviceid)
                             except DfmEntryParserException as e:
                                 info_log("Got DfmParserException: {}".format(e))
                                 continue
-						                        
-                            topic = DfmEntryParser.get_topic(accumulated_payload)
+						    
                             file_path = args.folder + "/" + topic;
                             
                             folder = str(Path(file_path).parent.resolve())
                             
                             Path(folder).mkdir(parents=True, exist_ok=True)
 
-                            info_log("Generating " + file_path)
+                            info_log("    Creating file " + file_path)
                                                     
+                            # Issue: 
+                            # Setting SessionID on the fly works for new alerts, but what if there are old alerts in the log file
+                            # that are processed again when the script restarts?
+                            # This will cause duplicate entries. But perhaps not a big deal?
+                            # This is perhaps a "documentation issue"?
+                            
+                            # Or could we keep track of file contents checksums?
+                            # Like, when a new chunk is detected, we store the checksum of the
+                            # previous log file contents (including previous alert data) to some
+                            # kind of persistent index for the percepio-receiver script.
+                            # Perhaps along with the line number.
+                            # Like: 
+                            #   Alert uihs9f8yr98732yri32483294uroiwejhfldnslkdu 323
+                            #   Alert fdshfds98fhrö3oirhjwqöoifdhsaöofhsafi9ewhe 1425
+                            #
+                            # If this file is reprocessed again, we could skip those alerts
+                            # that have already been created. This could be an optional feature.
+                                                        
                             with open(file_path, 'wb') as dump_fh:
                                dump_fh.write(parsed_payload)
 

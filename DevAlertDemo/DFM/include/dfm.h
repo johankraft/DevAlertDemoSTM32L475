@@ -211,6 +211,21 @@ typedef struct DfmData
 DfmResult_t xDfmInitialize(DfmUserCallback_t xGetUniqueSessionID, DfmUserCallback_t xGetDeviceName);
 
 /**
+ * @internal Initializes the entire DFM system, simplified version for local use.
+ *
+ * This is intended for when DFM is used with serial output to a directly connected host computer,
+ * that parses the data using percepio-receiver.py.
+ * This function calls xDfmInitialize but applies default "magic" values for DeviceID and for
+ * SessionID. The percepio-receiver tool will replace these values on the host machine, using the
+ * current time as SessionID and a static DeviceID provided as parameter.
+ *
+ * @retval DFM_FAIL Failure
+ * @retval DFM_SUCCESS Success
+ */
+
+DfmResult_t xDfmInitializeForLocalUse(void);
+
+/**
  * @brief Is DFM initialized?
  *
  * @retval DFM_FAIL Failure
